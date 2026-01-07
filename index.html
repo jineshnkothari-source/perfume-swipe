@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<title>Perfume Swipe</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        primary: "#ee2b8c",
+        bg: "#221019"
+      }
+    }
+  }
+}
+</script>
+</head>
+
+<body class="bg-bg text-white overflow-hidden">
+
+<!-- PERFUME CARD -->
+<div id="card"
+  class="fixed inset-0 bg-cover bg-center flex flex-col justify-end transition-transform duration-300">
+
+  <!-- Swipe Overlays -->
+  <div id="likeOverlay"
+    class="absolute top-16 left-6 border-4 border-green-400 text-green-400 px-4 py-2 text-3xl font-extrabold rotate-[-12deg] opacity-0">
+    LIKE
+  </div>
+
+  <div id="skipOverlay"
+    class="absolute top-16 right-6 border-4 border-red-400 text-red-400 px-4 py-2 text-3xl font-extrabold rotate-[12deg] opacity-0">
+    NOPE
+  </div>
+
+  <!-- Gradient -->
+  <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+
+  <!-- Content -->
+  <div class="relative p-6 space-y-2">
+    <div class="text-xs uppercase tracking-widest text-primary font-bold">
+      Discover your scent
+    </div>
+    <h1 id="name" class="text-4xl font-extrabold"></h1>
+    <p id="desc" class="text-white/80 text-lg"></p>
+    <p class="text-xs text-white/40">
+      Swipe right to like · left to skip
+    </p>
+  </div>
+</div>
+
+<!-- EMAIL SCREEN -->
+<div id="email"
+  class="hidden fixed inset-0 bg-bg flex flex-col justify-center p-6 text-center space-y-4">
+  <h1 class="text-4xl font-extrabold">You’ve got great taste</h1>
+  <p class="text-white/70">We’ll notify you when your 50ml launches</p>
+  <input id="emailInput" type="email"
+    placeholder="yourname@college.edu"
+    class="w-full p-4 rounded-full text-black">
+  <button onclick="submitEmail()"
+    class="w-full bg-primary py-4 rounded-full font-bold">
+    Join the List →
+  </button>
+</div>
+
+<!-- CONFIRMATION -->
+<div id="done"
+  class="hidden fixed inset-0 bg-bg flex flex-col justify-center items-center text-center space-y-4">
+  <h1 class="text-5xl font-extrabold">You’re in 🎉</h1>
+  <p class="text-white/70">Your scent is locked</p>
+  <button onclick="reset()"
+    class="text-sm underline text-white/50">
+    Start over
+  </button>
+</div>
+
+<!-- ADMIN EXPORT -->
+<button onclick="exportCSV()"
+  class="fixed bottom-3 right-3 text-xs text-white/40 underline z-50">
+  Admin Export
+</button>
+
+<script>
+const perfumes = [
+  {
+    name: "Midnight Bloom",
+    desc: "Spicy, bold, night-ready",
+    img: "https://images.unsplash.com/photo-1615634260167-c8cdede054de"
+  },
+  {
+    name: "Citrus Rush",
+    desc: "Fresh, energetic, daytime vibes",
+    img: "https://images.unsplash.com/photo-1523293836410-f7c1d7d7a3d4"
+  },
+  {
+    name: "Amber Woods",
+    desc: "Warm, woody confidence",
+    img: "https://images.unsplash.com/photo-1615397349754-cfa2066a298e"
+  },
+  {
+    name: "Rose Smoke",
+    desc: "Floral with an edge",
+    img: "https://images.unsplash.com/photo-1585386959984-a41552231693"
+  },
+  {
+    name: "Vanilla Noir",
+    desc: "Deep, sweet, addictive",
+    img: "https://images.unsplash.com/photo-1616627981661-6bb06e0d9c7f"
+  }
+];
+
+let i = 0;
+let liked = [];
+let startX = 0;
+
+const card = document.getElementById("card");
+const nameEl = document.getElementById("name");
+const descEl = document.getElementById("desc");
+const likeOverlay = document.getElementById("likeOverlay");
+const skipOverlay = document.getElementById("skipOverlay");
+
+function render() {
+  if (i >= perfumes.length) {
+    card.classList.add("hidden");
+    document.getElementById("email").classList.remove("hidden");
+    return;
+  }
+  card.style.backgroundImage = `url(${perfumes[i].img})`;
+  nameEl.textContent = perfumes[i].name;
+  descEl.textContent = perfumes[i].desc;
+}
+
+function like() {
+  liked.push(perfumes[i].name);
+  next();
+}
+
+function skip() {
+  next();
+}
+
+function next() {
+  i++;
+  resetCard();
+  render();
+}
+
+function submitEmail() {
+  const email = document.getElementById("emailInput").value;
+  if (!email) return alert("Enter email");
+
+  const data = JSON.parse(localStorage.getItem("leads") || "[]");
+  data.push({
+    email,
+    liked: liked.join(" | "),
+    time: new Date().toISOString()
+  });
+  localStorage.setItem("leads", JSON.stringify(data));
+
+  document.getElementById("email").classList.add("hidden");
+  document.getElementById("done").classList.remove("hidden");
+}
+
+function reset() {
+  i = 0;
+  liked = [];
+  document.getElementById("done").classList.add("hidden");
+  card.classList.remove("hidden");
+  render();
+}
+
+/* TOUCH + MOUSE SWIPE */
+card.addEventListener("touchstart", e => startX = e.touches[0].clientX);
+card.addEventListener("touchmove", e => move(e.touches[0].clientX));
+card.addEventListener("touchend", e => end(e.changedTouches[0].clientX));
+
+card.addEventListener("mousedown", e => startX = e.clientX);
+card.addEventListener("mousemove", e => e.buttons && move(e.clientX));
+card.addEventListener("mouseup", e => end(e.clientX));
+
+function move(x) {
+  const dx = x - startX;
+  card.style.transform = `translateX(${dx}px) rotate(${dx / 20}deg)`;
+  likeOverlay.style.opacity = dx > 60 ? 1 : 0;
+  skipOverlay.style.opacity = dx < -60 ? 1 : 0;
+}
+
+function end(x) {
+  const dx = x - startX;
+  if (dx > 120) like();
+  else if (dx < -120) skip();
+  else resetCard();
+}
+
+function resetCard() {
+  card.style.transform = "translateX(0)";
+  likeOverlay.style.opacity = 0;
+  skipOverlay.style.opacity = 0;
+}
+
+/* EXPORT CSV */
+function exportCSV() {
+  const data = JSON.parse(localStorage.getItem("leads") || "[]");
+  if (!data.length) return alert("No data");
+
+  let csv = "Email,Liked Perfumes,Time\n";
+  data.forEach(r => {
+    csv += `"${r.email}","${r.liked}","${r.time}"\n`;
+  });
+
+  const blob = new Blob([csv], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "perfume_leads.csv";
+  a.click();
+}
+
+render();
+</script>
+
+</body>
+</html>
