@@ -131,27 +131,31 @@ function next() {
   render();
 }
 
-/* ========= SUBMIT TO GOOGLE SHEETS ========= */
+/* ========= SUBMIT (NO-CORS SAFE MODE) ========= */
 function submitEmail() {
   const email = document.getElementById("emailInput").value;
-  if (!email) return alert("Please enter email");
+  if (!email) {
+    alert("Please enter email");
+    return;
+  }
 
   fetch(SCRIPT_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    mode: "no-cors",
+    headers: {
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify({
       email: email,
       liked: liked.join(" | "),
-      source: "College Fest Mumbai"
+      source: "College Fest Mumbai",
+      time: new Date().toISOString()
     })
-  })
-  .then(() => {
-    document.getElementById("email").classList.add("hidden");
-    document.getElementById("done").classList.remove("hidden");
-  })
-  .catch(() => {
-    alert("Network issue. Please try again.");
   });
+
+  // Fire-and-forget (do NOT wait for response)
+  document.getElementById("email").classList.add("hidden");
+  document.getElementById("done").classList.remove("hidden");
 }
 
 function reset() {
@@ -162,7 +166,7 @@ function reset() {
   render();
 }
 
-/* ========= SWIPE HANDLERS ========= */
+/* ========= SWIPE ========= */
 card.addEventListener("touchstart", e => startX = e.touches[0].clientX);
 card.addEventListener("touchmove", e => move(e.touches[0].clientX));
 card.addEventListener("touchend", e => end(e.changedTouches[0].clientX));
@@ -197,5 +201,3 @@ render();
 
 </body>
 </html>
-
-
