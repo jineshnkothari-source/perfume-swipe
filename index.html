@@ -59,7 +59,7 @@ tailwind.config = {
 
   <div id="choices" class="space-y-3"></div>
 
-  <button onclick="confirmChoice()"
+  <button onclick="showEmailPrompt()"
     class="w-full bg-primary py-4 rounded-full font-bold">
     Lock my scent →
   </button>
@@ -69,13 +69,13 @@ tailwind.config = {
 <div id="email"
   class="hidden fixed inset-0 bg-bg flex flex-col justify-center p-6 text-center space-y-4">
   <h1 class="text-4xl font-extrabold">We saved your scent 💖</h1>
-  <p class="text-white/70">Drop your email for early access</p>
+  <p class="text-white/70">Drop your email for early access (optional)</p>
   <input id="emailInput" type="email"
     placeholder="yourname@college.edu"
     class="w-full p-4 rounded-full text-black">
   <button onclick="submitEmail()"
     class="w-full bg-primary py-4 rounded-full font-bold">
-    Join the List →
+    Join the List → (or skip)
   </button>
 </div>
 
@@ -162,34 +162,18 @@ function showFinalChoice() {
   document.getElementById("finalChoice").classList.remove("hidden");
 }
 
-function confirmChoice() {
+function showEmailPrompt() {
   if (!finalChoice) {
     alert("Please select one");
     return;
   }
-
-  // SAVE ANONYMOUS DATA
-  fetch(SCRIPT_URL, {
-    method: "POST",
-    mode: "no-cors",
-    body: JSON.stringify({
-      session_id: sessionId,
-      final_choice: finalChoice,
-      liked: liked.join(" | "),
-      source: "College Fest Mumbai",
-      anonymous: true,
-      time: new Date().toISOString()
-    })
-  });
-
   document.getElementById("finalChoice").classList.add("hidden");
   document.getElementById("email").classList.remove("hidden");
 }
 
-/* ========= EMAIL ========= */
+/* ========= EMAIL & DATA SUBMISSION ========= */
 function submitEmail() {
-  const email = document.getElementById("emailInput").value;
-  if (!email) return alert("Enter email");
+  const email = document.getElementById("emailInput").value || "";
 
   fetch(SCRIPT_URL, {
     method: "POST",
@@ -198,8 +182,9 @@ function submitEmail() {
       session_id: sessionId,
       email: email,
       final_choice: finalChoice,
+      liked: liked.join(" | "),
       source: "College Fest Mumbai",
-      anonymous: false,
+      anonymous: !email,
       time: new Date().toISOString()
     })
   });
@@ -239,5 +224,3 @@ render();
 
 </body>
 </html>
-
-
