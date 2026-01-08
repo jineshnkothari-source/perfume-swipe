@@ -27,7 +27,6 @@ tailwind.config = {
 <div id="card"
   class="fixed inset-0 bg-cover bg-center flex flex-col justify-end transition-transform duration-300">
 
-  <!-- Swipe Overlays -->
   <div id="likeOverlay"
     class="absolute top-16 left-6 border-4 border-green-400 text-green-400 px-4 py-2 text-3xl font-extrabold rotate-[-12deg] opacity-0">
     LIKE
@@ -38,10 +37,8 @@ tailwind.config = {
     NOPE
   </div>
 
-  <!-- Gradient -->
   <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
 
-  <!-- Content -->
   <div class="relative p-6 space-y-2">
     <div class="text-xs uppercase tracking-widest text-primary font-bold">
       Discover your scent
@@ -54,11 +51,25 @@ tailwind.config = {
   </div>
 </div>
 
-<!-- EMAIL SCREEN -->
+<!-- FINAL CHOICE -->
+<div id="finalChoice"
+  class="hidden fixed inset-0 bg-bg flex flex-col justify-center p-6 space-y-4 text-center">
+
+  <h1 class="text-3xl font-extrabold">Pick the one you'd buy in 50ml</h1>
+
+  <div id="choices" class="space-y-3"></div>
+
+  <button onclick="confirmChoice()"
+    class="w-full bg-primary py-4 rounded-full font-bold">
+    Lock my scent →
+  </button>
+</div>
+
+<!-- EMAIL -->
 <div id="email"
   class="hidden fixed inset-0 bg-bg flex flex-col justify-center p-6 text-center space-y-4">
-  <h1 class="text-4xl font-extrabold">You’ve got great taste</h1>
-  <p class="text-white/70">We’ll notify you when your 50ml launches</p>
+  <h1 class="text-4xl font-extrabold">We saved your scent 💖</h1>
+  <p class="text-white/70">Drop your email for early access</p>
   <input id="emailInput" type="email"
     placeholder="yourname@college.edu"
     class="w-full p-4 rounded-full text-black">
@@ -68,23 +79,20 @@ tailwind.config = {
   </button>
 </div>
 
-<!-- CONFIRMATION -->
+<!-- DONE -->
 <div id="done"
   class="hidden fixed inset-0 bg-bg flex flex-col justify-center items-center text-center space-y-4">
   <h1 class="text-5xl font-extrabold">You’re in 🎉</h1>
   <p class="text-white/70">Your scent is locked</p>
-  <button onclick="reset()"
-    class="text-sm underline text-white/50">
-    Start over
-  </button>
 </div>
 
 <script>
 /* ========= CONFIG ========= */
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw1mwTvZYvhjarv3sGOLi5svNaOsBvtkcSAHekJGR0q07lxaI3L8NpwTk4D-JvkiviXBg/exec";
+const sessionId = crypto.randomUUID();
 
 /* ========= DATA ========= */
-const perfumes = [
+let perfumes = [
   { name: "about last night", desc: "Spicy, bold, night-ready", img: "about-last-night.png" },
   { name: "freshly picked", desc: "Fresh, energetic, daytime vibes", img: "freshly-picked.png" },
   { name: "midnight snack", desc: "Warm, woody confidence", img: "midnight-snack.png" },
@@ -92,8 +100,12 @@ const perfumes = [
   { name: "still not over it", desc: "Deep, sweet, addictive", img: "still-not-over-it.png" }
 ];
 
+// RANDOMISE ORDER
+perfumes.sort(() => Math.random() - 0.5);
+
 let i = 0;
 let liked = [];
+let finalChoice = null;
 let startX = 0;
 
 /* ========= ELEMENTS ========= */
@@ -107,7 +119,7 @@ const skipOverlay = document.getElementById("skipOverlay");
 function render() {
   if (i >= perfumes.length) {
     card.classList.add("hidden");
-    document.getElementById("email").classList.remove("hidden");
+    showFinalChoice();
     return;
   }
   card.style.backgroundImage = `url(${perfumes[i].img})`;
@@ -115,7 +127,6 @@ function render() {
   descEl.textContent = perfumes[i].desc;
 }
 
-/* ========= ACTIONS ========= */
 function like() {
   liked.push(perfumes[i].name);
   next();
@@ -131,49 +142,76 @@ function next() {
   render();
 }
 
-/* ========= SUBMIT (NO-CORS SAFE MODE) ========= */
-function submitEmail() {
-  const email = document.getElementById("emailInput").value;
-  if (!email) {
-    alert("Please enter email");
+/* ========= FINAL CHOICE ========= */
+function showFinalChoice() {
+  const container = document.getElementById("choices");
+  container.innerHTML = "";
+
+  perfumes.forEach(p => {
+    const btn = document.createElement("button");
+    btn.className = "w-full border border-white/30 rounded-full py-3";
+    btn.innerText = p.name;
+    btn.onclick = () => {
+      document.querySelectorAll("#choices button").forEach(b => b.classList.remove("bg-primary"));
+      btn.classList.add("bg-primary");
+      finalChoice = p.name;
+    };
+    container.appendChild(btn);
+  });
+
+  document.getElementById("finalChoice").classList.remove("hidden");
+}
+
+function confirmChoice() {
+  if (!finalChoice) {
+    alert("Please select one");
     return;
   }
 
+  // SAVE ANONYMOUS DATA
   fetch(SCRIPT_URL, {
     method: "POST",
     mode: "no-cors",
-    headers: {
-      "Content-Type": "application/json"
-    },
     body: JSON.stringify({
-      email: email,
+      session_id: sessionId,
+      final_choice: finalChoice,
       liked: liked.join(" | "),
       source: "College Fest Mumbai",
+      anonymous: true,
       time: new Date().toISOString()
     })
   });
 
-  // Fire-and-forget (do NOT wait for response)
-  document.getElementById("email").classList.add("hidden");
-  document.getElementById("done").classList.remove("hidden");
+  document.getElementById("finalChoice").classList.add("hidden");
+  document.getElementById("email").classList.remove("hidden");
 }
 
-function reset() {
-  i = 0;
-  liked = [];
-  document.getElementById("done").classList.add("hidden");
-  card.classList.remove("hidden");
-  render();
+/* ========= EMAIL ========= */
+function submitEmail() {
+  const email = document.getElementById("emailInput").value;
+  if (!email) return alert("Enter email");
+
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    mode: "no-cors",
+    body: JSON.stringify({
+      session_id: sessionId,
+      email: email,
+      final_choice: finalChoice,
+      source: "College Fest Mumbai",
+      anonymous: false,
+      time: new Date().toISOString()
+    })
+  });
+
+  document.getElementById("email").classList.add("hidden");
+  document.getElementById("done").classList.remove("hidden");
 }
 
 /* ========= SWIPE ========= */
 card.addEventListener("touchstart", e => startX = e.touches[0].clientX);
 card.addEventListener("touchmove", e => move(e.touches[0].clientX));
 card.addEventListener("touchend", e => end(e.changedTouches[0].clientX));
-
-card.addEventListener("mousedown", e => startX = e.clientX);
-card.addEventListener("mousemove", e => e.buttons && move(e.clientX));
-card.addEventListener("mouseup", e => end(e.clientX));
 
 function move(x) {
   const dx = x - startX;
@@ -201,8 +239,3 @@ render();
 
 </body>
 </html>
-
-
-
-
-
