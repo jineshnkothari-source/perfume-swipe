@@ -79,51 +79,31 @@ tailwind.config = {
   </button>
 </div>
 
-<!-- ADMIN EXPORT -->
-<button onclick="exportCSV()"
-  class="fixed bottom-3 right-3 text-xs text-white/40 underline z-50">
-  Admin Export
-</button>
-
 <script>
+/* ========= CONFIG ========= */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUfCbL_xzFO1YFO5XLSxGSE-FRdOuh-0WI_gHwmIJgB9OH5brcFV-CG2oDsBIbNUe3NA/exec";
+
+/* ========= DATA ========= */
 const perfumes = [
-  {
-    name: "Midnight Bloom",
-    desc: "Spicy, bold, night-ready",
-    img: "https://images.unsplash.com/photo-1615634260167-c8cdede054de"
-  },
-  {
-    name: "Citrus Rush",
-    desc: "Fresh, energetic, daytime vibes",
-    img: "https://images.unsplash.com/photo-1523293836410-f7c1d7d7a3d4"
-  },
-  {
-    name: "Amber Woods",
-    desc: "Warm, woody confidence",
-    img: "https://images.unsplash.com/photo-1615397349754-cfa2066a298e"
-  },
-  {
-    name: "Rose Smoke",
-    desc: "Floral with an edge",
-    img: "https://images.unsplash.com/photo-1585386959984-a41552231693"
-  },
-  {
-    name: "Vanilla Noir",
-    desc: "Deep, sweet, addictive",
-    img: "https://images.unsplash.com/photo-1616627981661-6bb06e0d9c7f"
-  }
+  { name: "Midnight Bloom", desc: "Spicy, bold, night-ready", img: "https://images.unsplash.com/photo-1615634260167-c8cdede054de" },
+  { name: "Citrus Rush", desc: "Fresh, energetic, daytime vibes", img: "https://images.unsplash.com/photo-1523293836410-f7c1d7d7a3d4" },
+  { name: "Amber Woods", desc: "Warm, woody confidence", img: "https://images.unsplash.com/photo-1615397349754-cfa2066a298e" },
+  { name: "Rose Smoke", desc: "Floral with an edge", img: "https://images.unsplash.com/photo-1585386959984-a41552231693" },
+  { name: "Vanilla Noir", desc: "Deep, sweet, addictive", img: "https://images.unsplash.com/photo-1616627981661-6bb06e0d9c7f" }
 ];
 
 let i = 0;
 let liked = [];
 let startX = 0;
 
+/* ========= ELEMENTS ========= */
 const card = document.getElementById("card");
 const nameEl = document.getElementById("name");
 const descEl = document.getElementById("desc");
 const likeOverlay = document.getElementById("likeOverlay");
 const skipOverlay = document.getElementById("skipOverlay");
 
+/* ========= RENDER ========= */
 function render() {
   if (i >= perfumes.length) {
     card.classList.add("hidden");
@@ -135,6 +115,7 @@ function render() {
   descEl.textContent = perfumes[i].desc;
 }
 
+/* ========= ACTIONS ========= */
 function like() {
   liked.push(perfumes[i].name);
   next();
@@ -150,20 +131,27 @@ function next() {
   render();
 }
 
+/* ========= SUBMIT TO GOOGLE SHEETS ========= */
 function submitEmail() {
   const email = document.getElementById("emailInput").value;
-  if (!email) return alert("Enter email");
+  if (!email) return alert("Please enter email");
 
-  const data = JSON.parse(localStorage.getItem("leads") || "[]");
-  data.push({
-    email,
-    liked: liked.join(" | "),
-    time: new Date().toISOString()
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: email,
+      liked: liked.join(" | "),
+      source: "College Fest Mumbai"
+    })
+  })
+  .then(() => {
+    document.getElementById("email").classList.add("hidden");
+    document.getElementById("done").classList.remove("hidden");
+  })
+  .catch(() => {
+    alert("Network issue. Please try again.");
   });
-  localStorage.setItem("leads", JSON.stringify(data));
-
-  document.getElementById("email").classList.add("hidden");
-  document.getElementById("done").classList.remove("hidden");
 }
 
 function reset() {
@@ -174,7 +162,7 @@ function reset() {
   render();
 }
 
-/* TOUCH + MOUSE SWIPE */
+/* ========= SWIPE HANDLERS ========= */
 card.addEventListener("touchstart", e => startX = e.touches[0].clientX);
 card.addEventListener("touchmove", e => move(e.touches[0].clientX));
 card.addEventListener("touchend", e => end(e.changedTouches[0].clientX));
@@ -203,25 +191,10 @@ function resetCard() {
   skipOverlay.style.opacity = 0;
 }
 
-/* EXPORT CSV */
-function exportCSV() {
-  const data = JSON.parse(localStorage.getItem("leads") || "[]");
-  if (!data.length) return alert("No data");
-
-  let csv = "Email,Liked Perfumes,Time\n";
-  data.forEach(r => {
-    csv += `"${r.email}","${r.liked}","${r.time}"\n`;
-  });
-
-  const blob = new Blob([csv], { type: "text/csv" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "perfume_leads.csv";
-  a.click();
-}
-
+/* ========= INIT ========= */
 render();
 </script>
 
 </body>
 </html>
+
