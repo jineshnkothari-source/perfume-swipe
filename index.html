@@ -88,7 +88,7 @@ tailwind.config = {
 
 <script>
 /* ========= CONFIG ========= */
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyAOkZ1VopUL4cyUG3whxhRu4NPiVlEknQsNhuyKA1U8jw7pWs19H9rF0Vx5q6IJqF6XQ/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxd4nKLkiZdpDQEKp_50F4mDPa9LeK36uQeY7lD7_wBe-zqxjeyfPcQaTNpjgZRWQghIg/exec";
 const sessionId = crypto.randomUUID();
 
 /* ========= DATA ========= */
@@ -167,13 +167,27 @@ function showEmailPrompt() {
     alert("Please select one");
     return;
   }
+  // SAVE ANONYMOUS PREFERENCE FIRST
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    mode: "no-cors",
+    body: JSON.stringify({
+      session_id: sessionId,
+      final_choice: finalChoice,
+      liked: liked.join(" | "),
+      source: "College Fest Mumbai",
+      anonymous: true,
+      time: new Date().toISOString()
+    })
+  });
+
   document.getElementById("finalChoice").classList.add("hidden");
   document.getElementById("email").classList.remove("hidden");
 }
 
 /* ========= EMAIL & DATA SUBMISSION ========= */
 function submitEmail() {
-  const email = document.getElementById("emailInput").value || "";
+  const email = document.getElementById("emailInput").value;
 
   fetch(SCRIPT_URL, {
     method: "POST",
@@ -181,10 +195,7 @@ function submitEmail() {
     body: JSON.stringify({
       session_id: sessionId,
       email: email,
-      final_choice: finalChoice,
-      liked: liked.join(" | "),
-      source: "College Fest Mumbai",
-      anonymous: !email,
+      anonymous: email ? false : true,
       time: new Date().toISOString()
     })
   });
