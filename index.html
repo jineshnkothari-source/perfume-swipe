@@ -53,14 +53,17 @@ tailwind.config = {
 
 <!-- FINAL CHOICE -->
 <div id="finalChoice"
-  class="hidden fixed inset-0 bg-bg flex flex-col justify-center p-6 space-y-4 text-center">
+  class="hidden fixed inset-0 bg-bg flex flex-col p-6 text-center">
 
-  <h1 class="text-3xl font-extrabold">Pick the one you'd buy in 50ml</h1>
+  <h1 class="text-2xl font-extrabold mb-3">
+    Pick the one you'd buy in 50ml
+  </h1>
 
-  <div id="choices" class="space-y-3"></div>
+  <!-- OPTIONS -->
+  <div id="choices" class="flex flex-col gap-2 flex-1 justify-center"></div>
 
   <button onclick="lockFinalChoice()"
-    class="w-full bg-primary py-4 rounded-full font-bold">
+    class="w-full bg-primary py-3 rounded-full font-bold mt-3">
     Lock my scent →
   </button>
 </div>
@@ -68,14 +71,14 @@ tailwind.config = {
 <!-- EMAIL -->
 <div id="email"
   class="hidden fixed inset-0 bg-bg flex flex-col justify-center p-6 text-center space-y-4">
-  <h1 class="text-4xl font-extrabold">We saved your scent 💖</h1>
+  <h1 class="text-3xl font-extrabold">We saved your scent 💖</h1>
   <p class="text-white/70">Drop your email for early access (optional)</p>
   <input id="emailInput" type="email"
     placeholder="yourname@college.edu"
     class="w-full p-4 rounded-full text-black">
   <button onclick="submitEmail()"
     class="w-full bg-primary py-4 rounded-full font-bold">
-    Continue →
+    Join the List → (or skip)
   </button>
 </div>
 
@@ -100,7 +103,7 @@ let perfumes = [
   { name: "still not over it", desc: "Deep, sweet, addictive", img: "still-not-over-it.png" }
 ];
 
-// RANDOMISE ORDER
+// Randomise order
 perfumes.sort(() => Math.random() - 0.5);
 
 let i = 0;
@@ -149,36 +152,35 @@ function showFinalChoice() {
 
   perfumes.forEach(p => {
     const btn = document.createElement("button");
-    btn.className = "w-full border border-white/30 rounded-full py-3";
+    btn.className = "w-full border border-white/30 rounded-full py-2 text-sm";
     btn.innerText = p.name;
-    btn.onclick = () => selectChoice(p.name, btn);
+    btn.onclick = () => selectFinalChoice(p.name, btn);
     container.appendChild(btn);
   });
 
-  // NONE OPTION
+  // NONE option
   const noneBtn = document.createElement("button");
-  noneBtn.className = "w-full border border-white/30 rounded-full py-3 text-white/70";
+  noneBtn.className = "w-full border border-white/30 rounded-full py-2 text-sm text-white/70";
   noneBtn.innerText = "Didn’t love any enough (yet)";
-  noneBtn.onclick = () => selectChoice("NONE", noneBtn);
+  noneBtn.onclick = () => selectFinalChoice("NONE", noneBtn);
   container.appendChild(noneBtn);
 
   document.getElementById("finalChoice").classList.remove("hidden");
 }
 
-function selectChoice(choice, btn) {
+function selectFinalChoice(choice, btn) {
   document.querySelectorAll("#choices button").forEach(b => b.classList.remove("bg-primary"));
   btn.classList.add("bg-primary");
   finalChoice = choice;
 }
 
-/* ========= LOCK & SAVE ========= */
 function lockFinalChoice() {
   if (!finalChoice) {
     alert("Please select one option");
     return;
   }
 
-  // SAVE IMMEDIATELY (even if user abandons)
+  // Save immediately (anonymous-safe)
   fetch(SCRIPT_URL, {
     method: "POST",
     mode: "no-cors",
@@ -197,7 +199,7 @@ function lockFinalChoice() {
   document.getElementById("email").classList.remove("hidden");
 }
 
-/* ========= EMAIL UPDATE ========= */
+/* ========= EMAIL ========= */
 function submitEmail() {
   const email = document.getElementById("emailInput").value || "";
 
@@ -207,7 +209,7 @@ function submitEmail() {
     body: JSON.stringify({
       session_id: sessionId,
       email: email,
-      anonymous: email ? false : true
+      anonymous: !email
     })
   });
 
