@@ -72,13 +72,13 @@ tailwind.config = {
 <div id="email"
   class="hidden fixed inset-0 bg-bg flex flex-col justify-center p-6 text-center space-y-4">
   <h1 class="text-3xl font-extrabold">We saved your scent 💖</h1>
-  <p class="text-white/70">Drop your email for early access (optional)</p>
+  <p class="text-white/70">Drop your email for early access </p>
   <input id="emailInput" type="email"
-    placeholder="yourname@college.edu"
+    placeholder="email@example.com"
     class="w-full p-4 rounded-full text-black">
   <button onclick="submitEmail()"
     class="w-full bg-primary py-4 rounded-full font-bold">
-    Join the List → (or skip)
+    Join the List 
   </button>
 </div>
 
@@ -86,7 +86,7 @@ tailwind.config = {
 <div id="done"
   class="hidden fixed inset-0 bg-bg flex flex-col justify-center items-center text-center space-y-4">
   <h1 class="text-5xl font-extrabold">You’re in 🎉</h1>
-  <p class="text-white/70">Your scent is locked</p>
+  <p class="text-white/70">Make me an OG.</p>
 </div>
 
 <script>
@@ -96,11 +96,11 @@ const sessionId = crypto.randomUUID();
 
 /* ========= DATA ========= */
 let perfumes = [
-  { name: "about last night", desc: "Spicy, bold, night-ready", img: "about-last-night.png" },
-  { name: "freshly picked", desc: "Fresh, energetic, daytime vibes", img: "freshly-picked.png" },
-  { name: "midnight snack", desc: "Warm, woody confidence", img: "midnight-snack.png" },
-  { name: "skinny dip", desc: "Floral with an edge", img: "skinny-dip.png" },
-  { name: "still not over it", desc: "Deep, sweet, addictive", img: "still-not-over-it.png" }
+  { name: "about last night", desc: "impossible to forget even if you tried.", img: "about-last-night.png" },
+  { name: "freshly picked", desc: "not your grandma's roses.", img: "freshly-picked.png" },
+  { name: "midnight snack", desc: "like you ate and left no crumbs.", img: "midnight-snack.png" },
+  { name: "skinny dip", desc: "like a freshly shaven jawline.", img: "skinny-dip.png" },
+  { name: "still not over it", desc: "lives in your head rent free.", img: "still-not-over-it.png" }
 ];
 
 // Randomise order
@@ -248,3 +248,4 @@ render();
 
 </body>
 </html>
+
