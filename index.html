@@ -29,24 +29,24 @@ tailwind.config = {
 
   <div id="likeOverlay"
     class="absolute top-16 left-6 border-4 border-green-400 text-green-400 px-4 py-2 text-3xl font-extrabold rotate-[-12deg] opacity-0">
-    LIKE
+    Obsessed
   </div>
 
   <div id="skipOverlay"
     class="absolute top-16 right-6 border-4 border-red-400 text-red-400 px-4 py-2 text-3xl font-extrabold rotate-[12deg] opacity-0">
-    NOPE
+    Not obsessed
   </div>
 
   <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
 
   <div class="relative p-6 space-y-2">
     <div class="text-xs uppercase tracking-widest text-primary font-bold">
-      Discover your scent
+      Find your obsession.
     </div>
     <h1 id="name" class="text-4xl font-extrabold"></h1>
     <p id="desc" class="text-white/80 text-lg"></p>
     <p class="text-xs text-white/40">
-      Swipe right to like · left to skip
+      Swipe right if you are obsessed · left if you are not
     </p>
   </div>
 </div>
@@ -64,21 +64,21 @@ tailwind.config = {
 
   <button onclick="lockFinalChoice()"
     class="w-full bg-primary py-3 rounded-full font-bold mt-3">
-    Lock my scent →
+    can't wait to buy it →
   </button>
 </div>
 
 <!-- EMAIL -->
 <div id="email"
   class="hidden fixed inset-0 bg-bg flex flex-col justify-center p-6 text-center space-y-4">
-  <h1 class="text-3xl font-extrabold">We saved your scent 💖</h1>
+  <h1 class="text-3xl font-extrabold">Are you OCD about fragrance too?</h1>
   <p class="text-white/70">Drop your email for early access </p>
   <input id="emailInput" type="email"
     placeholder="email@example.com"
     class="w-full p-4 rounded-full text-black">
   <button onclick="submitEmail()"
     class="w-full bg-primary py-4 rounded-full font-bold">
-    Join the List 
+    Join the Obsession 
   </button>
 </div>
 
@@ -161,7 +161,7 @@ function showFinalChoice() {
   // NONE option
   const noneBtn = document.createElement("button");
   noneBtn.className = "w-full border border-white/30 rounded-full py-2 text-sm text-white/70";
-  noneBtn.innerText = "Didn’t love any enough (yet)";
+  noneBtn.innerText = "Not Obsessed with any (yet)";
   noneBtn.onclick = () => selectFinalChoice("NONE", noneBtn);
   container.appendChild(noneBtn);
 
@@ -248,4 +248,5 @@ render();
 
 </body>
 </html>
+
 
