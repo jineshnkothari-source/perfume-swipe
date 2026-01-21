@@ -55,14 +55,24 @@ tailwind.config = {
 <div id="finalChoice"
   class="hidden fixed inset-0 bg-bg flex flex-col p-6 text-center">
 
-  <h1 class="text-2xl font-extrabold mb-3">
-    Pick the one you'd buy in 50ml
+  <h1 class="text-2xl font-extrabold mb-2">
+    Pick the one you'd buy
   </h1>
+  <p class="text-white/70 text-sm mb-3">
+    Then choose your preferred size.
+  </p>
 
-  <div id="choices" class="flex flex-col gap-2 flex-1 justify-center"></div>
+  <!-- PERFUME OPTIONS -->
+  <div id="choices" class="flex flex-col gap-2"></div>
+
+  <!-- SIZE OPTIONS -->
+  <div class="mt-4">
+    <h2 class="text-lg font-bold mb-2">Choose your size</h2>
+    <div id="sizes" class="grid grid-cols-3 gap-2"></div>
+  </div>
 
   <button onclick="lockFinalChoice()"
-    class="w-full bg-primary py-3 rounded-full font-bold mt-3">
+    class="w-full bg-primary py-3 rounded-full font-bold mt-4">
     can't wait to buy it →
   </button>
 </div>
@@ -84,7 +94,7 @@ tailwind.config = {
 <script>
 /* ========= CONFIG ========= */
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxd4nKLkiZdpDQEKp_50F4mDPa9LeK36uQeY7lD7_wBe-zqxjeyfPcQaTNpjgZRWQghIg/exec";
-const INSTAGRAM_URL = "https://www.instagram.com/fix.myocd?igsh=MWtvZGZpNG1vNXF2YQ=="; // 👈 CHANGE THIS
+const INSTAGRAM_URL = "https://www.instagram.com/fix.myocd?igsh=MWtvZGZpNG1vNXF2YQ==";
 const sessionId = crypto.randomUUID();
 
 /* ========= DATA ========= */
@@ -96,9 +106,17 @@ let perfumes = [
   { name: "still not over it", desc: "lives in your head rent free.", img: "still-not-over-it.png" }
 ];
 
+const sizeOptions = [
+  { ml: "5ml",  price: 100 },
+  { ml: "20ml", price: 549 },
+  { ml: "50ml", price: 1099 }
+];
+
 let i = 0;
 let liked = [];
 let finalChoice = null;
+let preferredSize = null;
+let preferredPrice = null;
 let startX = 0;
 
 /* ========= ELEMENTS ========= */
@@ -135,8 +153,9 @@ function next() {
   render();
 }
 
-/* ========= FINAL CHOICE ========= */
+/* ========= FINAL CHOICE + SIZE ========= */
 function showFinalChoice() {
+  // Perfume buttons
   const container = document.getElementById("choices");
   container.innerHTML = "";
 
@@ -154,6 +173,18 @@ function showFinalChoice() {
   noneBtn.onclick = () => selectFinalChoice("NONE", noneBtn);
   container.appendChild(noneBtn);
 
+  // Size buttons
+  const sizesDiv = document.getElementById("sizes");
+  sizesDiv.innerHTML = "";
+
+  sizeOptions.forEach(s => {
+    const b = document.createElement("button");
+    b.className = "border border-white/30 rounded-xl py-3 text-sm";
+    b.innerHTML = `<div class="font-bold">${s.ml}</div><div class="text-white/70">₹${s.price}</div>`;
+    b.onclick = () => selectSize(s.ml, s.price, b);
+    sizesDiv.appendChild(b);
+  });
+
   document.getElementById("finalChoice").classList.remove("hidden");
 }
 
@@ -163,9 +194,20 @@ function selectFinalChoice(choice, btn) {
   finalChoice = choice;
 }
 
+function selectSize(ml, price, btn) {
+  document.querySelectorAll("#sizes button").forEach(b => b.classList.remove("bg-primary"));
+  btn.classList.add("bg-primary");
+  preferredSize = ml;
+  preferredPrice = price;
+}
+
 function lockFinalChoice() {
   if (!finalChoice) {
-    alert("Please select one option");
+    alert("Please select one perfume option");
+    return;
+  }
+  if (!preferredSize) {
+    alert("Please select a size option");
     return;
   }
 
@@ -176,6 +218,8 @@ function lockFinalChoice() {
       session_id: sessionId,
       final_choice: finalChoice,
       liked: liked.join(" | "),
+      preferred_size: preferredSize,
+      preferred_price: preferredPrice,
       source: "Test",
       email: "",
       anonymous: true,
@@ -201,7 +245,6 @@ function submitEmail() {
     })
   });
 
-  // Redirect to Instagram after short delay
   setTimeout(() => {
     window.location.href = INSTAGRAM_URL;
   }, 300);
