@@ -56,7 +56,7 @@ tailwind.config = {
   class="hidden fixed inset-0 bg-bg flex flex-col p-6 text-center">
 
   <h1 class="text-2xl font-extrabold mb-2">
-    Pick the one you'd buy
+    Which one are you low-key obsessed with?
   </h1>
   <p class="text-white/70 text-sm mb-3">
     Then choose your preferred size.
@@ -73,7 +73,7 @@ tailwind.config = {
 
   <button onclick="lockFinalChoice()"
     class="w-full bg-primary py-3 rounded-full font-bold mt-4">
-    can't wait to buy it →
+    Lock my obsession →
   </button>
 </div>
 
@@ -192,7 +192,29 @@ function selectFinalChoice(choice, btn) {
   document.querySelectorAll("#choices button").forEach(b => b.classList.remove("bg-primary"));
   btn.classList.add("bg-primary");
   finalChoice = choice;
+
+  // If NONE selected, disable size selection
+  if (choice === "NONE") {
+    preferredSize = "NONE";
+    preferredPrice = "";
+
+    document.getElementById("sizes").classList.add("opacity-40");
+    document.querySelectorAll("#sizes button").forEach(b => {
+      b.disabled = true;
+      b.classList.remove("bg-primary");
+    });
+  } else {
+    // Enable size selection
+    preferredSize = null;
+    preferredPrice = null;
+
+    document.getElementById("sizes").classList.remove("opacity-40");
+    document.querySelectorAll("#sizes button").forEach(b => {
+      b.disabled = false;
+    });
+  }
 }
+
 
 function selectSize(ml, price, btn) {
   document.querySelectorAll("#sizes button").forEach(b => b.classList.remove("bg-primary"));
@@ -203,10 +225,12 @@ function selectSize(ml, price, btn) {
 
 function lockFinalChoice() {
   if (!finalChoice) {
-    alert("Please select one perfume option");
+    alert("Please select one option");
     return;
   }
-  if (!preferredSize) {
+
+  // Only require size if a perfume is selected
+  if (finalChoice !== "NONE" && !preferredSize) {
     alert("Please select a size option");
     return;
   }
@@ -230,6 +254,7 @@ function lockFinalChoice() {
   document.getElementById("finalChoice").classList.add("hidden");
   document.getElementById("email").classList.remove("hidden");
 }
+
 
 /* ========= EMAIL + REDIRECT ========= */
 function submitEmail() {
@@ -281,3 +306,4 @@ render();
 
 </body>
 </html>
+
