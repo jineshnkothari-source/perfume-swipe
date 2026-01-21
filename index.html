@@ -81,19 +81,13 @@ tailwind.config = {
   </button>
 </div>
 
-<!-- DONE -->
-<div id="done"
-  class="hidden fixed inset-0 bg-bg flex flex-col justify-center items-center text-center space-y-4">
-  <h1 class="text-5xl font-extrabold">You’re in 🎉</h1>
-  <p class="text-white/70">Make me an OG.</p>
-</div>
-
 <script>
 /* ========= CONFIG ========= */
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxd4nKLkiZdpDQEKp_50F4mDPa9LeK36uQeY7lD7_wBe-zqxjeyfPcQaTNpjgZRWQghIg/exec";
+const INSTAGRAM_URL = "https://www.instagram.com/fix.myocd?igsh=MWtvZGZpNG1vNXF2YQ=="; // 👈 CHANGE THIS
 const sessionId = crypto.randomUUID();
 
-/* ========= DATA (ORDER IS NOW FIXED) ========= */
+/* ========= DATA ========= */
 let perfumes = [
   { name: "about last night", desc: "impossible to forget even if you tried.", img: "about-last-night.png" },
   { name: "freshly picked", desc: "not your grandma's roses.", img: "freshly-picked.png" },
@@ -182,7 +176,7 @@ function lockFinalChoice() {
       session_id: sessionId,
       final_choice: finalChoice,
       liked: liked.join(" | "),
-      source: "College Fest Mumbai",
+      source: "Test",
       email: "",
       anonymous: true,
       time: new Date().toISOString()
@@ -193,7 +187,7 @@ function lockFinalChoice() {
   document.getElementById("email").classList.remove("hidden");
 }
 
-/* ========= EMAIL ========= */
+/* ========= EMAIL + REDIRECT ========= */
 function submitEmail() {
   const email = document.getElementById("emailInput").value || "";
 
@@ -207,8 +201,10 @@ function submitEmail() {
     })
   });
 
-  document.getElementById("email").classList.add("hidden");
-  document.getElementById("done").classList.remove("hidden");
+  // Redirect to Instagram after short delay
+  setTimeout(() => {
+    window.location.href = INSTAGRAM_URL;
+  }, 300);
 }
 
 /* ========= SWIPE ========= */
