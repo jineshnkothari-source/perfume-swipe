@@ -62,10 +62,8 @@ tailwind.config = {
     Then choose your preferred size.
   </p>
 
-  <!-- PERFUME OPTIONS -->
   <div id="choices" class="flex flex-col gap-2"></div>
 
-  <!-- SIZE OPTIONS -->
   <div class="mt-4">
     <h2 class="text-lg font-bold mb-2">Choose your size</h2>
     <div id="sizes" class="grid grid-cols-3 gap-2"></div>
@@ -74,6 +72,23 @@ tailwind.config = {
   <button onclick="lockFinalChoice()"
     class="w-full bg-primary py-3 rounded-full font-bold mt-4">
     Lock my obsession →
+  </button>
+</div>
+
+<!-- BOOTH CODE SCREEN -->
+<div id="booth"
+  class="hidden fixed inset-0 bg-bg flex flex-col justify-center items-center text-center p-6 space-y-4">
+
+  <h1 class="text-3xl font-extrabold">Spin the Wheel 🎡</h1>
+  <p class="text-white/70">Show this code at the booth</p>
+
+  <div class="text-5xl font-extrabold tracking-widest bg-black/30 px-6 py-4 rounded-xl">
+    <span id="boothCodeText"></span>
+  </div>
+
+  <button onclick="goToEmail()"
+    class="w-full bg-primary py-3 rounded-full font-bold mt-4">
+    Continue →
   </button>
 </div>
 
@@ -95,7 +110,11 @@ tailwind.config = {
 /* ========= CONFIG ========= */
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwDUQXRM6vVLCb-L5e01hdILi6UTELMifDwjcI5WAYkOnyDesPYBY7DTnWP3K9xJCigcw/exec";
 const INSTAGRAM_URL = "https://www.instagram.com/fix.myocd?igsh=MWtvZGZpNG1vNXF2YQ==";
+const SOURCE = "Test";
+
 const sessionId = crypto.randomUUID();
+// ✅ numeric 6-digit booth code
+const boothCode = Math.floor(100000 + Math.random() * 900000).toString();
 
 /* ========= DATA ========= */
 let perfumes = [
@@ -107,7 +126,7 @@ let perfumes = [
 ];
 
 const sizeOptions = [
-  { ml: "5ml",  price: 100 },
+  { ml: "5ml", price: 100 },
   { ml: "20ml", price: 549 },
   { ml: "50ml", price: 1099 }
 ];
@@ -116,7 +135,6 @@ let i = 0;
 let liked = [];
 let finalChoice = null;
 let preferredSize = null;
-let preferredPrice = null;
 let startX = 0;
 
 /* ========= ELEMENTS ========= */
@@ -138,113 +156,80 @@ function render() {
   descEl.textContent = perfumes[i].desc;
 }
 
-function like() {
-  liked.push(perfumes[i].name);
-  next();
-}
+function like() { liked.push(perfumes[i].name); next(); }
+function skip() { next(); }
+function next() { i++; resetCard(); render(); }
 
-function skip() {
-  next();
-}
-
-function next() {
-  i++;
-  resetCard();
-  render();
-}
-
-/* ========= FINAL CHOICE + SIZE ========= */
+/* ========= FINAL CHOICE ========= */
 function showFinalChoice() {
-  // Perfume buttons
-  const container = document.getElementById("choices");
-  container.innerHTML = "";
+  const c = document.getElementById("choices");
+  c.innerHTML = "";
 
   perfumes.forEach(p => {
-    const btn = document.createElement("button");
-    btn.className = "w-full border border-white/30 rounded-full py-2 text-sm";
-    btn.innerText = p.name;
-    btn.onclick = () => selectFinalChoice(p.name, btn);
-    container.appendChild(btn);
+    const b = document.createElement("button");
+    b.className = "w-full border border-white/30 rounded-full py-2 text-sm";
+    b.innerText = p.name;
+    b.onclick = () => selectFinalChoice(p.name, b);
+    c.appendChild(b);
   });
 
-  const noneBtn = document.createElement("button");
-  noneBtn.className = "w-full border border-white/30 rounded-full py-2 text-sm text-white/70";
-  noneBtn.innerText = "Not Obsessed with any (yet)";
-  noneBtn.onclick = () => selectFinalChoice("NONE", noneBtn);
-  container.appendChild(noneBtn);
+  const none = document.createElement("button");
+  none.className = "w-full border border-white/30 rounded-full py-2 text-sm text-white/70";
+  none.innerText = "Not Obsessed with any (yet)";
+  none.onclick = () => selectFinalChoice("NONE", none);
+  c.appendChild(none);
 
-  // Size buttons
-  const sizesDiv = document.getElementById("sizes");
-  sizesDiv.innerHTML = "";
+  const s = document.getElementById("sizes");
+  s.innerHTML = "";
 
-  sizeOptions.forEach(s => {
+  sizeOptions.forEach(x => {
     const b = document.createElement("button");
     b.className = "border border-white/30 rounded-xl py-3 text-sm";
-    b.innerHTML = `<div class="font-bold">${s.ml}</div><div class="text-white/70">₹${s.price}</div>`;
-    b.onclick = () => selectSize(s.ml, s.price, b);
-    sizesDiv.appendChild(b);
+    b.innerHTML = `<div class="font-bold">${x.ml}</div><div class="text-white/70">₹${x.price}</div>`;
+    b.onclick = () => selectSize(x.ml, b);
+    s.appendChild(b);
   });
 
   document.getElementById("finalChoice").classList.remove("hidden");
 }
 
-function selectFinalChoice(choice, btn) {
+function selectFinalChoice(v, btn) {
   document.querySelectorAll("#choices button").forEach(b => b.classList.remove("bg-primary"));
   btn.classList.add("bg-primary");
-  finalChoice = choice;
+  finalChoice = v;
 
-  // If NONE selected, disable size selection
-  if (choice === "NONE") {
+  const sizes = document.getElementById("sizes");
+  if (v === "NONE") {
     preferredSize = "NONE";
-    preferredPrice = "";
-
-    document.getElementById("sizes").classList.add("opacity-40");
-    document.querySelectorAll("#sizes button").forEach(b => {
-      b.disabled = true;
-      b.classList.remove("bg-primary");
-    });
+    sizes.classList.add("opacity-40");
+    document.querySelectorAll("#sizes button").forEach(b => b.disabled = true);
   } else {
-    // Enable size selection
     preferredSize = null;
-    preferredPrice = null;
-
-    document.getElementById("sizes").classList.remove("opacity-40");
-    document.querySelectorAll("#sizes button").forEach(b => {
-      b.disabled = false;
-    });
+    sizes.classList.remove("opacity-40");
+    document.querySelectorAll("#sizes button").forEach(b => b.disabled = false);
   }
 }
 
-
-function selectSize(ml, price, btn) {
+function selectSize(v, btn) {
   document.querySelectorAll("#sizes button").forEach(b => b.classList.remove("bg-primary"));
   btn.classList.add("bg-primary");
-  preferredSize = ml;
-  preferredPrice = price;
+  preferredSize = v;
 }
 
 function lockFinalChoice() {
-  if (!finalChoice) {
-    alert("Please select one option");
-    return;
-  }
-
-  // Only require size if a perfume is selected
-  if (finalChoice !== "NONE" && !preferredSize) {
-    alert("Please select a size option");
-    return;
-  }
+  if (!finalChoice) return alert("Select an option");
+  if (finalChoice !== "NONE" && !preferredSize) return alert("Select size");
 
   fetch(SCRIPT_URL, {
     method: "POST",
     mode: "no-cors",
     body: JSON.stringify({
       session_id: sessionId,
+      booth_code: boothCode,
       final_choice: finalChoice,
       liked: liked.join(" | "),
       preferred_size: preferredSize,
-      preferred_price: preferredPrice,
-      source: "Test",
+      source: SOURCE,
       email: "",
       anonymous: true,
       time: new Date().toISOString()
@@ -252,9 +237,14 @@ function lockFinalChoice() {
   });
 
   document.getElementById("finalChoice").classList.add("hidden");
-  document.getElementById("email").classList.remove("hidden");
+  document.getElementById("boothCodeText").innerText = boothCode;
+  document.getElementById("booth").classList.remove("hidden");
 }
 
+function goToEmail() {
+  document.getElementById("booth").classList.add("hidden");
+  document.getElementById("email").classList.remove("hidden");
+}
 
 /* ========= EMAIL + REDIRECT ========= */
 function submitEmail() {
@@ -270,9 +260,7 @@ function submitEmail() {
     })
   });
 
-  setTimeout(() => {
-    window.location.href = INSTAGRAM_URL;
-  }, 300);
+  setTimeout(() => window.location.href = INSTAGRAM_URL, 300);
 }
 
 /* ========= SWIPE ========= */
@@ -300,12 +288,8 @@ function resetCard() {
   skipOverlay.style.opacity = 0;
 }
 
-/* ========= INIT ========= */
 render();
 </script>
 
 </body>
 </html>
-
-
-
