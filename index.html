@@ -22,17 +22,9 @@ tailwind.config = {
 
 <!-- PERFUME CARD -->
 <div id="card" class="fixed inset-0 bg-cover bg-center flex flex-col justify-end transition-transform duration-300">
-
-  <div id="likeOverlay" class="absolute top-16 left-6 border-4 border-green-400 text-green-400 px-4 py-2 text-3xl font-extrabold rotate-[-12deg] opacity-0">
-    Obsessed
-  </div>
-
-  <div id="skipOverlay" class="absolute top-16 right-6 border-4 border-red-400 text-red-400 px-4 py-2 text-3xl font-extrabold rotate-[12deg] opacity-0">
-    Not obsessed
-  </div>
-
+  <div id="likeOverlay" class="absolute top-16 left-6 border-4 border-green-400 text-green-400 px-4 py-2 text-3xl font-extrabold rotate-[-12deg] opacity-0">Obsessed</div>
+  <div id="skipOverlay" class="absolute top-16 right-6 border-4 border-red-400 text-red-400 px-4 py-2 text-3xl font-extrabold rotate-[12deg] opacity-0">Not obsessed</div>
   <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
-
   <div class="relative p-6 space-y-2">
     <div class="text-xs uppercase tracking-widest text-primary font-bold">Find your obsession.</div>
     <h1 id="name" class="text-4xl font-extrabold"></h1>
@@ -45,53 +37,49 @@ tailwind.config = {
 <div id="finalChoice" class="hidden fixed inset-0 bg-bg flex flex-col p-6 text-center">
   <h1 class="text-2xl font-extrabold mb-2">Which one are you low-key obsessed with?</h1>
   <p class="text-white/70 text-sm mb-3">Then choose your preferred size.</p>
-
   <div id="choices" class="flex flex-col gap-2"></div>
-
   <div class="mt-4">
     <h2 class="text-lg font-bold mb-2">Choose your size</h2>
     <div id="sizes" class="grid grid-cols-3 gap-2"></div>
   </div>
-
   <button onclick="lockFinalChoice()" class="w-full bg-primary py-3 rounded-full font-bold mt-4">
     Lock my obsession →
   </button>
 </div>
 
 <!-- EMAIL + BOOTH MERGED -->
-<div id="email" class="hidden fixed inset-0 bg-bg flex flex-col justify-center p-6 text-center space-y-6">
+<div id="email" class="hidden fixed inset-0 bg-bg flex flex-col justify-center p-6 text-center space-y-4">
 
-  <div>
-    <h1 class="text-3xl font-extrabold">Spin the Wheel 🎡</h1>
-    <p class="text-white/70 mt-1">Show this code at the booth</p>
-    <div class="text-5xl font-extrabold tracking-widest bg-black/30 px-6 py-4 rounded-xl mt-4">
-      <span id="boothCodeText">...</span>
-    </div>
+  <h1 class="text-3xl font-extrabold">Spin the Wheel 🎡</h1>
+  <p class="text-white/70">Show this code at the booth</p>
+
+  <div class="text-5xl font-extrabold tracking-widest bg-black/30 px-6 py-4 rounded-xl">
+    <span id="boothCodeText">...</span>
   </div>
 
-  <div>
-    <h1 class="text-2xl font-extrabold mt-6">Are you OCD about fragrance too?</h1>
-    <p class="text-white/70">Drop your email for early access</p>
-    <input id="emailInput" type="email" placeholder="email@example.com" class="w-full p-4 rounded-full text-black mt-3">
-    <button onclick="submitEmail()" class="w-full bg-primary py-4 rounded-full font-bold mt-4">
-      Follow the Obsession.
-    </button>
+  <div class="pt-6">
+    <h2 class="text-2xl font-extrabold">Are you OCD about fragrance too?</h2>
+    <p class="text-white/70 text-sm">Drop your email for early access</p>
   </div>
+
+  <input id="emailInput" type="email" placeholder="email@example.com"
+    class="w-full p-4 rounded-full text-black">
+
+  <button onclick="submitEmail()" class="w-full bg-primary py-4 rounded-full font-bold">
+    Follow the Obsession.
+  </button>
 
 </div>
 
 <script>
-
-/* ========= CONFIG ========= */
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby6t3nQp9mgozH7nn39QHzrBrR3oLD4D96_egnRQQytuz24aS2PGwELGfzvV7NpokA-Zw/exec";
 const INSTAGRAM_URL = "https://www.instagram.com/fix.myocd?igsh=MWtvZGZpNG1vNXF2YQ==";
 const SOURCE = "Test";
 
-/* ========= SESSION ========= */
 const sessionId = crypto.randomUUID();
-let boothCode = null;
 
-/* ========= DATA ========= */
+let boothCode = null;   // will be pre-generated
+
 let perfumes = [
   { name: "about last night", desc: "impossible to forget even if you tried.", img: "about-last-night.png" },
   { name: "freshly picked", desc: "not your grandma's roses.", img: "freshly-picked.png" },
@@ -118,28 +106,25 @@ const descEl = document.getElementById("desc");
 const likeOverlay = document.getElementById("likeOverlay");
 const skipOverlay = document.getElementById("skipOverlay");
 
-/* ========= SERVER BOOTH CODE ========= */
-function requestBoothCode() {
-  return new Promise((resolve) => {
-    const cbName = "cb_" + Math.random().toString(36).slice(2);
+/* ========= PRE-GENERATE BOOTH CODE ========= */
+function preGenerateBoothCode() {
+  const cbName = "cb_" + Math.random().toString(36).slice(2);
 
-    window[cbName] = (resp) => {
-      if (resp && resp.status === "success" && resp.booth_code) {
-        boothCode = String(resp.booth_code);
-      }
-      delete window[cbName];
-      resolve(boothCode);
-    };
+  window[cbName] = (resp) => {
+    if (resp && resp.status === "success") {
+      boothCode = String(resp.booth_code);
+    }
+    delete window[cbName];
+  };
 
-    const script = document.createElement("script");
-    script.src =
-      `${SCRIPT_URL}?action=get_code` +
-      `&session_id=${encodeURIComponent(sessionId)}` +
-      `&source=${encodeURIComponent(SOURCE)}` +
-      `&callback=${encodeURIComponent(cbName)}`;
+  const script = document.createElement("script");
+  script.src =
+    `${SCRIPT_URL}?action=get_code` +
+    `&session_id=${encodeURIComponent(sessionId)}` +
+    `&source=${encodeURIComponent(SOURCE)}` +
+    `&callback=${encodeURIComponent(cbName)}`;
 
-    document.body.appendChild(script);
-  });
+  document.body.appendChild(script);
 }
 
 /* ========= RENDER ========= */
@@ -158,7 +143,7 @@ function like() { liked.push(perfumes[i].name); next(); }
 function skip() { next(); }
 function next() { i++; resetCard(); render(); }
 
-/* ========= FINAL ========= */
+/* ========= FINAL CHOICE ========= */
 function showFinalChoice() {
   const c = document.getElementById("choices");
   c.innerHTML = "";
@@ -214,19 +199,29 @@ function selectSize(v, btn) {
   preferredSize = v;
 }
 
-async function lockFinalChoice() {
+/* ========= LOCK ========= */
+function lockFinalChoice() {
   if (!finalChoice) return alert("Select an option");
   if (finalChoice !== "NONE" && !preferredSize) return alert("Select size");
 
-  const code = await requestBoothCode();
-  if (!code) return alert("Booth code failed");
+  // instant transition
+  document.getElementById("finalChoice").classList.add("hidden");
+  document.getElementById("email").classList.remove("hidden");
 
+  // fallback if server slow
+  if (!boothCode) {
+    boothCode = Math.floor(100 + Math.random() * 900).toString();
+  }
+
+  document.getElementById("boothCodeText").innerText = boothCode;
+
+  // Save data
   fetch(SCRIPT_URL, {
     method: "POST",
     mode: "no-cors",
     body: JSON.stringify({
       session_id: sessionId,
-      booth_code: code,
+      booth_code: boothCode,
       final_choice: finalChoice,
       liked: liked.join(" | "),
       preferred_size: preferredSize,
@@ -236,12 +231,9 @@ async function lockFinalChoice() {
       time: new Date().toISOString()
     })
   });
-
-  document.getElementById("finalChoice").classList.add("hidden");
-  document.getElementById("boothCodeText").innerText = code;
-  document.getElementById("email").classList.remove("hidden");
 }
 
+/* ========= EMAIL ========= */
 function submitEmail() {
   const email = document.getElementById("emailInput").value || "";
 
@@ -250,13 +242,13 @@ function submitEmail() {
     mode: "no-cors",
     body: JSON.stringify({
       session_id: sessionId,
-      booth_code: boothCode || "",
+      booth_code: boothCode,
       email: email,
       anonymous: !email
     })
   });
 
-  setTimeout(() => window.location.href = INSTAGRAM_URL, 300);
+  setTimeout(() => window.location.href = INSTAGRAM_URL, 200);
 }
 
 /* ========= SWIPE ========= */
@@ -284,8 +276,9 @@ function resetCard() {
   skipOverlay.style.opacity = 0;
 }
 
+/* INIT */
+preGenerateBoothCode();  // 🔥 happens immediately
 render();
-
 </script>
 
 </body>
