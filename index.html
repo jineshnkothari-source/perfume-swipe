@@ -21,43 +21,30 @@ tailwind.config = {
 <body class="bg-bg text-white overflow-hidden">
 
 <!-- PERFUME CARD -->
-<div id="card"
-  class="fixed inset-0 bg-cover bg-center flex flex-col justify-end transition-transform duration-300">
+<div id="card" class="fixed inset-0 bg-cover bg-center flex flex-col justify-end transition-transform duration-300">
 
-  <div id="likeOverlay"
-    class="absolute top-16 left-6 border-4 border-green-400 text-green-400 px-4 py-2 text-3xl font-extrabold rotate-[-12deg] opacity-0">
+  <div id="likeOverlay" class="absolute top-16 left-6 border-4 border-green-400 text-green-400 px-4 py-2 text-3xl font-extrabold rotate-[-12deg] opacity-0">
     Obsessed
   </div>
 
-  <div id="skipOverlay"
-    class="absolute top-16 right-6 border-4 border-red-400 text-red-400 px-4 py-2 text-3xl font-extrabold rotate-[12deg] opacity-0">
+  <div id="skipOverlay" class="absolute top-16 right-6 border-4 border-red-400 text-red-400 px-4 py-2 text-3xl font-extrabold rotate-[12deg] opacity-0">
     Not obsessed
   </div>
 
   <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
 
   <div class="relative p-6 space-y-2">
-    <div class="text-xs uppercase tracking-widest text-primary font-bold">
-      Find your obsession.
-    </div>
+    <div class="text-xs uppercase tracking-widest text-primary font-bold">Find your obsession.</div>
     <h1 id="name" class="text-4xl font-extrabold"></h1>
     <p id="desc" class="text-white/80 text-lg"></p>
-    <p class="text-xs text-white/40">
-      Swipe right if you are obsessed · left if you are not
-    </p>
+    <p class="text-xs text-white/40">Swipe right if you are obsessed · left if you are not</p>
   </div>
 </div>
 
 <!-- FINAL CHOICE -->
-<div id="finalChoice"
-  class="hidden fixed inset-0 bg-bg flex flex-col p-6 text-center">
-
-  <h1 class="text-2xl font-extrabold mb-2">
-    Which one are you low-key obsessed with?
-  </h1>
-  <p class="text-white/70 text-sm mb-3">
-    Then choose your preferred size.
-  </p>
+<div id="finalChoice" class="hidden fixed inset-0 bg-bg flex flex-col p-6 text-center">
+  <h1 class="text-2xl font-extrabold mb-2">Which one are you low-key obsessed with?</h1>
+  <p class="text-white/70 text-sm mb-3">Then choose your preferred size.</p>
 
   <div id="choices" class="flex flex-col gap-2"></div>
 
@@ -66,44 +53,46 @@ tailwind.config = {
     <div id="sizes" class="grid grid-cols-3 gap-2"></div>
   </div>
 
-  <button onclick="lockFinalChoice()"
-    class="w-full bg-primary py-3 rounded-full font-bold mt-4">
+  <button onclick="lockFinalChoice()" class="w-full bg-primary py-3 rounded-full font-bold mt-4">
     Lock my obsession →
   </button>
 </div>
 
-<!-- EMAIL + BOOTH CODE (COMBINED SCREEN) -->
-<div id="email"
-  class="hidden fixed inset-0 bg-bg flex flex-col justify-center p-6 text-center space-y-4">
+<!-- EMAIL + BOOTH CODE (MERGED SCREEN) -->
+<div id="email" class="hidden fixed inset-0 bg-bg flex flex-col justify-center p-6 text-center space-y-6">
 
-  <!-- Booth Code -->
   <div>
-    <p class="text-white/70 text-sm">Your Spin Code 🎡</p>
-    <div class="text-5xl font-extrabold tracking-widest bg-black/30 px-6 py-4 rounded-xl mt-2">
+    <h1 class="text-3xl font-extrabold">🎡 Spin the Wheel</h1>
+    <p class="text-white/70 mt-2">Show this code at the booth</p>
+
+    <div class="text-5xl font-extrabold tracking-widest bg-black/30 px-6 py-4 rounded-xl mt-4">
       <span id="boothCodeText">...</span>
     </div>
   </div>
 
-  <h1 class="text-3xl font-extrabold mt-4">Are you OCD about fragrance too?</h1>
-  <p class="text-white/70">Drop your email for early access</p>
+  <div class="pt-4 border-t border-white/20">
+    <h2 class="text-2xl font-extrabold">Are you OCD about fragrance too?</h2>
+    <p class="text-white/70 mt-2">Drop your email for early access</p>
 
-  <input id="emailInput" type="email"
-    placeholder="email@example.com"
-    class="w-full p-4 rounded-full text-black">
+    <input id="emailInput" type="email"
+      placeholder="email@example.com"
+      class="w-full p-4 rounded-full text-black mt-4">
 
-  <button onclick="submitEmail()"
-    class="w-full bg-primary py-4 rounded-full font-bold">
-    Follow the Obsession.
-  </button>
+    <button onclick="submitEmail()"
+      class="w-full bg-primary py-4 rounded-full font-bold mt-3">
+      Follow the Obsession.
+    </button>
+  </div>
+
 </div>
 
 <script>
-
 /* ========= CONFIG ========= */
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby6t3nQp9mgozH7nn39QHzrBrR3oLD4D96_egnRQQytuz24aS2PGwELGfzvV7NpokA-Zw/exec";
 const INSTAGRAM_URL = "https://www.instagram.com/fix.myocd?igsh=MWtvZGZpNG1vNXF2YQ==";
 const SOURCE = "Test";
 
+/* ========= SESSION ========= */
 const sessionId = crypto.randomUUID();
 let boothCode = null;
 let boothCodeReady = false;
@@ -129,14 +118,7 @@ let finalChoice = null;
 let preferredSize = null;
 let startX = 0;
 
-/* ========= ELEMENTS ========= */
-const card = document.getElementById("card");
-const nameEl = document.getElementById("name");
-const descEl = document.getElementById("desc");
-const likeOverlay = document.getElementById("likeOverlay");
-const skipOverlay = document.getElementById("skipOverlay");
-
-/* ========= SERVER BOOTH CODE (JSONP) ========= */
+/* ========= SERVER BOOTH CODE ========= */
 function requestBoothCode() {
   return new Promise((resolve) => {
     const cbName = "cb_" + Math.random().toString(36).slice(2);
@@ -161,6 +143,12 @@ function requestBoothCode() {
 }
 
 /* ========= RENDER ========= */
+const card = document.getElementById("card");
+const nameEl = document.getElementById("name");
+const descEl = document.getElementById("desc");
+const likeOverlay = document.getElementById("likeOverlay");
+const skipOverlay = document.getElementById("skipOverlay");
+
 function render() {
   if (i >= perfumes.length) {
     card.classList.add("hidden");
@@ -178,6 +166,8 @@ function next() { i++; resetCard(); render(); }
 
 /* ========= FINAL CHOICE ========= */
 function showFinalChoice() {
+  document.getElementById("finalChoice").classList.remove("hidden");
+
   const c = document.getElementById("choices");
   c.innerHTML = "";
 
@@ -185,59 +175,14 @@ function showFinalChoice() {
     const b = document.createElement("button");
     b.className = "w-full border border-white/30 rounded-full py-2 text-sm";
     b.innerText = p.name;
-    b.onclick = () => selectFinalChoice(p.name, b);
+    b.onclick = () => { finalChoice = p.name; };
     c.appendChild(b);
   });
-
-  const none = document.createElement("button");
-  none.className = "w-full border border-white/30 rounded-full py-2 text-sm text-white/70";
-  none.innerText = "Not Obsessed with any (yet)";
-  none.onclick = () => selectFinalChoice("NONE", none);
-  c.appendChild(none);
-
-  const s = document.getElementById("sizes");
-  s.innerHTML = "";
-
-  sizeOptions.forEach(x => {
-    const b = document.createElement("button");
-    b.className = "border border-white/30 rounded-xl py-3 text-sm";
-    b.innerHTML = `<div class="font-bold">${x.ml}</div><div class="text-white/70">₹${x.price}</div>`;
-    b.onclick = () => selectSize(x.ml, b);
-    s.appendChild(b);
-  });
-
-  document.getElementById("finalChoice").classList.remove("hidden");
-}
-
-function selectFinalChoice(v, btn) {
-  document.querySelectorAll("#choices button").forEach(b => b.classList.remove("bg-primary"));
-  btn.classList.add("bg-primary");
-  finalChoice = v;
-
-  const sizes = document.getElementById("sizes");
-  if (v === "NONE") {
-    preferredSize = "NONE";
-    sizes.classList.add("opacity-40");
-    document.querySelectorAll("#sizes button").forEach(b => b.disabled = true);
-  } else {
-    preferredSize = null;
-    sizes.classList.remove("opacity-40");
-    document.querySelectorAll("#sizes button").forEach(b => b.disabled = false);
-  }
-}
-
-function selectSize(v, btn) {
-  document.querySelectorAll("#sizes button").forEach(b => b.classList.remove("bg-primary"));
-  btn.classList.add("bg-primary");
-  preferredSize = v;
 }
 
 async function lockFinalChoice() {
-  if (!finalChoice) return alert("Select an option");
-  if (finalChoice !== "NONE" && !preferredSize) return alert("Select size");
-
   if (!boothCodeReady) await requestBoothCode();
-  if (!boothCode) return alert("Booth code failed. Please retry.");
+  if (!boothCode) return alert("Booth code failed. Retry.");
 
   fetch(SCRIPT_URL, {
     method: "POST",
@@ -269,7 +214,7 @@ function submitEmail() {
     mode: "no-cors",
     body: JSON.stringify({
       session_id: sessionId,
-      booth_code: boothCode,
+      booth_code: boothCode || "",
       email: email,
       anonymous: !email
     })
@@ -303,10 +248,8 @@ function resetCard() {
   skipOverlay.style.opacity = 0;
 }
 
-/* ========= INIT ========= */
 requestBoothCode();
 render();
-
 </script>
 
 </body>
