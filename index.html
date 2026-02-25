@@ -22,12 +22,15 @@ tailwind.config = {
 
 <!-- PERFUME CARD -->
 <div id="card" class="fixed inset-0 bg-cover bg-center flex flex-col justify-end transition-transform duration-300">
+
   <div id="likeOverlay" class="absolute top-16 left-6 border-4 border-green-400 text-green-400 px-4 py-2 text-3xl font-extrabold rotate-[-12deg] opacity-0">
     Obsessed
   </div>
+
   <div id="skipOverlay" class="absolute top-16 right-6 border-4 border-red-400 text-red-400 px-4 py-2 text-3xl font-extrabold rotate-[12deg] opacity-0">
     Not obsessed
   </div>
+
   <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
 
   <div class="relative p-6 space-y-2">
@@ -55,37 +58,42 @@ tailwind.config = {
   </button>
 </div>
 
-<!-- EMAIL + BOOTH CODE -->
-<div id="email" class="hidden fixed inset-0 bg-bg flex flex-col justify-center p-6 text-center space-y-4">
+<!-- BOOTH CODE SCREEN -->
+<div id="booth" class="hidden fixed inset-0 bg-bg flex flex-col justify-center items-center text-center p-6 space-y-4">
+  <h1 class="text-3xl font-extrabold">Spin the Wheel 🎡</h1>
+  <p class="text-white/70">Show this code at the booth</p>
 
-  <!-- Booth Code -->
-  <div>
-    <p class="text-white/70 text-sm">Your Spin Code 🎡</p>
-    <div class="text-5xl font-extrabold tracking-widest bg-black/30 px-6 py-4 rounded-xl mt-2">
-      <span id="boothCodeText">...</span>
-    </div>
+  <div class="text-5xl font-extrabold tracking-widest bg-black/30 px-6 py-4 rounded-xl">
+    <span id="boothCodeText">...</span>
   </div>
 
-  <h1 class="text-3xl font-extrabold mt-4">Are you OCD about fragrance too?</h1>
+  <button onclick="goToEmail()" class="w-full bg-primary py-3 rounded-full font-bold mt-4">
+    Continue →
+  </button>
+</div>
+
+<!-- EMAIL -->
+<div id="email" class="hidden fixed inset-0 bg-bg flex flex-col justify-center p-6 text-center space-y-4">
+  <h1 class="text-3xl font-extrabold">Are you OCD about fragrance too?</h1>
   <p class="text-white/70">Drop your email for early access</p>
-
   <input id="emailInput" type="email" placeholder="email@example.com" class="w-full p-4 rounded-full text-black">
-
   <button onclick="submitEmail()" class="w-full bg-primary py-4 rounded-full font-bold">
     Follow the Obsession.
   </button>
 </div>
 
 <script>
-const SCRIPT_URL = "YOUR_SCRIPT_URL_HERE";
+/* ========= CONFIG ========= */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby6t3nQp9mgozH7nn39QHzrBrR3oLD4D96_egnRQQytuz24aS2PGwELGfzvV7NpokA-Zw/exec";
 const INSTAGRAM_URL = "https://www.instagram.com/fix.myocd?igsh=MWtvZGZpNG1vNXF2YQ==";
 const SOURCE = "Test";
 
+/* ========= SESSION ========= */
 const sessionId = crypto.randomUUID();
 let boothCode = null;
 let boothCodeReady = false;
 
-/* Perfume Data */
+/* ========= DATA ========= */
 let perfumes = [
   { name: "about last night", desc: "impossible to forget even if you tried.", img: "about-last-night.png" },
   { name: "freshly picked", desc: "not your grandma's roses.", img: "freshly-picked.png" },
@@ -106,35 +114,124 @@ let finalChoice = null;
 let preferredSize = null;
 let startX = 0;
 
-/* JSONP Booth Code */
+/* ========= ELEMENTS ========= */
+const card = document.getElementById("card");
+const nameEl = document.getElementById("name");
+const descEl = document.getElementById("desc");
+const likeOverlay = document.getElementById("likeOverlay");
+const skipOverlay = document.getElementById("skipOverlay");
+
+/* ========= SERVER BOOTH CODE (JSONP) ========= */
 function requestBoothCode() {
   return new Promise((resolve) => {
     const cbName = "cb_" + Math.random().toString(36).slice(2);
+
     window[cbName] = (resp) => {
-      if (resp && resp.status === "success") {
-        boothCode = String(resp.booth_code);
-        boothCodeReady = true;
-      }
+      try {
+        if (resp && resp.status === "success" && resp.booth_code) {
+          boothCode = String(resp.booth_code);
+          boothCodeReady = true;
+        }
+      } catch (e) {}
+
+      // cleanup
+      try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
       resolve(boothCode);
     };
 
     const script = document.createElement("script");
     script.src =
       `${SCRIPT_URL}?action=get_code` +
-      `&session_id=${sessionId}` +
-      `&source=${SOURCE}` +
-      `&callback=${cbName}`;
+      `&session_id=${encodeURIComponent(sessionId)}` +
+      `&source=${encodeURIComponent(SOURCE)}` +
+      `&callback=${encodeURIComponent(cbName)}`;
+
+    script.onerror = () => resolve(null);
     document.body.appendChild(script);
   });
 }
 
-/* Final Choice */
+/* ========= RENDER ========= */
+function render() {
+  if (i >= perfumes.length) {
+    card.classList.add("hidden");
+    showFinalChoice();
+    return;
+  }
+  card.style.backgroundImage = `url(${perfumes[i].img})`;
+  nameEl.textContent = perfumes[i].name;
+  descEl.textContent = perfumes[i].desc;
+}
+
+function like() { liked.push(perfumes[i].name); next(); }
+function skip() { next(); }
+function next() { i++; resetCard(); render(); }
+
+/* ========= FINAL CHOICE ========= */
+function showFinalChoice() {
+  const c = document.getElementById("choices");
+  c.innerHTML = "";
+
+  perfumes.forEach(p => {
+    const b = document.createElement("button");
+    b.className = "w-full border border-white/30 rounded-full py-2 text-sm";
+    b.innerText = p.name;
+    b.onclick = () => selectFinalChoice(p.name, b);
+    c.appendChild(b);
+  });
+
+  const none = document.createElement("button");
+  none.className = "w-full border border-white/30 rounded-full py-2 text-sm text-white/70";
+  none.innerText = "Not Obsessed with any (yet)";
+  none.onclick = () => selectFinalChoice("NONE", none);
+  c.appendChild(none);
+
+  const s = document.getElementById("sizes");
+  s.innerHTML = "";
+
+  sizeOptions.forEach(x => {
+    const b = document.createElement("button");
+    b.className = "border border-white/30 rounded-xl py-3 text-sm";
+    b.innerHTML = `<div class="font-bold">${x.ml}</div><div class="text-white/70">₹${x.price}</div>`;
+    b.onclick = () => selectSize(x.ml, b);
+    s.appendChild(b);
+  });
+
+  document.getElementById("finalChoice").classList.remove("hidden");
+}
+
+function selectFinalChoice(v, btn) {
+  document.querySelectorAll("#choices button").forEach(b => b.classList.remove("bg-primary"));
+  btn.classList.add("bg-primary");
+  finalChoice = v;
+
+  const sizes = document.getElementById("sizes");
+  if (v === "NONE") {
+    preferredSize = "NONE";
+    sizes.classList.add("opacity-40");
+    document.querySelectorAll("#sizes button").forEach(b => {
+      b.disabled = true;
+      b.classList.remove("bg-primary");
+    });
+  } else {
+    preferredSize = null;
+    sizes.classList.remove("opacity-40");
+    document.querySelectorAll("#sizes button").forEach(b => b.disabled = false);
+  }
+}
+
+function selectSize(v, btn) {
+  document.querySelectorAll("#sizes button").forEach(b => b.classList.remove("bg-primary"));
+  btn.classList.add("bg-primary");
+  preferredSize = v;
+}
+
 async function lockFinalChoice() {
   if (!finalChoice) return alert("Select an option");
   if (finalChoice !== "NONE" && !preferredSize) return alert("Select size");
 
   if (!boothCodeReady) await requestBoothCode();
-  if (!boothCode) return alert("Code failed. Retry.");
+  if (!boothCode) return alert("Booth code failed. Please retry.");
 
   fetch(SCRIPT_URL, {
     method: "POST",
@@ -146,16 +243,23 @@ async function lockFinalChoice() {
       liked: liked.join(" | "),
       preferred_size: preferredSize,
       source: SOURCE,
-      anonymous: true
+      email: "",
+      anonymous: true,
+      time: new Date().toISOString()
     })
   });
 
   document.getElementById("finalChoice").classList.add("hidden");
   document.getElementById("boothCodeText").innerText = boothCode;
+  document.getElementById("booth").classList.remove("hidden");
+}
+
+function goToEmail() {
+  document.getElementById("booth").classList.add("hidden");
   document.getElementById("email").classList.remove("hidden");
 }
 
-/* Email */
+/* ========= EMAIL + REDIRECT ========= */
 function submitEmail() {
   const email = document.getElementById("emailInput").value || "";
 
@@ -164,7 +268,7 @@ function submitEmail() {
     mode: "no-cors",
     body: JSON.stringify({
       session_id: sessionId,
-      booth_code: boothCode,
+      booth_code: boothCode || "",
       email: email,
       anonymous: !email
     })
@@ -173,6 +277,35 @@ function submitEmail() {
   setTimeout(() => window.location.href = INSTAGRAM_URL, 300);
 }
 
+/* ========= SWIPE ========= */
+card.addEventListener("touchstart", e => startX = e.touches[0].clientX);
+card.addEventListener("touchmove", e => move(e.touches[0].clientX));
+card.addEventListener("touchend", e => end(e.changedTouches[0].clientX));
+
+function move(x) {
+  const dx = x - startX;
+  card.style.transform = `translateX(${dx}px) rotate(${dx / 20}deg)`;
+  likeOverlay.style.opacity = dx > 60 ? 1 : 0;
+  skipOverlay.style.opacity = dx < -60 ? 1 : 0;
+}
+
+function end(x) {
+  const dx = x - startX;
+  if (dx > 120) like();
+  else if (dx < -120) skip();
+  else resetCard();
+}
+
+function resetCard() {
+  card.style.transform = "translateX(0)";
+  likeOverlay.style.opacity = 0;
+  skipOverlay.style.opacity = 0;
+}
+
+/* ========= INIT ========= */
+requestBoothCode(); // prefetch early
+render();
 </script>
+
 </body>
 </html>
