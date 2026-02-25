@@ -37,28 +37,31 @@ tailwind.config = {
     <div class="text-xs uppercase tracking-widest text-primary font-bold">Find your obsession.</div>
     <h1 id="name" class="text-4xl font-extrabold"></h1>
     <p id="desc" class="text-white/80 text-lg"></p>
-    <p class="text-xs text-white/40">Swipe right if you are obsessed · left if you are not</p>
+    <p class="text-xs text-white/40">Swipe right if obsessed · left if not</p>
   </div>
 </div>
 
 <!-- FINAL CHOICE -->
-<div id="finalChoice" class="hidden fixed inset-0 bg-bg flex flex-col p-6 text-center">
-  <h1 class="text-2xl font-extrabold mb-2">Which one are you low-key obsessed with?</h1>
-  <p class="text-white/70 text-sm mb-3">Then choose your preferred size.</p>
+<div id="finalChoice" class="hidden fixed inset-0 bg-bg flex flex-col p-6 text-center overflow-y-auto">
 
-  <div id="choices" class="flex flex-col gap-2"></div>
+  <h1 class="text-2xl font-extrabold mb-2">
+    Which one are you obsessed with?
+  </h1>
 
-  <div class="mt-4">
+  <div id="choices" class="flex flex-col gap-2 mb-4"></div>
+
+  <div>
     <h2 class="text-lg font-bold mb-2">Choose your size</h2>
     <div id="sizes" class="grid grid-cols-3 gap-2"></div>
   </div>
 
-  <button onclick="lockFinalChoice()" class="w-full bg-primary py-3 rounded-full font-bold mt-4">
+  <button onclick="lockFinalChoice()" 
+    class="w-full bg-primary py-3 rounded-full font-bold mt-6">
     Lock my obsession →
   </button>
 </div>
 
-<!-- EMAIL + BOOTH CODE (MERGED SCREEN) -->
+<!-- EMAIL + BOOTH -->
 <div id="email" class="hidden fixed inset-0 bg-bg flex flex-col justify-center p-6 text-center space-y-6">
 
   <div>
@@ -71,8 +74,9 @@ tailwind.config = {
   </div>
 
   <div class="pt-4 border-t border-white/20">
-    <h2 class="text-2xl font-extrabold">Are you OCD about fragrance too?</h2>
-    <p class="text-white/70 mt-2">Drop your email for early access</p>
+    <h2 class="text-2xl font-extrabold">
+      Are you OCD about fragrance too?
+    </h2>
 
     <input id="emailInput" type="email"
       placeholder="email@example.com"
@@ -80,30 +84,30 @@ tailwind.config = {
 
     <button onclick="submitEmail()"
       class="w-full bg-primary py-4 rounded-full font-bold mt-3">
-      Follow the Obsession.
+      Follow the Obsession
     </button>
   </div>
-
 </div>
 
 <script>
-/* ========= CONFIG ========= */
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby6t3nQp9mgozH7nn39QHzrBrR3oLD4D96_egnRQQytuz24aS2PGwELGfzvV7NpokA-Zw/exec";
-const INSTAGRAM_URL = "https://www.instagram.com/fix.myocd?igsh=MWtvZGZpNG1vNXF2YQ==";
+
+/* CONFIG */
+const SCRIPT_URL = "YOUR_SCRIPT_URL_HERE";
+const INSTAGRAM_URL = "https://www.instagram.com/fix.myocd";
 const SOURCE = "Test";
 
-/* ========= SESSION ========= */
+/* SESSION */
 const sessionId = crypto.randomUUID();
 let boothCode = null;
 let boothCodeReady = false;
 
-/* ========= DATA ========= */
+/* DATA */
 let perfumes = [
-  { name: "about last night", desc: "impossible to forget even if you tried.", img: "about-last-night.png" },
+  { name: "about last night", desc: "impossible to forget.", img: "about-last-night.png" },
   { name: "freshly picked", desc: "not your grandma's roses.", img: "freshly-picked.png" },
-  { name: "midnight snack", desc: "like you ate and left no crumbs.", img: "midnight-snack.png" },
-  { name: "skinny dip", desc: "like a freshly shaven jawline.", img: "skinny-dip.png" },
-  { name: "still not over it", desc: "lives in your head rent free.", img: "still-not-over-it.png" }
+  { name: "midnight snack", desc: "left no crumbs.", img: "midnight-snack.png" },
+  { name: "skinny dip", desc: "freshly shaven jawline.", img: "skinny-dip.png" },
+  { name: "still not over it", desc: "rent free.", img: "still-not-over-it.png" }
 ];
 
 const sizeOptions = [
@@ -118,14 +122,21 @@ let finalChoice = null;
 let preferredSize = null;
 let startX = 0;
 
-/* ========= SERVER BOOTH CODE ========= */
+/* ELEMENTS */
+const card = document.getElementById("card");
+const nameEl = document.getElementById("name");
+const descEl = document.getElementById("desc");
+const likeOverlay = document.getElementById("likeOverlay");
+const skipOverlay = document.getElementById("skipOverlay");
+
+/* BOOTH CODE FETCH */
 function requestBoothCode() {
   return new Promise((resolve) => {
     const cbName = "cb_" + Math.random().toString(36).slice(2);
 
     window[cbName] = (resp) => {
-      if (resp && resp.status === "success" && resp.booth_code) {
-        boothCode = String(resp.booth_code);
+      if (resp && resp.status === "success") {
+        boothCode = resp.booth_code;
         boothCodeReady = true;
       }
       resolve(boothCode);
@@ -134,27 +145,21 @@ function requestBoothCode() {
     const script = document.createElement("script");
     script.src =
       `${SCRIPT_URL}?action=get_code` +
-      `&session_id=${encodeURIComponent(sessionId)}` +
-      `&source=${encodeURIComponent(SOURCE)}` +
-      `&callback=${encodeURIComponent(cbName)}`;
+      `&session_id=${sessionId}` +
+      `&callback=${cbName}`;
 
     document.body.appendChild(script);
   });
 }
 
-/* ========= RENDER ========= */
-const card = document.getElementById("card");
-const nameEl = document.getElementById("name");
-const descEl = document.getElementById("desc");
-const likeOverlay = document.getElementById("likeOverlay");
-const skipOverlay = document.getElementById("skipOverlay");
-
+/* RENDER PERFUME */
 function render() {
   if (i >= perfumes.length) {
     card.classList.add("hidden");
     showFinalChoice();
     return;
   }
+
   card.style.backgroundImage = `url(${perfumes[i].img})`;
   nameEl.textContent = perfumes[i].name;
   descEl.textContent = perfumes[i].desc;
@@ -164,25 +169,80 @@ function like() { liked.push(perfumes[i].name); next(); }
 function skip() { next(); }
 function next() { i++; resetCard(); render(); }
 
-/* ========= FINAL CHOICE ========= */
+/* FINAL CHOICE SCREEN */
 function showFinalChoice() {
   document.getElementById("finalChoice").classList.remove("hidden");
 
   const c = document.getElementById("choices");
+  const s = document.getElementById("sizes");
   c.innerHTML = "";
+  s.innerHTML = "";
 
   perfumes.forEach(p => {
     const b = document.createElement("button");
-    b.className = "w-full border border-white/30 rounded-full py-2 text-sm";
+    b.className = "border border-white/30 rounded-full py-2";
     b.innerText = p.name;
-    b.onclick = () => { finalChoice = p.name; };
+
+    b.onclick = () => {
+      document.querySelectorAll("#choices button")
+        .forEach(x => x.classList.remove("bg-primary"));
+
+      b.classList.add("bg-primary");
+      finalChoice = p.name;
+      preferredSize = null;
+
+      document.querySelectorAll("#sizes button")
+        .forEach(btn => btn.disabled = false);
+    };
+
     c.appendChild(b);
+  });
+
+  const none = document.createElement("button");
+  none.className = "border border-white/30 rounded-full py-2 text-white/70";
+  none.innerText = "Not Obsessed (yet)";
+  none.onclick = () => {
+    document.querySelectorAll("#choices button")
+      .forEach(x => x.classList.remove("bg-primary"));
+
+    none.classList.add("bg-primary");
+    finalChoice = "NONE";
+    preferredSize = "NONE";
+
+    document.querySelectorAll("#sizes button").forEach(btn => {
+      btn.disabled = true;
+      btn.classList.remove("bg-primary");
+    });
+  };
+
+  c.appendChild(none);
+
+  sizeOptions.forEach(x => {
+    const b = document.createElement("button");
+    b.className = "border border-white/30 rounded-xl py-3";
+    b.innerHTML = `<div class="font-bold">${x.ml}</div>
+                   <div class="text-white/70">₹${x.price}</div>`;
+
+    b.onclick = () => {
+      document.querySelectorAll("#sizes button")
+        .forEach(x => x.classList.remove("bg-primary"));
+
+      b.classList.add("bg-primary");
+      preferredSize = x.ml;
+    };
+
+    s.appendChild(b);
   });
 }
 
+/* LOCK CHOICE */
 async function lockFinalChoice() {
+
+  if (!finalChoice) return alert("Select fragrance");
+  if (finalChoice !== "NONE" && !preferredSize)
+    return alert("Select size");
+
   if (!boothCodeReady) await requestBoothCode();
-  if (!boothCode) return alert("Booth code failed. Retry.");
 
   fetch(SCRIPT_URL, {
     method: "POST",
@@ -195,8 +255,7 @@ async function lockFinalChoice() {
       preferred_size: preferredSize,
       source: SOURCE,
       email: "",
-      anonymous: true,
-      time: new Date().toISOString()
+      anonymous: true
     })
   });
 
@@ -205,7 +264,7 @@ async function lockFinalChoice() {
   document.getElementById("email").classList.remove("hidden");
 }
 
-/* ========= EMAIL ========= */
+/* EMAIL */
 function submitEmail() {
   const email = document.getElementById("emailInput").value || "";
 
@@ -214,7 +273,7 @@ function submitEmail() {
     mode: "no-cors",
     body: JSON.stringify({
       session_id: sessionId,
-      booth_code: boothCode || "",
+      booth_code: boothCode,
       email: email,
       anonymous: !email
     })
@@ -223,14 +282,14 @@ function submitEmail() {
   setTimeout(() => window.location.href = INSTAGRAM_URL, 300);
 }
 
-/* ========= SWIPE ========= */
+/* SWIPE */
 card.addEventListener("touchstart", e => startX = e.touches[0].clientX);
 card.addEventListener("touchmove", e => move(e.touches[0].clientX));
 card.addEventListener("touchend", e => end(e.changedTouches[0].clientX));
 
 function move(x) {
   const dx = x - startX;
-  card.style.transform = `translateX(${dx}px) rotate(${dx / 20}deg)`;
+  card.style.transform = `translateX(${dx}px) rotate(${dx/20}deg)`;
   likeOverlay.style.opacity = dx > 60 ? 1 : 0;
   skipOverlay.style.opacity = dx < -60 ? 1 : 0;
 }
@@ -250,7 +309,7 @@ function resetCard() {
 
 requestBoothCode();
 render();
-</script>
 
+</script>
 </body>
 </html>
