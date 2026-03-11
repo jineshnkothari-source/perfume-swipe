@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://cdn.tailwindcss.com"></script>
+
 <script>
 tailwind.config = {
   darkMode: "class",
@@ -16,82 +17,130 @@ tailwind.config = {
   }
 }
 </script>
+
 </head>
 
 <body class="bg-bg text-white overflow-hidden">
 
 <!-- PERFUME CARD -->
 <div id="card" class="fixed inset-0 bg-cover bg-center flex flex-col justify-end transition-transform duration-300">
-  <div id="likeOverlay" class="absolute top-16 left-6 border-4 border-green-400 text-green-400 px-4 py-2 text-3xl font-extrabold rotate-[-12deg] opacity-0">Obsessed</div>
-  <div id="skipOverlay" class="absolute top-16 right-6 border-4 border-red-400 text-red-400 px-4 py-2 text-3xl font-extrabold rotate-[12deg] opacity-0">Not obsessed</div>
+
+  <div id="likeOverlay" class="absolute top-16 left-6 border-4 border-green-400 text-green-400 px-4 py-2 text-3xl font-extrabold rotate-[-12deg] opacity-0">
+    Obsessed
+  </div>
+
+  <div id="skipOverlay" class="absolute top-16 right-6 border-4 border-red-400 text-red-400 px-4 py-2 text-3xl font-extrabold rotate-[12deg] opacity-0">
+    Not obsessed
+  </div>
+
   <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+
   <div class="relative p-6 space-y-2">
-    <div class="text-xs uppercase tracking-widest text-primary font-bold">Find your obsession.</div>
+    <div class="text-xs uppercase tracking-widest text-primary font-bold">
+      Find your obsession.
+    </div>
+
     <h1 id="name" class="text-4xl font-extrabold"></h1>
     <p id="desc" class="text-white/80 text-lg"></p>
-    <p class="text-xs text-white/40">Swipe right if you are obsessed · left if you are not</p>
+
+    <p class="text-xs text-white/40">
+      Swipe right if obsessed · left if not
+    </p>
   </div>
 </div>
 
 <!-- FINAL CHOICE -->
 <div id="finalChoice" class="hidden fixed inset-0 bg-bg flex flex-col p-6 text-center">
-  <h1 class="text-2xl font-extrabold mb-2">Which one are you low-key obsessed with?</h1>
-  <p class="text-white/70 text-sm mb-3">Then choose your preferred size.</p>
-  <div id="choices" class="flex flex-col gap-2"></div>
-  <div class="mt-4">
-    <h2 class="text-lg font-bold mb-2">Choose your size</h2>
-    <div id="sizes" class="grid grid-cols-3 gap-2"></div>
-  </div>
-  <button onclick="lockFinalChoice()" class="w-full bg-primary py-3 rounded-full font-bold mt-4">
-    Lock my obsession →
-  </button>
+
+<h1 class="text-2xl font-extrabold mb-2">
+Which one are you low-key obsessed with?
+</h1>
+
+<p class="text-white/70 text-sm mb-3">
+Then choose your preferred size.
+</p>
+
+<div id="choices" class="flex flex-col gap-2"></div>
+
+<div class="mt-4">
+<h2 class="text-lg font-bold mb-2">Choose your size</h2>
+<div id="sizes" class="grid grid-cols-3 gap-2"></div>
 </div>
 
-<!-- EMAIL + BOOTH MERGED -->
-<div id="Mobile number" class="hidden fixed inset-0 bg-bg flex flex-col justify-center p-6 text-center space-y-4">
+<button onclick="lockFinalChoice()" class="w-full bg-primary py-3 rounded-full font-bold mt-4">
+Lock my obsession →
+</button>
 
-  <h1 class="text-3xl font-extrabold">Spin the Wheel 🎡</h1>
-  <p class="text-white/70">Show this code at the booth</p>
+</div>
 
-  <div class="text-5xl font-extrabold tracking-widest bg-black/30 px-6 py-4 rounded-xl">
-    <span id="boothCodeText">...</span>
-  </div>
+<!-- MOBILE + BOOTH -->
+<div id="email" class="hidden fixed inset-0 bg-bg flex flex-col justify-center p-6 text-center space-y-4">
 
-  <div class="pt-6">
-    <h2 class="text-2xl font-extrabold">Are you OCD about fragrance too?</h2>
-    <p class="text-white/70 text-sm">Drop your Number for early access</p>
-  </div>
+<h1 class="text-3xl font-extrabold">
+Spin the Wheel 🎡
+</h1>
 
-  <input id="emailInput" type="email" placeholder="Mobile number"
-    class="w-full p-4 rounded-full text-black">
+<p class="text-white/70">
+Show this code at the booth
+</p>
 
-  <button onclick="submitEmail()" class="w-full bg-primary py-4 rounded-full font-bold">
-    Follow the Obsession.
-  </button>
+<div class="text-5xl font-extrabold tracking-widest bg-black/30 px-6 py-4 rounded-xl">
+<span id="boothCodeText">...</span>
+</div>
+
+<div class="pt-6">
+<h2 class="text-2xl font-extrabold">
+Are you OCD about fragrance too?
+</h2>
+
+<p class="text-white/70 text-sm">
+Drop your number for early access
+</p>
+</div>
+
+<input
+id="mobileInput"
+type="tel"
+placeholder="Enter mobile number"
+class="w-full p-4 rounded-full text-black"
+/>
+
+<button onclick="submitMobile()" class="w-full bg-primary py-4 rounded-full font-bold">
+Follow the Obsession →
+</button>
 
 </div>
 
 <script>
+
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby6t3nQp9mgozH7nn39QHzrBrR3oLD4D96_egnRQQytuz24aS2PGwELGfzvV7NpokA-Zw/exec";
 const INSTAGRAM_URL = "https://www.instagram.com/fix.myocd?igsh=MWtvZGZpNG1vNXF2YQ==";
 const SOURCE = "Test";
 
 const sessionId = crypto.randomUUID();
 
-let boothCode = null;   // will be pre-generated
+let boothCode = null;
 
 let perfumes = [
-  { name: "about last night", desc: "impossible to forget even if you tried.", img: "about-last-night.png" },
-  { name: "freshly picked", desc: "not your grandma's roses.", img: "freshly-picked.png" },
-  { name: "midnight snack", desc: "like you ate and left no crumbs.", img: "midnight-snack.png" },
-  { name: "skinny dip", desc: "like a freshly shaven jawline.", img: "skinny-dip.png" },
-  { name: "still not over it", desc: "lives in your head rent free.", img: "still-not-over-it.png" }
+
+{ name: "about last night", desc: "impossible to forget even if you tried.", img: "about-last-night.png" },
+
+{ name: "freshly picked", desc: "not your grandma's roses.", img: "freshly-picked.png" },
+
+{ name: "midnight snack", desc: "like you ate and left no crumbs.", img: "midnight-snack.png" },
+
+{ name: "skinny dip", desc: "like a freshly shaven jawline.", img: "skinny-dip.png" },
+
+{ name: "still not over it", desc: "lives in your head rent free.", img: "still-not-over-it.png" }
+
 ];
 
 const sizeOptions = [
-  { ml: "5ml", price: 100 },
-  { ml: "20ml", price: 549 },
-  { ml: "50ml", price: 1099 }
+
+{ ml: "5ml", price: 100 },
+{ ml: "20ml", price: 549 },
+{ ml: "50ml", price: 1099 }
+
 ];
 
 let i = 0;
@@ -106,182 +155,339 @@ const descEl = document.getElementById("desc");
 const likeOverlay = document.getElementById("likeOverlay");
 const skipOverlay = document.getElementById("skipOverlay");
 
-/* ========= PRE-GENERATE BOOTH CODE ========= */
-function preGenerateBoothCode() {
-  const cbName = "cb_" + Math.random().toString(36).slice(2);
 
-  window[cbName] = (resp) => {
-    if (resp && resp.status === "success") {
-      boothCode = String(resp.booth_code);
-    }
-    delete window[cbName];
-  };
 
-  const script = document.createElement("script");
-  script.src =
-    `${SCRIPT_URL}?action=get_code` +
-    `&session_id=${encodeURIComponent(sessionId)}` +
-    `&source=${encodeURIComponent(SOURCE)}` +
-    `&callback=${encodeURIComponent(cbName)}`;
+/* PRE-GENERATE BOOTH CODE */
 
-  document.body.appendChild(script);
+function preGenerateBoothCode(){
+
+const cbName = "cb_" + Math.random().toString(36).slice(2);
+
+window[cbName] = (resp)=>{
+
+if(resp && resp.status==="success"){
+boothCode = String(resp.booth_code);
 }
 
-/* ========= RENDER ========= */
-function render() {
-  if (i >= perfumes.length) {
-    card.classList.add("hidden");
-    showFinalChoice();
-    return;
-  }
-  card.style.backgroundImage = `url(${perfumes[i].img})`;
-  nameEl.textContent = perfumes[i].name;
-  descEl.textContent = perfumes[i].desc;
+delete window[cbName];
+
+};
+
+const script = document.createElement("script");
+
+script.src =
+`${SCRIPT_URL}?action=get_code` +
+`&session_id=${sessionId}` +
+`&source=${SOURCE}` +
+`&callback=${cbName}`;
+
+document.body.appendChild(script);
+
 }
 
-function like() { liked.push(perfumes[i].name); next(); }
-function skip() { next(); }
-function next() { i++; resetCard(); render(); }
 
-/* ========= FINAL CHOICE ========= */
-function showFinalChoice() {
-  const c = document.getElementById("choices");
-  c.innerHTML = "";
 
-  perfumes.forEach(p => {
-    const b = document.createElement("button");
-    b.className = "w-full border border-white/30 rounded-full py-2 text-sm";
-    b.innerText = p.name;
-    b.onclick = () => selectFinalChoice(p.name, b);
-    c.appendChild(b);
-  });
+/* RENDER */
 
-  const none = document.createElement("button");
-  none.className = "w-full border border-white/30 rounded-full py-2 text-sm text-white/70";
-  none.innerText = "Not Obsessed with any (yet)";
-  none.onclick = () => selectFinalChoice("NONE", none);
-  c.appendChild(none);
+function render(){
 
-  const s = document.getElementById("sizes");
-  s.innerHTML = "";
+if(i >= perfumes.length){
 
-  sizeOptions.forEach(x => {
-    const b = document.createElement("button");
-    b.className = "border border-white/30 rounded-xl py-3 text-sm";
-    b.innerHTML = `<div class="font-bold">${x.ml}</div><div class="text-white/70">₹${x.price}</div>`;
-    b.onclick = () => selectSize(x.ml, b);
-    s.appendChild(b);
-  });
+card.classList.add("hidden");
+showFinalChoice();
+return;
 
-  document.getElementById("finalChoice").classList.remove("hidden");
 }
 
-function selectFinalChoice(v, btn) {
-  document.querySelectorAll("#choices button").forEach(b => b.classList.remove("bg-primary"));
-  btn.classList.add("bg-primary");
-  finalChoice = v;
+card.style.backgroundImage = `url(${perfumes[i].img})`;
+nameEl.textContent = perfumes[i].name;
+descEl.textContent = perfumes[i].desc;
 
-  const sizes = document.getElementById("sizes");
-  if (v === "NONE") {
-    preferredSize = "NONE";
-    sizes.classList.add("opacity-40");
-    document.querySelectorAll("#sizes button").forEach(b => b.disabled = true);
-  } else {
-    preferredSize = null;
-    sizes.classList.remove("opacity-40");
-    document.querySelectorAll("#sizes button").forEach(b => b.disabled = false);
-  }
 }
 
-function selectSize(v, btn) {
-  document.querySelectorAll("#sizes button").forEach(b => b.classList.remove("bg-primary"));
-  btn.classList.add("bg-primary");
-  preferredSize = v;
+
+
+function like(){
+
+liked.push(perfumes[i].name);
+next();
+
 }
 
-/* ========= LOCK ========= */
-function lockFinalChoice() {
-  if (!finalChoice) return alert("Select an option");
-  if (finalChoice !== "NONE" && !preferredSize) return alert("Select size");
+function skip(){
 
-  // instant transition
-  document.getElementById("finalChoice").classList.add("hidden");
-  document.getElementById("email").classList.remove("hidden");
+next();
 
-  // fallback if server slow
-  if (!boothCode) {
-    boothCode = Math.floor(100 + Math.random() * 900).toString();
-  }
-
-  document.getElementById("boothCodeText").innerText = boothCode;
-
-  // Save data
-  fetch(SCRIPT_URL, {
-    method: "POST",
-    mode: "no-cors",
-    body: JSON.stringify({
-      session_id: sessionId,
-      booth_code: boothCode,
-      final_choice: finalChoice,
-      liked: liked.join(" | "),
-      preferred_size: preferredSize,
-      source: SOURCE,
-      email: "",
-      anonymous: true,
-      time: new Date().toISOString()
-    })
-  });
 }
 
-/* ========= EMAIL ========= */
-function submitEmail() {
-  const email = document.getElementById("emailInput").value || "";
+function next(){
 
-  fetch(SCRIPT_URL, {
-    method: "POST",
-    mode: "no-cors",
-    body: JSON.stringify({
-      session_id: sessionId,
-      booth_code: boothCode,
-      email: email,
-      anonymous: !email
-    })
-  });
+i++;
+resetCard();
+render();
 
-  setTimeout(() => window.location.href = INSTAGRAM_URL, 200);
 }
 
-/* ========= SWIPE ========= */
-card.addEventListener("touchstart", e => startX = e.touches[0].clientX);
-card.addEventListener("touchmove", e => move(e.touches[0].clientX));
-card.addEventListener("touchend", e => end(e.changedTouches[0].clientX));
 
-function move(x) {
-  const dx = x - startX;
-  card.style.transform = `translateX(${dx}px) rotate(${dx / 20}deg)`;
-  likeOverlay.style.opacity = dx > 60 ? 1 : 0;
-  skipOverlay.style.opacity = dx < -60 ? 1 : 0;
+
+/* FINAL CHOICE */
+
+function showFinalChoice(){
+
+const c = document.getElementById("choices");
+c.innerHTML="";
+
+perfumes.forEach(p=>{
+
+const b=document.createElement("button");
+
+b.className="w-full border border-white/30 rounded-full py-2 text-sm";
+
+b.innerText=p.name;
+
+b.onclick=()=>selectFinalChoice(p.name,b);
+
+c.appendChild(b);
+
+});
+
+const none=document.createElement("button");
+
+none.className="w-full border border-white/30 rounded-full py-2 text-sm text-white/70";
+
+none.innerText="Not Obsessed with any (yet)";
+
+none.onclick=()=>selectFinalChoice("NONE",none);
+
+c.appendChild(none);
+
+
+
+const s=document.getElementById("sizes");
+
+s.innerHTML="";
+
+sizeOptions.forEach(x=>{
+
+const b=document.createElement("button");
+
+b.className="border border-white/30 rounded-xl py-3 text-sm";
+
+b.innerHTML=`<div class="font-bold">${x.ml}</div><div class="text-white/70">₹${x.price}</div>`;
+
+b.onclick=()=>selectSize(x.ml,b);
+
+s.appendChild(b);
+
+});
+
+
+
+document.getElementById("finalChoice").classList.remove("hidden");
+
 }
 
-function end(x) {
-  const dx = x - startX;
-  if (dx > 120) like();
-  else if (dx < -120) skip();
-  else resetCard();
+
+
+function selectFinalChoice(v,btn){
+
+document.querySelectorAll("#choices button").forEach(b=>b.classList.remove("bg-primary"));
+
+btn.classList.add("bg-primary");
+
+finalChoice=v;
+
+const sizes=document.getElementById("sizes");
+
+if(v==="NONE"){
+
+preferredSize="NONE";
+
+sizes.classList.add("opacity-40");
+
+document.querySelectorAll("#sizes button").forEach(b=>b.disabled=true);
+
 }
 
-function resetCard() {
-  card.style.transform = "translateX(0)";
-  likeOverlay.style.opacity = 0;
-  skipOverlay.style.opacity = 0;
+else{
+
+preferredSize=null;
+
+sizes.classList.remove("opacity-40");
+
+document.querySelectorAll("#sizes button").forEach(b=>b.disabled=false);
+
 }
+
+}
+
+
+
+function selectSize(v,btn){
+
+document.querySelectorAll("#sizes button").forEach(b=>b.classList.remove("bg-primary"));
+
+btn.classList.add("bg-primary");
+
+preferredSize=v;
+
+}
+
+
+
+/* LOCK */
+
+function lockFinalChoice(){
+
+if(!finalChoice) return alert("Select an option");
+
+if(finalChoice!=="NONE" && !preferredSize)
+return alert("Select size");
+
+document.getElementById("finalChoice").classList.add("hidden");
+
+document.getElementById("email").classList.remove("hidden");
+
+
+
+if(!boothCode){
+
+boothCode = Math.floor(100 + Math.random()*900).toString();
+
+}
+
+
+
+document.getElementById("boothCodeText").innerText = boothCode;
+
+
+
+fetch(SCRIPT_URL,{
+method:"POST",
+mode:"no-cors",
+body:JSON.stringify({
+
+session_id:sessionId,
+booth_code:boothCode,
+final_choice:finalChoice,
+liked:liked.join(" | "),
+preferred_size:preferredSize,
+source:SOURCE,
+mobile:"",
+anonymous:true,
+time:new Date().toISOString()
+
+})
+
+});
+
+}
+
+
+
+/* MOBILE SUBMIT */
+
+function submitMobile(){
+
+const mobile = document.getElementById("mobileInput").value.trim();
+
+
+
+if(mobile && !/^[6-9]\d{9}$/.test(mobile)){
+
+alert("Enter a valid 10 digit mobile number");
+
+return;
+
+}
+
+
+
+fetch(SCRIPT_URL,{
+
+method:"POST",
+mode:"no-cors",
+
+body:JSON.stringify({
+
+session_id:sessionId,
+booth_code:boothCode,
+mobile:mobile,
+anonymous:!mobile
+
+})
+
+});
+
+
+
+setTimeout(()=>{
+
+window.location.href = INSTAGRAM_URL;
+
+},200);
+
+}
+
+
+
+/* SWIPE */
+
+card.addEventListener("touchstart",e=>startX=e.touches[0].clientX);
+
+card.addEventListener("touchmove",e=>move(e.touches[0].clientX));
+
+card.addEventListener("touchend",e=>end(e.changedTouches[0].clientX));
+
+
+
+function move(x){
+
+const dx=x-startX;
+
+card.style.transform=`translateX(${dx}px) rotate(${dx/20}deg)`;
+
+likeOverlay.style.opacity=dx>60?1:0;
+
+skipOverlay.style.opacity=dx<-60?1:0;
+
+}
+
+
+
+function end(x){
+
+const dx=x-startX;
+
+if(dx>120) like();
+
+else if(dx<-120) skip();
+
+else resetCard();
+
+}
+
+
+
+function resetCard(){
+
+card.style.transform="translateX(0)";
+
+likeOverlay.style.opacity=0;
+
+skipOverlay.style.opacity=0;
+
+}
+
+
 
 /* INIT */
-preGenerateBoothCode();  // 🔥 happens immediately
+
+preGenerateBoothCode();
+
 render();
+
 </script>
 
 </body>
 </html>
-
-
