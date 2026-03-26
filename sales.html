@@ -200,6 +200,7 @@ const FRAGRANCES = [
 ];
 
 let selCode=null, selFrag=null, selSize=null, selPrice=null, selPay=null, freeItem=false;
+let lookupTimer;
 
 // ── BUILD UI ─────────────────────────────────────────────────
 function buildFragGrid() {
@@ -235,12 +236,22 @@ function checkReady(){
   document.getElementById('submitBtn').disabled=!(selFrag&&selSize&&selPay);
 }
 
-// ── LOOKUP ───────────────────────────────────────────────────
+// ── AUTO LOOKUP ──────────────────────────────────────────────
 function onCodeType(el){
-  el.value=el.value.replace(/\D/g,'').slice(0,3);
-  document.getElementById('customerStrip').classList.remove('show');
-  selCode=null;
+  el.value = el.value.replace(/\D/g,'').slice(0,3);
+
+  clearTimeout(lookupTimer);
+
+  if(el.value.length === 3){
+    lookupTimer = setTimeout(()=>{
+      lookupCode();
+    }, 300);
+  } else {
+    selCode=null;
+    document.getElementById('customerStrip').classList.remove('show');
+  }
 }
+
 function setFb(msg,cls){
   const el=document.getElementById('codeFb');
   el.textContent=msg;
@@ -251,8 +262,7 @@ async function lookupCode(){
   const raw=document.getElementById('codeInput').value.trim();
 
   if(!raw){
-    selCode='WALKIN-'+Date.now();
-    setFb('Walk-in','ok');
+    selCode=null;
     return;
   }
 
@@ -262,32 +272,42 @@ async function lookupCode(){
 
     if(data.found){
       selCode=raw;
-      setFb('Found','ok');
+
       document.getElementById('customerStrip').classList.add('show');
       document.getElementById('csCode').textContent=raw;
       document.getElementById('csFav').textContent=data.final_choice||'—';
       document.getElementById('csContact').textContent=data.email||'—';
       document.getElementById('csSpun').textContent=data.spun?'Yes':'No';
+
     } else {
-      selCode='WALKIN-'+raw;
-      setFb('Not found → Walk-in','err');
+      selCode=null;
+      document.getElementById('customerStrip').classList.remove('show');
     }
+
   }catch(e){
-    selCode='WALKIN-'+raw;
+    selCode=null;
   }
 }
 
-// ── RECORD SALE (FIXED) ──────────────────────────────────────
+// ── RECORD SALE ──────────────────────────────────────────────
 async function recordSale(){
   if(!selFrag||!selSize||!selPay)return;
 
-  if(!selCode) selCode='WALKIN-'+Date.now();
+  const inputCode = document.getElementById('codeInput').value.trim();
+
+  // 🔥 ensure correct mapping
+  if(inputCode){
+    selCode = inputCode;
+  }
+
+  if(!selCode){
+    selCode='WALKIN-'+Date.now();
+  }
 
   const btn=document.getElementById('submitBtn');
   btn.disabled=true;
   btn.textContent='SAVING…';
 
-  // 🔥 USE FORMDATA (KEY FIX)
   const formData = new FormData();
   formData.append("action","logSale");
   formData.append("booth_code",selCode);
@@ -304,6 +324,7 @@ async function recordSale(){
     await fetch(SCRIPT_URL,{
       method:"POST",
       mode:"no-cors",
+      keepalive:true,
       body: formData
     });
 
@@ -329,6 +350,7 @@ function clearAll(){
   document.getElementById('saleNotes').value='';
   document.getElementById('freeCheck').checked=false;
   document.querySelectorAll('.selected').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('customerStrip').classList.remove('show');
   document.getElementById('submitBtn').disabled=true;
 }
 
