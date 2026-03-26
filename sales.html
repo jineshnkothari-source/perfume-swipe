@@ -2,153 +2,137 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>OCD — Record Sale</title>
 
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
 <style>
-body { background:#0A0A08; color:#F2EFE8; font-family:sans-serif; }
-.page { max-width:420px; margin:auto; padding:20px; }
-button { padding:12px; width:100%; margin-top:10px; }
-.frag-btn,.size-btn,.pay-btn { border:1px solid #444; padding:10px; margin:5px; cursor:pointer; }
-.selected { background:#fff; color:#000; }
+:root {
+  --black:#0A0A08;
+  --white:#F2EFE8;
+  --border:rgba(242,239,232,0.13);
+  --muted:rgba(242,239,232,0.38);
+}
+body{
+  background:var(--black);
+  color:var(--white);
+  font-family:'DM Sans',sans-serif;
+}
+.page{max-width:480px;margin:auto;padding:20px}
+button{width:100%;padding:14px;margin:6px 0;border:none;background:#fff;color:#000;font-family:'Bebas Neue';font-size:18px}
+.selected{background:#fff;color:#000}
+input{width:100%;padding:12px;font-size:22px;text-align:center;margin-bottom:10px}
 </style>
 </head>
 
 <body>
+
 <div class="page">
 
 <h2>Record Sale</h2>
 
-<input id="codeInput" placeholder="Enter Code" oninput="onCodeType(this)" />
+<input id="codeInput" maxlength="3" placeholder="123">
 
 <h3>Fragrance</h3>
-<div id="fragGrid"></div>
+<button onclick="selectFrag(this,'Skinny Dip','SKU1')">Skinny Dip</button>
+<button onclick="selectFrag(this,'Midnight Snack','SKU2')">Midnight Snack</button>
+<button onclick="selectFrag(this,'Freshly Picked','SKU3')">Freshly Picked</button>
+<button onclick="selectFrag(this,'Still Not Over It','SKU4')">Still Not Over It</button>
+<button onclick="selectFrag(this,'About Last Night','SKU5')">About Last Night</button>
 
 <h3>Size</h3>
-<div>
-<button class="size-btn" onclick="selectSize(this,'5ml','100')">5ml</button>
-<button class="size-btn" onclick="selectSize(this,'50ml','1099')">50ml</button>
-<button class="size-btn" onclick="selectSize(this,'100ml','2499')">100ml</button>
-</div>
+<button onclick="selectSize(this,'5ml','100')">5ml</button>
+<button onclick="selectSize(this,'50ml','1099')">50ml</button>
+<button onclick="selectSize(this,'100ml','2499')">100ml</button>
 
 <h3>Payment</h3>
-<div>
-<button class="pay-btn" onclick="selectPay(this,'Cash')">Cash</button>
-<button class="pay-btn" onclick="selectPay(this,'GPay')">GPay</button>
-</div>
+<button onclick="selectPay(this,'Cash')">Cash</button>
+<button onclick="selectPay(this,'GPay')">GPay</button>
 
-<label>
-<input type="checkbox" id="freeCheck" onclick="toggleFree()"> Free Item
-</label>
+<br>
 
-<textarea id="saleNotes" placeholder="Notes"></textarea>
-
-<button id="submitBtn" onclick="recordSale()" disabled>Record Sale</button>
+<button onclick="recordSale()">RECORD SALE</button>
 
 </div>
 
 <script>
+
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby-es0gcWx9lenRwlvrhByldVHuDwBwmxxS6wfRu6iiiYTOf8dPUumBGKS6NcQXs5-ArQ/exec";
 
-const FRAGRANCES = [
-  { id:'SKU1', name:'Skinny Dip' },
-  { id:'SKU2', name:'Midnight Snack' },
-  { id:'SKU3', name:'Freshly Picked' },
-  { id:'SKU4', name:'Still Not Over It' },
-  { id:'SKU5', name:'About Last Night' }
-];
+let selFrag=null, selSKU=null, selSize=null, selPrice=null, selPay=null;
 
-let selCode=null, selFrag=null, selSize=null, selPrice=null, selPay=null, freeItem=false;
-
-// build UI
-function buildFragGrid(){
-  document.getElementById('fragGrid').innerHTML =
-    FRAGRANCES.map(f =>
-      `<button class="frag-btn" onclick="selectFrag(this,'${f.id}','${f.name}')">${f.name}</button>`
-    ).join('');
+// selection
+function clearSel(){
+  document.querySelectorAll("button").forEach(b=>b.classList.remove("selected"));
 }
 
-// selections
-function selectFrag(el,id,name){
-  document.querySelectorAll('.frag-btn').forEach(b=>b.classList.remove('selected'));
-  el.classList.add('selected');
-  selFrag={id,name};
-  checkReady();
+function selectFrag(el,name,sku){
+  clearSel();
+  el.classList.add("selected");
+  selFrag=name;
+  selSKU=sku;
 }
 
 function selectSize(el,size,price){
-  document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('selected'));
-  el.classList.add('selected');
-  selSize=size; selPrice=price;
-  checkReady();
+  clearSel();
+  el.classList.add("selected");
+  selSize=size;
+  selPrice=price;
 }
 
 function selectPay(el,method){
-  document.querySelectorAll('.pay-btn').forEach(b=>b.classList.remove('selected'));
-  el.classList.add('selected');
+  clearSel();
+  el.classList.add("selected");
   selPay=method;
-  checkReady();
 }
 
-function toggleFree(){
-  freeItem=document.getElementById('freeCheck').checked;
-}
-
-function checkReady(){
-  document.getElementById('submitBtn').disabled=!(selFrag && selSize && selPay);
-}
-
-// code input
-function onCodeType(el){
-  el.value=el.value.replace(/\D/g,'').slice(0,3);
-  selCode=el.value||null;
-}
-
-// 🚀 SAVE FUNCTION (WORKING)
+// save
 async function recordSale(){
 
-  if(!selFrag || !selSize || !selPay) return;
+  if(!selFrag || !selSize || !selPay){
+    alert("Select all fields");
+    return;
+  }
 
-  let code = selCode || ('WALKIN-'+Date.now());
+  let code = document.getElementById("codeInput").value.trim();
+
+  if(!code){
+    code = "WALKIN-" + Date.now();
+  }
 
   const payload = {
-    action:'logSale',
+    action:"logSale",
     booth_code:code,
-    sale_fragrance:selFrag.name,
-    sale_sku:selFrag.id,
+    sale_fragrance:selFrag,
+    sale_sku:selSKU,
     sale_size:selSize,
     sale_price:selPrice,
     sale_payment:selPay,
-    sale_free_item:freeItem,
-    sale_notes:document.getElementById('saleNotes').value.trim(),
+    sale_free_item:false,
+    sale_notes:"",
     sale_time:new Date().toISOString()
   };
 
   try{
     await fetch(SCRIPT_URL,{
-      method:'POST',
-      mode:'no-cors',   // IMPORTANT
-      body: JSON.stringify(payload)
+      method:"POST",
+      mode:"no-cors",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload)
     });
 
-    alert("Saved ✅");
-    clearAll();
+    alert("✅ Saved");
+
+    // reset
+    document.getElementById("codeInput").value="";
+    selFrag=selSKU=selSize=selPrice=selPay=null;
 
   }catch(e){
-    alert("Error ❌");
+    alert("❌ Failed");
   }
 }
 
-function clearAll(){
-  selCode=null; selFrag=null; selSize=null; selPrice=null; selPay=null; freeItem=false;
-  document.getElementById('codeInput').value='';
-  document.getElementById('saleNotes').value='';
-  document.getElementById('freeCheck').checked=false;
-  document.querySelectorAll('.selected').forEach(b=>b.classList.remove('selected'));
-  document.getElementById('submitBtn').disabled=true;
-}
-
-buildFragGrid();
 </script>
 
 </body>
