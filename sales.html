@@ -4,136 +4,375 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>OCD — Record Sale</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <style>
 :root {
-  --black:#0A0A08;
-  --white:#F2EFE8;
-  --border:rgba(242,239,232,0.13);
-  --muted:rgba(242,239,232,0.38);
+  --black:  #0A0A08;
+  --white:  #F2EFE8;
+  --border: rgba(242,239,232,0.13);
+  --muted:  rgba(242,239,232,0.38);
+  --red:    #E8372A;
+  --green:  #3DBF72;
+  --gpay:   #4285F4;
 }
-body{
-  background:var(--black);
-  color:var(--white);
-  font-family:'DM Sans',sans-serif;
-}
-.page{max-width:480px;margin:auto;padding:20px}
-button{width:100%;padding:14px;margin:6px 0;border:none;background:#fff;color:#000;font-family:'Bebas Neue';font-size:18px}
-.selected{background:#fff;color:#000}
-input{width:100%;padding:12px;font-size:22px;text-align:center;margin-bottom:10px}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { width: 100%; min-height: 100%; background: var(--black); color: var(--white); font-family: 'DM Sans', sans-serif; }
+
+.page { max-width: 480px; margin: 0 auto; padding: 22px 20px 40px; }
+
+/* header */
+.header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 24px; }
+.logo { font-family: 'Bebas Neue', sans-serif; font-size: 44px; line-height: 0.88; letter-spacing: 0.06em; }
+.logo-sub { font-size: 10px; font-family: 'DM Sans', sans-serif; font-weight: 300; font-style: italic; letter-spacing: 0.1em; color: var(--muted); margin-top: 4px; }
+.page-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.1em; color: var(--muted); }
+
+.divider { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+
+/* code entry */
+.section-label { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; display: block; }
+
+.code-row { display: flex; gap: 10px; margin-bottom: 6px; }
+#codeInput { flex: 1; background: rgba(242,239,232,0.06); border: 1px solid var(--border); border-radius: 4px; padding: 13px 16px; font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 0.3em; color: var(--white); outline: none; text-align: center; transition: border-color 0.2s; }
+#codeInput:focus { border-color: rgba(242,239,232,0.38); }
+#codeInput.err { border-color: var(--red) !important; animation: shake 0.3s ease; }
+#codeInput.ok  { border-color: var(--green) !important; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-7px)} 75%{transform:translateX(7px)} }
+#lookupBtn { background: var(--white); color: var(--black); border: none; padding: 13px 18px; font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.06em; border-radius: 4px; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+#lookupBtn:disabled { opacity: 0.35; cursor: not-allowed; }
+.code-fb { font-size: 12px; min-height: 18px; margin-bottom: 4px; }
+.code-fb.err { color: var(--red); }
+.code-fb.ok  { color: var(--green); }
+
+/* customer info strip */
+.customer-strip { background: rgba(61,191,114,0.07); border: 1px solid rgba(61,191,114,0.2); border-radius: 6px; padding: 12px 14px; margin-bottom: 18px; display: none; }
+.customer-strip.show { display: block; }
+.cs-row { display: flex; gap: 16px; flex-wrap: wrap; }
+.cs-item { font-size: 12px; color: var(--muted); }
+.cs-item strong { color: var(--white); font-weight: 500; display: block; font-size: 13px; }
+
+/* fragrance grid */
+.frag-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; margin-bottom: 16px; }
+.frag-btn { background: rgba(242,239,232,0.04); border: 1px solid var(--border); border-radius: 8px; padding: 10px 4px; text-align: center; cursor: pointer; transition: all 0.15s; }
+.frag-color { width: 24px; height: 24px; border-radius: 50%; margin: 0 auto 6px; }
+.frag-name { font-size: 9px; letter-spacing: 0.03em; color: var(--muted); line-height: 1.3; }
+.frag-btn.selected { border-color: var(--white); background: rgba(242,239,232,0.1); }
+.frag-btn.selected .frag-name { color: var(--white); }
+
+/* size grid */
+.size-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 16px; }
+.size-btn { background: rgba(242,239,232,0.04); border: 1px solid var(--border); border-radius: 6px; padding: 12px 8px; text-align: center; cursor: pointer; transition: all 0.15s; }
+.size-ml { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.06em; color: var(--muted); }
+.size-price { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.size-btn.selected { border-color: var(--white); background: rgba(242,239,232,0.1); }
+.size-btn.selected .size-ml,
+.size-btn.selected .size-price { color: var(--white); }
+
+/* payment */
+.payment-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.pay-btn { background: rgba(242,239,232,0.04); border: 1px solid var(--border); border-radius: 6px; padding: 14px 8px; text-align: center; cursor: pointer; transition: all 0.15s; }
+.pay-icon { font-size: 22px; margin-bottom: 4px; }
+.pay-label { font-size: 12px; color: var(--muted); letter-spacing: 0.06em; }
+.pay-btn.selected { border-color: var(--white); background: rgba(242,239,232,0.1); }
+.pay-btn.selected .pay-label { color: var(--white); }
+.pay-btn.gpay-btn.selected { border-color: var(--gpay); background: rgba(66,133,244,0.1); }
+
+/* free item toggle */
+.free-toggle { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: rgba(61,191,114,0.05); border: 1px solid rgba(61,191,114,0.15); border-radius: 6px; cursor: pointer; margin-bottom: 16px; user-select: none; }
+.free-toggle input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--green); cursor: pointer; flex-shrink: 0; }
+.free-toggle-label { font-size: 13px; color: var(--muted); line-height: 1.4; }
+.free-toggle.active .free-toggle-label { color: var(--green); }
+
+/* notes */
+#saleNotes { width: 100%; background: rgba(242,239,232,0.05); border: 1px solid var(--border); border-radius: 6px; padding: 11px 13px; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--white); outline: none; resize: none; height: 60px; }
+#saleNotes:focus { border-color: rgba(242,239,232,0.32); }
+#saleNotes::placeholder { color: var(--muted); }
+
+/* submit */
+.submit-btn { width: 100%; background: var(--white); color: var(--black); border: none; padding: 16px; font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.08em; border-radius: 4px; cursor: pointer; margin-top: 8px; transition: opacity 0.2s; }
+.submit-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.submit-btn.saving { opacity: 0.6; }
+
+.clear-btn { width: 100%; background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 12px; font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.08em; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+
+/* success flash */
+.success-flash { position: fixed; inset: 0; background: rgba(61,191,114,0.12); display: none; align-items: center; justify-content: center; z-index: 99; pointer-events: none; }
+.success-flash.show { display: flex; animation: flashIn 0.3s ease; }
+@keyframes flashIn { from{opacity:0}to{opacity:1} }
+.success-msg { font-family: 'Bebas Neue', sans-serif; font-size: 48px; letter-spacing: 0.06em; color: var(--green); text-align: center; }
+
+.save-note { font-size: 11px; color: var(--muted); text-align: center; margin-top: 10px; min-height: 16px; }
+
+/* walk-in note */
+.walkin-note { font-size: 11px; color: var(--muted); line-height: 1.5; margin-bottom: 10px; }
 </style>
 </head>
-
 <body>
 
-<div class="page">
-
-<h2>Record Sale</h2>
-
-<input id="codeInput" maxlength="3" placeholder="123">
-
-<h3>Fragrance</h3>
-<button onclick="selectFrag(this,'Skinny Dip','SKU1')">Skinny Dip</button>
-<button onclick="selectFrag(this,'Midnight Snack','SKU2')">Midnight Snack</button>
-<button onclick="selectFrag(this,'Freshly Picked','SKU3')">Freshly Picked</button>
-<button onclick="selectFrag(this,'Still Not Over It','SKU4')">Still Not Over It</button>
-<button onclick="selectFrag(this,'About Last Night','SKU5')">About Last Night</button>
-
-<h3>Size</h3>
-<button onclick="selectSize(this,'5ml','100')">5ml</button>
-<button onclick="selectSize(this,'50ml','1099')">50ml</button>
-<button onclick="selectSize(this,'100ml','2499')">100ml</button>
-
-<h3>Payment</h3>
-<button onclick="selectPay(this,'Cash')">Cash</button>
-<button onclick="selectPay(this,'GPay')">GPay</button>
-
-<br>
-
-<button onclick="recordSale()">RECORD SALE</button>
-
+<div class="success-flash" id="successFlash">
+  <div class="success-msg">SALE<br>RECORDED ✓</div>
 </div>
 
-<script>
+<div class="page">
+  <div class="header">
+    <div class="logo">OCD<div class="logo-sub">Obsessive. Compulsive. Delicious.</div></div>
+    <div class="page-title">Record Sale</div>
+  </div>
 
+  <!-- CODE LOOKUP -->
+  <span class="section-label">Booth code (from customer's survey)</span>
+  <div class="code-row">
+    <input id="codeInput" type="text" maxlength="3" placeholder="123"
+      oninput="onCodeType(this)" onkeydown="if(event.key==='Enter')lookupCode()">
+    <button id="lookupBtn" onclick="lookupCode()">LOOK UP</button>
+  </div>
+  <div class="code-fb" id="codeFb"></div>
+  <p class="walkin-note">No code? Leave blank and tap Look Up to record a walk-in sale.</p>
+
+  <!-- CUSTOMER INFO STRIP -->
+  <div class="customer-strip" id="customerStrip">
+    <div class="cs-row">
+      <div class="cs-item"><strong id="csCode">—</strong>Code</div>
+      <div class="cs-item"><strong id="csFav">—</strong>Favourite</div>
+      <div class="cs-item"><strong id="csContact">—</strong>Contact</div>
+      <div class="cs-item"><strong id="csSpun">—</strong>Spun</div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- FRAGRANCE -->
+  <span class="section-label">Fragrance purchased</span>
+  <div class="frag-grid" id="fragGrid"></div>
+
+  <!-- SIZE -->
+  <span class="section-label">Size</span>
+  <div class="size-grid">
+    <div class="size-btn" onclick="selectSize(this,'30ml','₹999')">
+      <div class="size-ml">30ml</div><div class="size-price">₹999</div>
+    </div>
+    <div class="size-btn" onclick="selectSize(this,'50ml','₹1499')">
+      <div class="size-ml">50ml</div><div class="size-price">₹1499</div>
+    </div>
+    <div class="size-btn" onclick="selectSize(this,'100ml','₹2499')">
+      <div class="size-ml">100ml</div><div class="size-price">₹2499</div>
+    </div>
+  </div>
+
+  <!-- PAYMENT -->
+  <span class="section-label">Payment method</span>
+  <div class="payment-grid">
+    <div class="pay-btn" onclick="selectPay(this,'Cash')">
+      <div class="pay-icon">💵</div>
+      <div class="pay-label">Cash</div>
+    </div>
+    <div class="pay-btn gpay-btn" onclick="selectPay(this,'GPay')">
+      <div class="pay-icon">📲</div>
+      <div class="pay-label">GPay / UPI</div>
+    </div>
+  </div>
+
+  <!-- FREE ITEM -->
+  <div class="free-toggle" id="freeToggle" onclick="toggleFree()">
+    <input type="checkbox" id="freeCheck" onclick="event.stopPropagation(); toggleFree()">
+    <div class="free-toggle-label">Customer is also receiving a <strong>free item</strong> with this purchase</div>
+  </div>
+
+  <!-- NOTES -->
+  <span class="section-label">Notes (optional)</span>
+  <textarea id="saleNotes" placeholder="e.g. gifting, repeat customer, asked about SKU5…"></textarea>
+
+  <button class="submit-btn" id="submitBtn" onclick="recordSale()" disabled>
+    Record Sale
+  </button>
+  <button class="clear-btn" onclick="clearAll()">Clear / New Sale</button>
+  <div class="save-note" id="saveNote"></div>
+</div>
+<script>
+// ── CONFIG ───────────────────────────────────────────────────
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby-es0gcWx9lenRwlvrhByldVHuDwBwmxxS6wfRu6iiiYTOf8dPUumBGKS6NcQXs5-ArQ/exec";
 
-let selFrag=null, selSKU=null, selSize=null, selPrice=null, selPay=null;
+const FRAGRANCES = [
+  { id:'SKU1', name:'Skinny Dip',       color:'#5B7FB5' },
+  { id:'SKU2', name:'Midnight Snack',   color:'#5A2510' },
+  { id:'SKU3', name:'Freshly Picked',   color:'#C8B89A' },
+  { id:'SKU4', name:'Still Not Over It',color:'#6B1E24' },
+  { id:'SKU5', name:'About Last Night', color:'#8A9E72' },
+];
 
-// selection
-function clearSel(){
-  document.querySelectorAll("button").forEach(b=>b.classList.remove("selected"));
+let selCode  = null;
+let selFrag  = null;
+let selSize  = null;
+let selPrice = null;
+let selPay   = null;
+let freeItem = false;
+
+// ── BUILD UI ─────────────────────────────────────────────────
+function buildFragGrid() {
+  document.getElementById('fragGrid').innerHTML = FRAGRANCES.map(f => `
+    <div class="frag-btn" onclick="selectFrag(this,'${f.id}','${f.name}')">
+      <div class="frag-color" style="background:${f.color}"></div>
+      <div class="frag-name">${f.name}</div>
+    </div>`).join('');
 }
 
-function selectFrag(el,name,sku){
-  clearSel();
-  el.classList.add("selected");
-  selFrag=name;
-  selSKU=sku;
+// ── SELECTIONS ───────────────────────────────────────────────
+function selectFrag(el, id, name) {
+  document.querySelectorAll('.frag-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  selFrag = { id, name };
+  checkReady();
+}
+function selectSize(el, size, price) {
+  document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  selSize = size; selPrice = price;
+  checkReady();
+}
+function selectPay(el, method) {
+  document.querySelectorAll('.pay-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  selPay = method;
+  checkReady();
+}
+function toggleFree() {
+  freeItem = !freeItem;
+  document.getElementById('freeCheck').checked = freeItem;
+  document.getElementById('freeToggle').classList.toggle('active', freeItem);
+}
+function checkReady() {
+  document.getElementById('submitBtn').disabled = !(selFrag && selSize && selPay);
 }
 
-function selectSize(el,size,price){
-  clearSel();
-  el.classList.add("selected");
-  selSize=size;
-  selPrice=price;
+// ── CODE INPUT (NO AUTO RESET) ───────────────────────────────
+function onCodeType(el) {
+  el.value = el.value.replace(/\D/g,'').slice(0,3);
+  el.classList.remove('err','ok');
+  setFb('','');
+  // ❌ DO NOT reset selCode here (important fix)
 }
 
-function selectPay(el,method){
-  clearSel();
-  el.classList.add("selected");
-  selPay=method;
+function setFb(msg,cls) {
+  const el=document.getElementById('codeFb');
+  el.textContent=msg;
+  el.className='code-fb'+(cls?' '+cls:'');
 }
 
-// save
-async function recordSale(){
+// ── OPTIONAL LOOKUP (UNCHANGED UI) ───────────────────────────
+async function lookupCode() {
+  const raw = document.getElementById('codeInput').value.trim();
+  const inp = document.getElementById('codeInput');
+  const btn = document.getElementById('lookupBtn');
 
-  if(!selFrag || !selSize || !selPay){
-    alert("Select all fields");
+  if (!raw) {
+    selCode = 'WALKIN-' + Date.now();
+    setFb('Walk-in sale','ok');
     return;
   }
 
-  let code = document.getElementById("codeInput").value.trim();
+  btn.disabled=true; btn.textContent='…';
 
-  if(!code){
-    code = "WALKIN-" + Date.now();
+  try {
+    const res  = await fetch(`${SCRIPT_URL}?action=lookup&booth_code=${encodeURIComponent(raw)}`);
+    const data = await res.json();
+
+    if (!data.found) {
+      inp.classList.add('err');
+      setFb('Code not found','err');
+      selCode = raw; // still use code
+    } else {
+      inp.classList.add('ok');
+      setFb('✓ Found','ok');
+      selCode = raw;
+
+      document.getElementById('csCode').textContent    = raw;
+      document.getElementById('csFav').textContent     = data.final_choice || '—';
+      document.getElementById('csContact').textContent = data.email || (data.anonymous ? 'Anonymous' : '—');
+      document.getElementById('csSpun').textContent    = data.spun ? 'Yes' : 'No';
+      document.getElementById('customerStrip').classList.add('show');
+    }
+  } catch(e) {
+    selCode = raw;
+    setFb('Using code without lookup','ok');
   }
 
+  btn.disabled=false; btn.textContent='LOOK UP';
+}
+
+// ── RECORD SALE (MAIN FIX) ───────────────────────────────────
+async function recordSale() {
+  if (!selFrag || !selSize || !selPay) return;
+
+  const inputCode = document.getElementById('codeInput').value.trim();
+
+  // ✅ CORE FIX: always use input directly
+  if (inputCode) {
+    selCode = inputCode; // use same survey code → same row
+  } else {
+    selCode = 'WALKIN-' + Date.now();
+  }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled=true;
+  btn.textContent='SAVING…';
+  btn.classList.add('saving');
+
   const payload = {
-    action:"logSale",
-    booth_code:code,
-    sale_fragrance:selFrag,
-    sale_sku:selSKU,
-    sale_size:selSize,
-    sale_price:selPrice,
-    sale_payment:selPay,
-    sale_free_item:false,
-    sale_notes:"",
-    sale_time:new Date().toISOString()
+    action:         'logSale',
+    booth_code:     selCode,
+    sale_fragrance: selFrag.name,
+    sale_sku:       selFrag.id,
+    sale_size:      selSize,
+    sale_price:     selPrice,
+    sale_payment:   selPay,
+    sale_free_item: freeItem,
+    sale_notes:     document.getElementById('saleNotes').value.trim(),
+    sale_time:      new Date().toISOString(),
   };
 
-  try{
-    await fetch(SCRIPT_URL,{
-      method:"POST",
-      mode:"no-cors",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify(payload)
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     });
 
-    alert("✅ Saved");
+    showSuccess();
 
-    // reset
-    document.getElementById("codeInput").value="";
-    selFrag=selSKU=selSize=selPrice=selPay=null;
-
-  }catch(e){
-    alert("❌ Failed");
+  } catch(e) {
+    document.getElementById('saveNote').textContent = '❌ Failed';
+    btn.disabled=false;
+    btn.textContent='Record Sale';
+    btn.classList.remove('saving');
   }
 }
 
-</script>
+// ── SUCCESS ──────────────────────────────────────────────────
+function showSuccess() {
+  const flash = document.getElementById('successFlash');
+  flash.classList.add('show');
+  setTimeout(()=>{ flash.classList.remove('show'); clearAll(); }, 1400);
+}
 
+// ── RESET ────────────────────────────────────────────────────
+function clearAll() {
+  selCode=null; selFrag=null; selSize=null; selPrice=null; selPay=null; freeItem=false;
+  document.getElementById('codeInput').value='';
+  document.getElementById('codeInput').className='';
+  document.getElementById('saleNotes').value='';
+  document.getElementById('freeCheck').checked=false;
+  document.getElementById('freeToggle').classList.remove('active');
+  document.querySelectorAll('.frag-btn,.size-btn,.pay-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('customerStrip').classList.remove('show');
+  document.getElementById('submitBtn').disabled=true;
+  document.getElementById('submitBtn').textContent='Record Sale';
+  document.getElementById('submitBtn').classList.remove('saving');
+  document.getElementById('saveNote').textContent='';
+  setFb('','');
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+buildFragGrid();
+</script>
 </body>
 </html>
