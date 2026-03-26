@@ -187,15 +187,9 @@ html, body { width: 100%; min-height: 100%; background: var(--black); color: var
   <button class="clear-btn" onclick="clearAll()">Clear / New Sale</button>
   <div class="save-note" id="saveNote"></div>
 </div>
-
 <script>
 // ── CONFIG ───────────────────────────────────────────────────
-// Paste your Apps Script URL here once
-let SCRIPT_URL = localStorage.getItem('ocdSalesUrl') || '';
-if (!SCRIPT_URL) {
-  SCRIPT_URL = prompt('Paste your Apps Script URL:') || '';
-  if (SCRIPT_URL) localStorage.setItem('ocdSalesUrl', SCRIPT_URL);
-}
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby-es0gcWx9lenRwlvrhByldVHuDwBwmxxS6wfRu6iiiYTOf8dPUumBGKS6NcQXs5-ArQ/exec";
 
 const FRAGRANCES = [
   { id:'SKU1', name:'Skinny Dip',       color:'#5B7FB5' },
@@ -205,12 +199,7 @@ const FRAGRANCES = [
   { id:'SKU5', name:'About Last Night', color:'#8A9E72' },
 ];
 
-let selCode  = null;
-let selFrag  = null;
-let selSize  = null;
-let selPrice = null;
-let selPay   = null;
-let freeItem = false;
+let selCode=null, selFrag=null, selSize=null, selPrice=null, selPay=null, freeItem=false;
 
 // ── BUILD UI ─────────────────────────────────────────────────
 function buildFragGrid() {
@@ -222,146 +211,125 @@ function buildFragGrid() {
 }
 
 // ── SELECTIONS ───────────────────────────────────────────────
-function selectFrag(el, id, name) {
+function selectFrag(el,id,name){
   document.querySelectorAll('.frag-btn').forEach(b=>b.classList.remove('selected'));
   el.classList.add('selected');
-  selFrag = { id, name };
-  checkReady();
+  selFrag={id,name}; checkReady();
 }
-function selectSize(el, size, price) {
+function selectSize(el,size,price){
   document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('selected'));
   el.classList.add('selected');
-  selSize = size; selPrice = price;
-  checkReady();
+  selSize=size; selPrice=price; checkReady();
 }
-function selectPay(el, method) {
+function selectPay(el,method){
   document.querySelectorAll('.pay-btn').forEach(b=>b.classList.remove('selected'));
   el.classList.add('selected');
-  selPay = method;
-  checkReady();
+  selPay=method; checkReady();
 }
-function toggleFree() {
-  freeItem = !freeItem;
-  document.getElementById('freeCheck').checked = freeItem;
-  document.getElementById('freeToggle').classList.toggle('active', freeItem);
+function toggleFree(){
+  freeItem=!freeItem;
+  document.getElementById('freeCheck').checked=freeItem;
+  document.getElementById('freeToggle').classList.toggle('active',freeItem);
 }
-function checkReady() {
-  document.getElementById('submitBtn').disabled = !(selFrag && selSize && selPay);
+function checkReady(){
+  document.getElementById('submitBtn').disabled=!(selFrag&&selSize&&selPay);
 }
 
-// ── CODE LOOKUP ──────────────────────────────────────────────
-function onCodeType(el) {
-  el.value = el.value.replace(/\D/g,'').slice(0,3);
-  el.classList.remove('err','ok');
-  setFb('','');
+// ── LOOKUP ───────────────────────────────────────────────────
+function onCodeType(el){
+  el.value=el.value.replace(/\D/g,'').slice(0,3);
   document.getElementById('customerStrip').classList.remove('show');
-  selCode = null;
+  selCode=null;
 }
-function setFb(msg,cls) {
+function setFb(msg,cls){
   const el=document.getElementById('codeFb');
   el.textContent=msg;
   el.className='code-fb'+(cls?' '+cls:'');
 }
 
-async function lookupCode() {
-  const raw = document.getElementById('codeInput').value.trim();
-  const inp = document.getElementById('codeInput');
-  const btn = document.getElementById('lookupBtn');
+async function lookupCode(){
+  const raw=document.getElementById('codeInput').value.trim();
 
-  // Walk-in — no code
-  if (!raw) {
-    selCode = 'WALKIN-' + Date.now();
-    setFb('Walk-in sale — no code','ok');
-    document.getElementById('customerStrip').classList.remove('show');
+  if(!raw){
+    selCode='WALKIN-'+Date.now();
+    setFb('Walk-in','ok');
     return;
   }
 
-  btn.disabled=true; btn.textContent='…';
+  try{
+    const res=await fetch(`${SCRIPT_URL}?action=lookup&booth_code=${raw}`);
+    const data=await res.json();
 
-  try {
-    const res  = await fetch(`${SCRIPT_URL}?action=lookup&booth_code=${encodeURIComponent(raw)}`);
-    const data = await res.json();
-
-    if (!data.found) {
-      inp.classList.add('err');
-      setFb('Code not found — recording as walk-in','err');
-      selCode = 'WALKIN-'+raw;
-    } else {
-      inp.classList.add('ok');
-      setFb('✓ Customer found','ok');
-      selCode = raw;
-      // Show customer info strip
-      document.getElementById('csCode').textContent    = raw;
-      document.getElementById('csFav').textContent     = data.final_choice || '—';
-      document.getElementById('csContact').textContent = data.email || (data.anonymous ? 'Anonymous' : '—');
-      document.getElementById('csSpun').textContent    = data.spun ? 'Yes' : 'Not yet';
+    if(data.found){
+      selCode=raw;
+      setFb('Found','ok');
       document.getElementById('customerStrip').classList.add('show');
+      document.getElementById('csCode').textContent=raw;
+      document.getElementById('csFav').textContent=data.final_choice||'—';
+      document.getElementById('csContact').textContent=data.email||'—';
+      document.getElementById('csSpun').textContent=data.spun?'Yes':'No';
+    } else {
+      selCode='WALKIN-'+raw;
+      setFb('Not found → Walk-in','err');
     }
-  } catch(e) {
-    inp.classList.add('err');
-    setFb('Network error — recording as walk-in','err');
-    selCode = 'WALKIN-'+raw;
+  }catch(e){
+    selCode='WALKIN-'+raw;
   }
-
-  btn.disabled=false; btn.textContent='LOOK UP';
 }
 
-// ── RECORD SALE ──────────────────────────────────────────────
-async function recordSale() {
-  if (!selFrag || !selSize || !selPay) return;
+// ── RECORD SALE (FIXED) ──────────────────────────────────────
+async function recordSale(){
+  if(!selFrag||!selSize||!selPay)return;
 
-  // Auto-assign walk-in code if staff skipped lookup
-  if (!selCode) selCode = 'WALKIN-' + Date.now();
+  if(!selCode) selCode='WALKIN-'+Date.now();
 
-  const btn = document.getElementById('submitBtn');
-  btn.disabled=true; btn.textContent='SAVING…'; btn.classList.add('saving');
+  const btn=document.getElementById('submitBtn');
+  btn.disabled=true;
+  btn.textContent='SAVING…';
 
-  const payload = {
-    action:         'logSale',
-    booth_code:     selCode,
-    sale_fragrance: selFrag.name,
-    sale_sku:       selFrag.id,
-    sale_size:      selSize,
-    sale_price:     selPrice,
-    sale_payment:   selPay,
-    sale_free_item: freeItem,           // boolean — sent explicitly
-    sale_notes:     document.getElementById('saleNotes').value.trim(),
-    sale_time:      new Date().toISOString(),
-  };
+  // 🔥 USE FORMDATA (KEY FIX)
+  const formData = new FormData();
+  formData.append("action","logSale");
+  formData.append("booth_code",selCode);
+  formData.append("sale_fragrance",selFrag.name);
+  formData.append("sale_sku",selFrag.id);
+  formData.append("sale_size",selSize);
+  formData.append("sale_price",selPrice);
+  formData.append("sale_payment",selPay);
+  formData.append("sale_free_item",freeItem);
+  formData.append("sale_notes",document.getElementById('saleNotes').value.trim());
+  formData.append("sale_time",new Date().toISOString());
 
-  try {
-    await fetch(SCRIPT_URL, {
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(payload)
+  try{
+    await fetch(SCRIPT_URL,{
+      method:"POST",
+      mode:"no-cors",
+      body: formData
     });
+
     showSuccess();
-  } catch(e) {
-    document.getElementById('saveNote').textContent = 'Could not save — note manually.';
-    btn.disabled=false; btn.textContent='Record Sale'; btn.classList.remove('saving');
+
+  }catch(e){
+    document.getElementById('saveNote').textContent='❌ Failed';
+    btn.disabled=false;
+    btn.textContent='Record Sale';
   }
 }
 
-function showSuccess() {
-  const flash = document.getElementById('successFlash');
-  flash.classList.add('show');
-  setTimeout(()=>{ flash.classList.remove('show'); clearAll(); }, 1400);
+// ── UI ───────────────────────────────────────────────────────
+function showSuccess(){
+  const f=document.getElementById('successFlash');
+  f.classList.add('show');
+  setTimeout(()=>{f.classList.remove('show');clearAll();},1400);
 }
 
-function clearAll() {
-  selCode=null; selFrag=null; selSize=null; selPrice=null; selPay=null; freeItem=false;
+function clearAll(){
+  selCode=null;selFrag=null;selSize=null;selPrice=null;selPay=null;freeItem=false;
   document.getElementById('codeInput').value='';
-  document.getElementById('codeInput').className='';
   document.getElementById('saleNotes').value='';
   document.getElementById('freeCheck').checked=false;
-  document.getElementById('freeToggle').classList.remove('active');
-  document.querySelectorAll('.frag-btn,.size-btn,.pay-btn').forEach(b=>b.classList.remove('selected'));
-  document.getElementById('customerStrip').classList.remove('show');
+  document.querySelectorAll('.selected').forEach(b=>b.classList.remove('selected'));
   document.getElementById('submitBtn').disabled=true;
-  document.getElementById('submitBtn').textContent='Record Sale';
-  document.getElementById('submitBtn').classList.remove('saving');
-  document.getElementById('saveNote').textContent='';
-  setFb('','');
 }
 
 // ── INIT ─────────────────────────────────────────────────────
