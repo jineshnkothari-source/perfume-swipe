@@ -190,12 +190,7 @@ html, body { width: 100%; min-height: 100%; background: var(--black); color: var
 
 <script>
 // ── CONFIG ───────────────────────────────────────────────────
-// Paste your Apps Script URL here once
-let SCRIPT_URL = localStorage.getItem('ocdSalesUrl') || '';
-if (!SCRIPT_URL) {
-  SCRIPT_URL = prompt('https://script.google.com/macros/s/AKfycbyhzedIvtzD6cVsyQSToZVTsDfFJUA5N0AXRL47t9QXKNJPQFyRep51npQCHXQzyvRKIw/exec') || '';
-  if (SCRIPT_URL) localStorage.setItem('ocdSalesUrl', SCRIPT_URL);
-}
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhzedIvtzD6cVsyQSToZVTsDfFJUA5N0AXRL47t9QXKNJPQFyRep51npQCHXQzyvRKIw/exec";
 
 const FRAGRANCES = [
   { id:'SKU1', name:'Skinny Dip',       color:'#5B7FB5' },
@@ -268,7 +263,6 @@ async function lookupCode() {
   const inp = document.getElementById('codeInput');
   const btn = document.getElementById('lookupBtn');
 
-  // Walk-in — no code
   if (!raw) {
     selCode = 'WALKIN-' + Date.now();
     setFb('Walk-in sale — no code','ok');
@@ -282,6 +276,8 @@ async function lookupCode() {
     const res  = await fetch(`${SCRIPT_URL}?action=lookup&booth_code=${encodeURIComponent(raw)}`);
     const data = await res.json();
 
+    console.log("Lookup response:", data);
+
     if (!data.found) {
       inp.classList.add('err');
       setFb('Code not found — recording as walk-in','err');
@@ -290,7 +286,7 @@ async function lookupCode() {
       inp.classList.add('ok');
       setFb('✓ Customer found','ok');
       selCode = raw;
-      // Show customer info strip
+
       document.getElementById('csCode').textContent    = raw;
       document.getElementById('csFav').textContent     = data.final_choice || '—';
       document.getElementById('csContact').textContent = data.email || (data.anonymous ? 'Anonymous' : '—');
@@ -298,6 +294,7 @@ async function lookupCode() {
       document.getElementById('customerStrip').classList.add('show');
     }
   } catch(e) {
+    console.error("Lookup error:", e);
     inp.classList.add('err');
     setFb('Network error — recording as walk-in','err');
     selCode = 'WALKIN-'+raw;
@@ -310,7 +307,6 @@ async function lookupCode() {
 async function recordSale() {
   if (!selFrag || !selSize || !selPay) return;
 
-  // Auto-assign walk-in code if staff skipped lookup
   if (!selCode) selCode = 'WALKIN-' + Date.now();
 
   const btn = document.getElementById('submitBtn');
@@ -324,20 +320,27 @@ async function recordSale() {
     sale_size:      selSize,
     sale_price:     selPrice,
     sale_payment:   selPay,
-    sale_free_item: freeItem,           // boolean — sent explicitly
+    sale_free_item: freeItem,
     sale_notes:     document.getElementById('saleNotes').value.trim(),
     sale_time:      new Date().toISOString(),
   };
 
+  console.log("Sending payload:", payload);
+
   try {
-    await fetch(SCRIPT_URL, {
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
+
+    const text = await res.text();
+    console.log("Server response:", text);
+
     showSuccess();
   } catch(e) {
-    document.getElementById('saveNote').textContent = 'Could not save — note manually.';
+    console.error("Save error:", e);
+    document.getElementById('saveNote').textContent = '❌ Failed to save — check connection';
     btn.disabled=false; btn.textContent='Record Sale'; btn.classList.remove('saving');
   }
 }
