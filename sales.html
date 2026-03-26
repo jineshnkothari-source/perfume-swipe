@@ -187,9 +187,15 @@ html, body { width: 100%; min-height: 100%; background: var(--black); color: var
   <button class="clear-btn" onclick="clearAll()">Clear / New Sale</button>
   <div class="save-note" id="saveNote"></div>
 </div>
+
 <script>
 // ── CONFIG ───────────────────────────────────────────────────
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby-es0gcWx9lenRwlvrhByldVHuDwBwmxxS6wfRu6iiiYTOf8dPUumBGKS6NcQXs5-ArQ/exec";
+// Paste your Apps Script URL here once
+let SCRIPT_URL = localStorage.getItem('ocdSalesUrl') || '';
+if (!SCRIPT_URL) {
+  SCRIPT_URL = prompt('Paste your Apps Script URL:') || '';
+  if (SCRIPT_URL) localStorage.setItem('ocdSalesUrl', SCRIPT_URL);
+}
 
 const FRAGRANCES = [
   { id:'SKU1', name:'Skinny Dip',       color:'#5B7FB5' },
@@ -243,29 +249,30 @@ function checkReady() {
   document.getElementById('submitBtn').disabled = !(selFrag && selSize && selPay);
 }
 
-// ── CODE INPUT (NO AUTO RESET) ───────────────────────────────
+// ── CODE LOOKUP ──────────────────────────────────────────────
 function onCodeType(el) {
   el.value = el.value.replace(/\D/g,'').slice(0,3);
   el.classList.remove('err','ok');
   setFb('','');
-  // ❌ DO NOT reset selCode here (important fix)
+  document.getElementById('customerStrip').classList.remove('show');
+  selCode = null;
 }
-
 function setFb(msg,cls) {
   const el=document.getElementById('codeFb');
   el.textContent=msg;
   el.className='code-fb'+(cls?' '+cls:'');
 }
 
-// ── OPTIONAL LOOKUP (UNCHANGED UI) ───────────────────────────
 async function lookupCode() {
   const raw = document.getElementById('codeInput').value.trim();
   const inp = document.getElementById('codeInput');
   const btn = document.getElementById('lookupBtn');
 
+  // Walk-in — no code
   if (!raw) {
     selCode = 'WALKIN-' + Date.now();
-    setFb('Walk-in sale','ok');
+    setFb('Walk-in sale — no code','ok');
+    document.getElementById('customerStrip').classList.remove('show');
     return;
   }
 
@@ -277,44 +284,37 @@ async function lookupCode() {
 
     if (!data.found) {
       inp.classList.add('err');
-      setFb('Code not found','err');
-      selCode = raw; // still use code
+      setFb('Code not found — recording as walk-in','err');
+      selCode = 'WALKIN-'+raw;
     } else {
       inp.classList.add('ok');
-      setFb('✓ Found','ok');
+      setFb('✓ Customer found','ok');
       selCode = raw;
-
+      // Show customer info strip
       document.getElementById('csCode').textContent    = raw;
       document.getElementById('csFav').textContent     = data.final_choice || '—';
       document.getElementById('csContact').textContent = data.email || (data.anonymous ? 'Anonymous' : '—');
-      document.getElementById('csSpun').textContent    = data.spun ? 'Yes' : 'No';
+      document.getElementById('csSpun').textContent    = data.spun ? 'Yes' : 'Not yet';
       document.getElementById('customerStrip').classList.add('show');
     }
   } catch(e) {
-    selCode = raw;
-    setFb('Using code without lookup','ok');
+    inp.classList.add('err');
+    setFb('Network error — recording as walk-in','err');
+    selCode = 'WALKIN-'+raw;
   }
 
   btn.disabled=false; btn.textContent='LOOK UP';
 }
 
-// ── RECORD SALE (MAIN FIX) ───────────────────────────────────
+// ── RECORD SALE ──────────────────────────────────────────────
 async function recordSale() {
   if (!selFrag || !selSize || !selPay) return;
 
-  const inputCode = document.getElementById('codeInput').value.trim();
-
-  // ✅ CORE FIX: always use input directly
-  if (inputCode) {
-    selCode = inputCode; // use same survey code → same row
-  } else {
-    selCode = 'WALKIN-' + Date.now();
-  }
+  // Auto-assign walk-in code if staff skipped lookup
+  if (!selCode) selCode = 'WALKIN-' + Date.now();
 
   const btn = document.getElementById('submitBtn');
-  btn.disabled=true;
-  btn.textContent='SAVING…';
-  btn.classList.add('saving');
+  btn.disabled=true; btn.textContent='SAVING…'; btn.classList.add('saving');
 
   const payload = {
     action:         'logSale',
@@ -324,37 +324,30 @@ async function recordSale() {
     sale_size:      selSize,
     sale_price:     selPrice,
     sale_payment:   selPay,
-    sale_free_item: freeItem,
+    sale_free_item: freeItem,           // boolean — sent explicitly
     sale_notes:     document.getElementById('saleNotes').value.trim(),
     sale_time:      new Date().toISOString(),
   };
 
   try {
     await fetch(SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
       body: JSON.stringify(payload)
     });
-
     showSuccess();
-
   } catch(e) {
-    document.getElementById('saveNote').textContent = '❌ Failed';
-    btn.disabled=false;
-    btn.textContent='Record Sale';
-    btn.classList.remove('saving');
+    document.getElementById('saveNote').textContent = 'Could not save — note manually.';
+    btn.disabled=false; btn.textContent='Record Sale'; btn.classList.remove('saving');
   }
 }
 
-// ── SUCCESS ──────────────────────────────────────────────────
 function showSuccess() {
   const flash = document.getElementById('successFlash');
   flash.classList.add('show');
   setTimeout(()=>{ flash.classList.remove('show'); clearAll(); }, 1400);
 }
 
-// ── RESET ────────────────────────────────────────────────────
 function clearAll() {
   selCode=null; selFrag=null; selSize=null; selPrice=null; selPay=null; freeItem=false;
   document.getElementById('codeInput').value='';
