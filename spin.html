@@ -7,36 +7,30 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <style>
 :root {
-  --black:    #0A0A08;
-  --white:    #F2EFE8;
-  --dim:      rgba(242,239,232,0.14);
-  --border:   rgba(242,239,232,0.13);
-  --muted:    rgba(242,239,232,0.38);
-  --red:      #E8372A;
-  --green:    #3DBF72;
+  --black:  #0A0A08;
+  --white:  #F2EFE8;
+  --dim:    rgba(242,239,232,0.14);
+  --border: rgba(242,239,232,0.13);
+  --muted:  rgba(242,239,232,0.38);
+  --red:    #E8372A;
+  --green:  #3DBF72;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html, body { width: 100%; height: 100%; overflow: hidden; background: var(--black); color: var(--white); font-family: 'DM Sans', sans-serif; }
 
-/* panels */
 .panel { display: none; position: fixed; inset: 0; z-index: 1; flex-direction: column; }
 .panel.active { display: flex; }
 
-/* ══ MAIN (attract) ══ */
-#main {
-  align-items: center;
-  justify-content: space-between;
-  padding: 18px 22px 14px;
-}
+/* ══ MAIN PANEL ══ */
+#main { align-items: center; justify-content: space-between; padding: 18px 22px 14px; }
 
 .top-bar { width: 100%; display: flex; align-items: flex-start; justify-content: space-between; flex-shrink: 0; }
 .logo { font-family: 'Bebas Neue', sans-serif; font-size: 54px; line-height: 0.88; letter-spacing: 0.06em; }
 .logo-sub { font-size: 10px; font-family: 'DM Sans', sans-serif; font-weight: 300; font-style: italic; letter-spacing: 0.1em; color: var(--muted); margin-top: 5px; }
-.setup-btn { font-size: 11px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; background: none; border: none; font-family: 'DM Sans', sans-serif; padding: 2px 0; transition: color 0.2s; }
-.setup-btn:hover { color: var(--white); }
+.setup-btn { font-size: 11px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; background: none; border: none; font-family: 'DM Sans', sans-serif; padding: 2px 0; }
 
 .headline { font-family: 'Bebas Neue', sans-serif; font-size: clamp(44px, 10vw, 64px); letter-spacing: 0.04em; line-height: 0.9; text-align: center; flex-shrink: 0; }
-.headline-sub { display: block; font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 300; font-style: italic; letter-spacing: 0.14em; color: var(--muted); margin-top: 7px; text-transform: none; }
+.headline-sub { display: block; font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 300; font-style: italic; letter-spacing: 0.14em; color: var(--muted); margin-top: 7px; }
 
 /* wheel */
 .wheel-stage { position: relative; width: min(72vw, 350px); height: min(72vw, 350px); flex-shrink: 0; }
@@ -56,10 +50,10 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--blac
   border-radius: 4px; padding: 13px 16px;
   font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 0.3em;
   color: var(--white); outline: none; text-align: center; text-transform: uppercase;
-  transition: border-color 0.2s, background 0.2s;
+  transition: border-color 0.2s;
 }
 #codeInput::placeholder { color: rgba(242,239,232,0.18); font-size: 18px; letter-spacing: 0.15em; }
-#codeInput:focus { border-color: rgba(242,239,232,0.38); background: rgba(242,239,232,0.09); }
+#codeInput:focus { border-color: rgba(242,239,232,0.38); }
 #codeInput.err { border-color: var(--red) !important; animation: shake 0.3s ease; }
 #codeInput.ok  { border-color: var(--green) !important; }
 @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-7px)} 75%{transform:translateX(7px)} }
@@ -68,9 +62,8 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--blac
   padding: 13px 20px; font-family: 'Bebas Neue', sans-serif;
   font-size: 18px; letter-spacing: 0.08em; border-radius: 4px;
   cursor: pointer; white-space: nowrap; flex-shrink: 0;
-  transition: opacity 0.2s, transform 0.1s;
+  transition: opacity 0.2s;
 }
-#spinBtn:active { opacity: 0.82; transform: scale(0.97); }
 #spinBtn:disabled { opacity: 0.3; cursor: not-allowed; }
 .code-fb { font-size: 12px; min-height: 18px; margin-top: 6px; letter-spacing: 0.03em; }
 .code-fb.err { color: var(--red); }
@@ -83,25 +76,86 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--blac
 @keyframes tick { from{transform:translateX(0)} to{transform:translateX(-50%)} }
 
 /* spinning overlay */
-.spin-overlay { position: fixed; inset: 0; z-index: 20; background: rgba(10,10,8,0.8); display: none; align-items: center; justify-content: center; flex-direction: column; gap: 12px; }
+.spin-overlay { position: fixed; inset: 0; z-index: 20; background: rgba(10,10,8,0.8); display: none; align-items: center; justify-content: center; }
 .spin-overlay.show { display: flex; }
 .spin-overlay-label { font-family: 'Bebas Neue', sans-serif; font-size: 30px; letter-spacing: 0.12em; animation: breathe 0.9s ease-in-out infinite; }
 @keyframes breathe { 0%,100%{opacity:0.4} 50%{opacity:1} }
 
-/* ══ PRIZE ══ */
-#prize { align-items: center; justify-content: center; text-align: center; padding: 36px 28px; }
-.prize-kicker { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); margin-bottom: 18px; }
-.prize-emoji { font-size: 58px; line-height: 1; margin-bottom: 18px; animation: pop 0.5s cubic-bezier(0.175,0.885,0.32,1.4) both; }
+/* ══ RESULT DRAWER — slides up over the wheel page ══ */
+#resultDrawer {
+  position: fixed; inset: 0; z-index: 15;
+  background: var(--black);
+  display: none; flex-direction: column;
+  padding: 24px 22px 20px;
+  overflow-y: auto;
+}
+#resultDrawer.show { display: flex; }
+
+.result-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.result-emoji { font-size: 44px; line-height: 1; animation: pop 0.45s cubic-bezier(0.175,0.885,0.32,1.4) both; }
 @keyframes pop { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
-#prizeHeadline { font-family: 'Bebas Neue', sans-serif; font-size: clamp(48px, 12vw, 72px); letter-spacing: 0.04em; line-height: 0.88; margin-bottom: 10px; animation: up 0.4s 0.12s both; }
-#prizeLabel { font-size: 16px; font-weight: 300; color: var(--muted); line-height: 1.6; max-width: 270px; margin: 0 auto 26px; animation: up 0.4s 0.22s both; }
-@keyframes up { from{transform:translateY(14px);opacity:0} to{transform:translateY(0);opacity:1} }
-.code-chip { display: inline-block; background: rgba(242,239,232,0.07); border: 1px solid var(--border); border-radius: 4px; padding: 11px 20px; margin-bottom: 24px; animation: up 0.4s 0.32s both; }
-.code-chip .lbl { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
-.code-chip .val { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 0.22em; }
-.save-status { font-size: 11px; color: var(--muted); margin-bottom: 22px; animation: up 0.4s 0.38s both; }
-.btn-next { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 13px 40px; font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.1em; border-radius: 4px; cursor: pointer; width: 100%; max-width: 290px; transition: border-color 0.2s, color 0.2s; animation: up 0.4s 0.44s both; }
-.btn-next:hover { border-color: rgba(242,239,232,0.38); color: var(--white); }
+.result-code-chip { background: rgba(242,239,232,0.07); border: 1px solid var(--border); border-radius: 4px; padding: 8px 14px; text-align: right; }
+.result-code-chip .lbl { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+.result-code-chip .val { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.2em; }
+
+#resultHeadline { font-family: 'Bebas Neue', sans-serif; font-size: clamp(36px, 9vw, 52px); letter-spacing: 0.04em; line-height: 0.9; margin-bottom: 6px; animation: up 0.35s 0.1s both; }
+#resultLabel { font-size: 14px; font-weight: 300; color: var(--muted); line-height: 1.5; margin-bottom: 18px; animation: up 0.35s 0.18s both; }
+@keyframes up { from{transform:translateY(12px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+/* divider */
+.section-div { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+/* sale section */
+.sale-section { animation: up 0.35s 0.25s both; }
+.sale-title { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+
+.frag-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 12px; }
+.frag-btn {
+  background: rgba(242,239,232,0.05); border: 1px solid var(--border);
+  border-radius: 6px; padding: 8px 4px; text-align: center;
+  cursor: pointer; transition: all 0.15s;
+  font-size: 10px; letter-spacing: 0.04em; color: var(--muted);
+  line-height: 1.3;
+}
+.frag-btn .frag-color { width: 20px; height: 20px; border-radius: 50%; margin: 0 auto 5px; }
+.frag-btn.selected { border-color: var(--white); color: var(--white); background: rgba(242,239,232,0.1); }
+
+.size-row { display: flex; gap: 6px; margin-bottom: 12px; }
+.size-btn {
+  flex: 1; background: rgba(242,239,232,0.05); border: 1px solid var(--border);
+  border-radius: 4px; padding: 9px 4px; text-align: center;
+  cursor: pointer; transition: all 0.15s;
+  font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: 0.08em; color: var(--muted);
+}
+.size-btn .size-price { font-size: 9px; font-family: 'DM Sans', sans-serif; display: block; margin-top: 1px; }
+.size-btn.selected { border-color: var(--white); color: var(--white); background: rgba(242,239,232,0.1); }
+
+.free-toggle {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+  cursor: pointer; padding: 10px 12px;
+  background: rgba(61,191,114,0.06); border: 1px solid rgba(61,191,114,0.2);
+  border-radius: 6px;
+}
+.free-toggle input { width: 16px; height: 16px; accent-color: var(--green); cursor: pointer; flex-shrink: 0; }
+.free-toggle label { font-size: 13px; color: var(--muted); cursor: pointer; flex: 1; }
+.free-toggle.active label { color: var(--green); }
+
+.record-btn {
+  width: 100%; background: var(--white); color: var(--black);
+  border: none; padding: 14px; font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px; letter-spacing: 0.08em; border-radius: 4px;
+  cursor: pointer; margin-bottom: 10px; transition: opacity 0.2s;
+}
+.record-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.record-btn.sale-mode { background: var(--green); }
+
+.skip-btn {
+  width: 100%; background: transparent; border: 1px solid var(--border);
+  color: var(--muted); padding: 11px; font-family: 'Bebas Neue', sans-serif;
+  font-size: 16px; letter-spacing: 0.08em; border-radius: 4px; cursor: pointer;
+}
+
+.save-status { font-size: 11px; color: var(--muted); text-align: center; margin-top: 8px; min-height: 16px; }
 
 /* ══ SETUP ══ */
 #setup { position: fixed; inset: 0; z-index: 50; background: var(--black); display: none; flex-direction: column; padding: 26px 22px; overflow-y: auto; }
@@ -111,7 +165,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--blac
 .fl { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; margin-top: 18px; display: block; }
 .fi { width: 100%; background: rgba(242,239,232,0.05); border: 1px solid var(--border); border-radius: 4px; padding: 11px 13px; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--white); outline: none; }
 .fi:focus { border-color: rgba(242,239,232,0.32); }
-.divider { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+.sdivider { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
 .prize-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
 .pr { display: flex; gap: 8px; align-items: center; background: rgba(242,239,232,0.04); border: 1px solid var(--border); border-radius: 4px; padding: 8px 11px; }
 .pr input[type=text] { flex: 1; background: transparent; border: none; outline: none; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--white); min-width: 0; }
@@ -121,11 +175,10 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--blac
 .t-buy   { background: rgba(91,127,181,0.18); color: #7BAAD4; }
 .t-again { background: rgba(242,239,232,0.08); color: var(--muted); }
 .wt { width: 38px; text-align: center; background: transparent; border: none; border-left: 1px solid var(--border); outline: none; font-family: 'DM Sans', sans-serif; font-size: 12px; color: var(--muted); padding-left: 8px; }
-.del { background: none; border: none; color: var(--muted); font-size: 17px; cursor: pointer; padding: 0 3px; transition: color 0.15s; flex-shrink: 0; }
+.del { background: none; border: none; color: var(--muted); font-size: 17px; cursor: pointer; padding: 0 3px; }
 .del:hover { color: var(--red); }
 .add-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
-.add { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 7px 13px; font-family: 'DM Sans', sans-serif; font-size: 12px; border-radius: 4px; cursor: pointer; transition: all 0.15s; }
-.add:hover { border-color: rgba(242,239,232,0.32); color: var(--white); }
+.add { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 7px 13px; font-family: 'DM Sans', sans-serif; font-size: 12px; border-radius: 4px; cursor: pointer; }
 .wt-note { font-size: 11px; color: var(--muted); line-height: 1.5; margin-bottom: 4px; }
 .setup-footer { display: flex; gap: 10px; margin-top: 26px; }
 .s-save { background: var(--white); color: var(--black); border: none; padding: 13px 0; flex: 1; font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.08em; border-radius: 4px; cursor: pointer; }
@@ -134,51 +187,40 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--blac
 </head>
 <body>
 
-<!-- ══ SETUP PANEL ══ -->
+<!-- ══ SETUP ══ -->
 <div id="setup">
   <div class="setup-title">Setup</div>
-  <p class="setup-sub">Paste your Apps Script URL once. Edit prizes anytime before an event.</p>
-
+  <p class="setup-sub">Paste your Apps Script URL once. Edit prizes before each event.</p>
   <label class="fl">Google Apps Script URL</label>
   <input class="fi" id="cfgUrl" type="url" placeholder="https://script.google.com/macros/s/…/exec">
-
-  <hr class="divider">
-
+  <hr class="sdivider">
   <label class="fl">Prizes on the wheel</label>
-  <p class="wt-note">Weight controls likelihood — higher = lands here more. E.g. 4 / 2 / 2 = 50% / 25% / 25%.</p>
+  <p class="wt-note">Weight = likelihood. Higher number = lands here more often.</p>
   <div class="prize-list" id="prizeList"></div>
   <div class="add-row">
     <button class="add" onclick="addPrize('free','🎁 Free sample kit',3)">+ Free goody</button>
     <button class="add" onclick="addPrize('buy','Buy any → get 30ml free',4)">+ Buy → get free</button>
     <button class="add" onclick="addPrize('again','Try again',2)">+ Try again</button>
   </div>
-
   <div class="setup-footer">
     <button class="s-cancel" onclick="closeSetup()">Cancel</button>
     <button class="s-save" onclick="saveSetup()">Save & Close</button>
   </div>
 </div>
 
-<!-- ══ MAIN PANEL ══ -->
+<!-- ══ MAIN WHEEL ══ -->
 <div id="main" class="panel active">
   <div class="top-bar">
     <div class="logo">OCD<div class="logo-sub">Obsessive. Compulsive. Delicious.</div></div>
     <button class="setup-btn" onclick="openSetup()">⚙ setup</button>
   </div>
-
-  <div class="headline">
-    SPIN TO WIN
-    <span class="headline-sub">complete the survey · get your code · spin</span>
-  </div>
-
+  <div class="headline">SPIN TO WIN<span class="headline-sub">complete the survey · get your code · spin</span></div>
   <div class="wheel-stage">
     <canvas id="wheelCanvas" width="500" height="500"></canvas>
-    <div class="ring"></div>
-    <div class="ring"></div>
+    <div class="ring"></div><div class="ring"></div>
     <div class="pointer"></div>
     <div class="hub"><div class="hub-text">OCD</div></div>
   </div>
-
   <div class="code-bar">
     <div class="code-row">
       <input id="codeInput" type="text" maxlength="3" placeholder="123"
@@ -187,99 +229,139 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--blac
     </div>
     <div class="code-fb" id="codeFb"></div>
   </div>
-
-  <div class="ticker-wrap">
-    <div class="ticker" id="ticker"></div>
-  </div>
+  <div class="ticker-wrap"><div class="ticker" id="ticker"></div></div>
 </div>
 
 <!-- spinning overlay -->
-<div class="spin-overlay" id="spinOverlay">
-  <div class="spin-overlay-label">SPINNING…</div>
-</div>
+<div class="spin-overlay" id="spinOverlay"><div class="spin-overlay-label">SPINNING…</div></div>
 
-<!-- ══ PRIZE PANEL ══ -->
-<div id="prize" class="panel">
-  <div class="prize-kicker">you're obsessed and we love that</div>
-  <div class="prize-emoji" id="pEmoji">🎁</div>
-  <div id="prizeHeadline">YOU WON</div>
-  <div id="prizeLabel"></div>
-  <div class="code-chip">
-    <div class="lbl">Booth Code</div>
-    <div class="val" id="pCode">—</div>
+<!-- ══ RESULT DRAWER (shown over wheel page after spin) ══ -->
+<div id="resultDrawer">
+  <div class="result-top">
+    <div class="result-emoji" id="rEmoji">🎁</div>
+    <div class="result-code-chip">
+      <div class="lbl">Booth Code</div>
+      <div class="val" id="rCode">—</div>
+    </div>
   </div>
-  <div class="save-status" id="saveStatus">Saving…</div>
-  <button class="btn-next" onclick="reset()">Next Customer →</button>
+
+  <div id="resultHeadline">YOU WON</div>
+  <div id="resultLabel"></div>
+
+  <hr class="section-div">
+
+  <!-- SALE SECTION — always shown, staff records if purchase happens -->
+  <div class="sale-section">
+    <div class="sale-title">Record a purchase (if any)</div>
+
+    <!-- Fragrance picker -->
+    <div class="frag-grid" id="fragGrid"></div>
+
+    <!-- Size + price picker -->
+    <div class="size-row">
+      <div class="size-btn" onclick="selectSize(this,'30ml','₹999')">
+        30ml<span class="size-price">₹999</span>
+      </div>
+      <div class="size-btn" onclick="selectSize(this,'50ml','₹1499')">
+        50ml<span class="size-price">₹1499</span>
+      </div>
+      <div class="size-btn" onclick="selectSize(this,'100ml','₹2499')">
+        100ml<span class="size-price">₹2499</span>
+      </div>
+    </div>
+
+    <!-- Free item toggle -->
+    <div class="free-toggle" id="freeToggle" onclick="toggleFree()">
+      <input type="checkbox" id="freeCheck" onclick="event.stopPropagation()">
+      <label for="freeCheck">Customer is also getting a free item with this purchase</label>
+    </div>
+
+    <button class="record-btn sale-mode" id="recordBtn" onclick="recordSale()" disabled>
+      Record Purchase
+    </button>
+    <button class="skip-btn" onclick="skipSale()">No purchase — Next Customer →</button>
+    <div class="save-status" id="saveStatus"></div>
+  </div>
 </div>
 
 <script>
+// ─── FRAGRANCES ─────────────────────────────────────────────
+// Update names/colors/prices to match your actual SKUs
+const FRAGRANCES = [
+  { id: 'SKU1', name: 'Skinny Dip',        color: '#5B7FB5' },
+  { id: 'SKU2', name: 'Midnight Snack',     color: '#5A2510' },
+  { id: 'SKU3', name: 'Freshly Picked',     color: '#C8B89A' },
+  { id: 'SKU4', name: 'Still Not Over It',  color: '#6B1E24' },
+  { id: 'SKU5', name: 'About Last Night',   color: '#8A9E72' },
+];
+
+// Wheel segment colors pulled from fragrance card colors
+const SEG_COLORS = FRAGRANCES.map(f => ({ fill: f.color, text: f.color === '#C8B89A' ? '#2A1A0A' : '#F2EFE8' }));
+
+const EMOJIS = { free: '🎁', buy: '✨', again: '🔄' };
+
 // ─── DEFAULTS ───────────────────────────────────────────────
 const DEFAULTS = {
   scriptUrl: '',
   prizes: [
-    { label: '🎁 Free sample kit',        type: 'free',  weight: 3 },
-    { label: '🎁 Free goody bag',          type: 'free',  weight: 2 },
-    { label: 'Buy any → get 30ml free',    type: 'buy',   weight: 4 },
-    { label: 'Buy 50ml → get 30ml free',   type: 'buy',   weight: 3 },
-    { label: 'Try again',                  type: 'again', weight: 2 },
+    { label: '🎁 Free sample kit',       type: 'free',  weight: 3 },
+    { label: '🎁 Free goody bag',         type: 'free',  weight: 2 },
+    { label: 'Buy any → get 30ml free',   type: 'buy',   weight: 4 },
+    { label: 'Buy 50ml → get 30ml free',  type: 'buy',   weight: 3 },
+    { label: 'Try again',                 type: 'again', weight: 2 },
   ]
 };
 
-// Wheel colors: pulled directly from OCD fragrance cards
-const SEG_COLORS = [
-  { fill: '#5B7FB5', text: '#FFFFFF' }, // Skinny Dip blue
-  { fill: '#5A2510', text: '#F2EFE8' }, // Midnight Snack brown
-  { fill: '#C8B89A', text: '#2A1A0A' }, // Freshly Picked cream
-  { fill: '#6B1E24', text: '#F2EFE8' }, // Still Not Over It maroon
-  { fill: '#8A9E72', text: '#1A2010' }, // About Last Night green
-];
+// ─── STATE ───────────────────────────────────────────────────
+let CFG         = loadCFG();
+let codeCache   = loadCache();   // { code: { verified:true, spun:false, ts:epoch } }
+let usedToday   = loadUsed();    // { "YYYY-MM-DD:code": true }
+let curCode     = null;
+let curPrize    = null;
+let selFrag     = null;
+let selSize     = null;
+let selPrice    = null;
+let freeItem    = false;
+let spinning    = false;
+let idleAngle   = 0;
+let idleRaf     = null;
 
-const EMOJIS = { free: '🎁', buy: '✨', again: '🔄' };
+function loadCFG()   { try { return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem('ocdCFG')||'{}')); } catch{ return Object.assign({},DEFAULTS); } }
+function saveCFG()   { localStorage.setItem('ocdCFG', JSON.stringify(CFG)); }
+function loadCache() { try { return JSON.parse(localStorage.getItem('ocdCache')||'{}'); } catch{ return {}; } }
+function saveCache() { localStorage.setItem('ocdCache', JSON.stringify(codeCache)); }
+function loadUsed()  { try { return JSON.parse(localStorage.getItem('ocdUsed')||'{}'); } catch{ return {}; } }
+function saveUsed()  { localStorage.setItem('ocdUsed', JSON.stringify(usedToday)); }
+function todayKey(c) { return new Date().toISOString().slice(0,10)+':'+String(c).trim(); }
+function todayStr()  { return new Date().toISOString().slice(0,10); }
 
-let CFG       = loadCFG();
-let usedToday = loadUsed();  // key = "YYYY-MM-DD:code"
-let curCode   = null;
-let spinning  = false;
-let idleAngle = 0;
-let idleRaf   = null;
-
-function loadCFG() {
-  try { return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem('ocdCFG') || '{}')); }
-  catch { return Object.assign({}, DEFAULTS); }
+// Prune cache entries older than 24h
+function pruneCache() {
+  const cutoff = Date.now() - 86400000;
+  let changed = false;
+  Object.keys(codeCache).forEach(k => { if (codeCache[k].ts < cutoff) { delete codeCache[k]; changed = true; } });
+  if (changed) saveCache();
 }
-function saveCFG() { localStorage.setItem('ocdCFG', JSON.stringify(CFG)); }
-function loadUsed() {
-  try { return JSON.parse(localStorage.getItem('ocdUsed') || '{}'); }
-  catch { return {}; }
-}
-function saveUsed() { localStorage.setItem('ocdUsed', JSON.stringify(usedToday)); }
-function todayKey(code) { return new Date().toISOString().slice(0,10) + ':' + String(code).trim(); }
 
 // ─── SETUP ──────────────────────────────────────────────────
-function openSetup() {
-  document.getElementById('cfgUrl').value = CFG.scriptUrl || '';
-  renderPrizeList();
-  document.getElementById('setup').classList.add('open');
-}
+function openSetup() { document.getElementById('cfgUrl').value = CFG.scriptUrl||''; renderPrizeList(); document.getElementById('setup').classList.add('open'); }
 function closeSetup() { document.getElementById('setup').classList.remove('open'); }
 function saveSetup() {
   CFG.scriptUrl = document.getElementById('cfgUrl').value.trim();
   CFG.prizes = [];
   document.querySelectorAll('#prizeList .pr').forEach(row => {
-    const label  = row.querySelector('input[type=text]').value.trim();
-    const type   = row.dataset.type;
-    const weight = parseInt(row.querySelector('.wt').value) || 1;
+    const label = row.querySelector('input[type=text]').value.trim();
+    const type  = row.dataset.type;
+    const weight = parseInt(row.querySelector('.wt').value)||1;
     if (label) CFG.prizes.push({ label, type, weight });
   });
-  saveCFG();
-  stopIdle(); drawWheel(idleAngle); startIdle();
-  closeSetup();
+  saveCFG(); stopIdle(); drawWheel(idleAngle); startIdle(); closeSetup();
 }
 function renderPrizeList() {
   document.getElementById('prizeList').innerHTML = CFG.prizes.map(p => prizeRowHTML(p)).join('');
 }
 function prizeRowHTML(p) {
-  const cls = p.type === 'free' ? 'free' : p.type === 'buy' ? 'buy' : 'again';
+  const cls = p.type==='free'?'free':p.type==='buy'?'buy':'again';
   return `<div class="pr" data-type="${p.type}">
     <span class="pr-type t-${cls}">${p.type}</span>
     <input type="text" value="${p.label}" placeholder="Prize description">
@@ -289,87 +371,80 @@ function prizeRowHTML(p) {
 }
 function addPrize(type, label, weight) {
   const d = document.createElement('div');
-  d.innerHTML = prizeRowHTML({ label, type, weight });
+  d.innerHTML = prizeRowHTML({label,type,weight});
   document.getElementById('prizeList').appendChild(d.firstElementChild);
 }
 
 // ─── WHEEL DRAW ─────────────────────────────────────────────
 function drawWheel(angle) {
   const canvas = document.getElementById('wheelCanvas');
-  const ctx    = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d');
   const prizes = CFG.prizes;
   if (!prizes.length) { ctx.clearRect(0,0,500,500); return; }
-
-  const cx = 250, cy = 250, r = 238;
-  const n   = prizes.length;
-  const arc = (2 * Math.PI) / n;
+  const cx=250, cy=250, r=238, n=prizes.length;
+  const arc = (2*Math.PI)/n;
   ctx.clearRect(0,0,500,500);
-
-  prizes.forEach((p, i) => {
-    const c     = SEG_COLORS[i % SEG_COLORS.length];
-    const start = angle + i * arc - Math.PI / 2;
-    const end   = start + arc;
-
-    // Fill
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.arc(cx, cy, r, start, end);
-    ctx.closePath();
-    ctx.fillStyle = c.fill;
-    ctx.fill();
-
-    // Divider
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.arc(cx, cy, r, start, end);
-    ctx.closePath();
-    ctx.strokeStyle = 'rgba(10,10,8,0.55)';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    // Text — clean single-line label, strip emoji
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(start + arc / 2);
-    ctx.textAlign = 'right';
-    ctx.fillStyle = c.text;
-    const fs = n > 6 ? 10 : 12;
-    ctx.font = `500 ${fs}px 'DM Sans', sans-serif`;
-    let txt = p.label.replace(/[\u{1F000}-\u{1FFFF}]|[\u2600-\u27FF]/gu, '').trim();
-    if (txt.length > 17) txt = txt.slice(0, 16) + '…';
-    ctx.fillText(txt, r - 16, fs * 0.38);
+  prizes.forEach((p,i) => {
+    const c = SEG_COLORS[i % SEG_COLORS.length];
+    const start = angle + i*arc - Math.PI/2;
+    const end = start + arc;
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,start,end); ctx.closePath();
+    ctx.fillStyle = c.fill; ctx.fill();
+    ctx.strokeStyle='rgba(10,10,8,0.55)'; ctx.lineWidth=2; ctx.stroke();
+    ctx.save(); ctx.translate(cx,cy); ctx.rotate(start+arc/2);
+    ctx.textAlign='right'; ctx.fillStyle=c.text;
+    const fs = n>6?10:12;
+    ctx.font=`500 ${fs}px 'DM Sans',sans-serif`;
+    let txt = p.label.replace(/[\u{1F000}-\u{1FFFF}]|[\u2600-\u27FF]/gu,'').trim();
+    if (txt.length>17) txt=txt.slice(0,16)+'…';
+    ctx.fillText(txt, r-16, fs*0.38);
     ctx.restore();
   });
-
-  // Outer ring
-  ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, 2*Math.PI);
-  ctx.strokeStyle = 'rgba(242,239,232,0.22)';
-  ctx.lineWidth = 2.5;
-  ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,2*Math.PI);
+  ctx.strokeStyle='rgba(242,239,232,0.22)'; ctx.lineWidth=2.5; ctx.stroke();
 }
 
-// ─── IDLE SPIN ───────────────────────────────────────────────
 function startIdle() {
-  let last = null;
-  function frame(ts) {
-    if (last !== null) idleAngle += (ts - last) * 0.00012;
-    last = ts;
-    drawWheel(idleAngle);
-    idleRaf = requestAnimationFrame(frame);
-  }
-  idleRaf = requestAnimationFrame(frame);
+  let last=null;
+  function frame(ts) { if(last!==null) idleAngle+=(ts-last)*0.00012; last=ts; drawWheel(idleAngle); idleRaf=requestAnimationFrame(frame); }
+  idleRaf=requestAnimationFrame(frame);
 }
-function stopIdle() {
-  if (idleRaf) { cancelAnimationFrame(idleRaf); idleRaf = null; }
-}
+function stopIdle() { if(idleRaf){cancelAnimationFrame(idleRaf);idleRaf=null;} }
 
 // ─── TICKER ─────────────────────────────────────────────────
 function buildTicker() {
-  const items = ['SKINNY DIP','·','MIDNIGHT SNACK','·','FRESHLY PICKED','·','STILL NOT OVER IT','·','ABOUT LAST NIGHT','·','OBSESSIVE','·','COMPULSIVE','·','DELICIOUS','·'];
-  const doubled = [...items, ...items];
-  document.getElementById('ticker').innerHTML = doubled.map(t =>
-    `<span class="ticker-item">${t}</span>`).join('');
+  const items=['SKINNY DIP','·','MIDNIGHT SNACK','·','FRESHLY PICKED','·','STILL NOT OVER IT','·','ABOUT LAST NIGHT','·','OBSESSIVE','·','COMPULSIVE','·','DELICIOUS','·'];
+  const d=[...items,...items];
+  document.getElementById('ticker').innerHTML=d.map(t=>`<span class="ticker-item">${t}</span>`).join('');
+}
+
+// ─── FRAGRANCE GRID ─────────────────────────────────────────
+function buildFragGrid() {
+  document.getElementById('fragGrid').innerHTML = FRAGRANCES.map(f => `
+    <div class="frag-btn" onclick="selectFrag(this,'${f.id}','${f.name}')">
+      <div class="frag-color" style="background:${f.color}"></div>
+      <div style="font-size:9px">${f.name.split(' ')[0]}</div>
+    </div>`).join('');
+}
+function selectFrag(el, id, name) {
+  document.querySelectorAll('.frag-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  selFrag = { id, name };
+  checkRecordReady();
+}
+function selectSize(el, size, price) {
+  document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  selSize = size; selPrice = price;
+  checkRecordReady();
+}
+function toggleFree() {
+  freeItem = !freeItem;
+  document.getElementById('freeCheck').checked = freeItem;
+  document.getElementById('freeToggle').classList.toggle('active', freeItem);
+}
+function checkRecordReady() {
+  document.getElementById('recordBtn').disabled = !(selFrag && selSize);
 }
 
 // ─── CODE INPUT ─────────────────────────────────────────────
@@ -378,35 +453,51 @@ function onType(el) {
   el.classList.remove('err','ok');
   fb('','');
 }
-function fb(msg, cls) {
-  const el = document.getElementById('codeFb');
-  el.textContent = msg;
-  el.className = 'code-fb' + (cls ? ' '+cls : '');
+function fb(msg,cls) {
+  const el=document.getElementById('codeFb');
+  el.textContent=msg;
+  el.className='code-fb'+(cls?' '+cls:'');
 }
 
 // ─── VALIDATE + SPIN ────────────────────────────────────────
 async function go() {
   if (spinning) return;
   const raw = document.getElementById('codeInput').value.trim();
-  if (!raw || raw.length < 3) { fb('Enter your 3-digit code','err'); return; }
+  if (!raw || raw.length<3) { fb('Enter your 3-digit code','err'); return; }
 
   const inp = document.getElementById('codeInput');
   const btn = document.getElementById('spinBtn');
-  btn.disabled = true; btn.textContent = 'CHECKING…';
+  btn.disabled=true; btn.textContent='CHECKING…';
 
-  // Local duplicate check (same code, same calendar day)
+  // 1. Local used-today check (instant)
   if (usedToday[todayKey(raw)]) {
     inp.classList.add('err');
-    fb('This code already spun today — one spin per customer.','err');
-    btn.disabled = false; btn.textContent = 'SPIN →';
+    fb('Already spun today — one spin per customer.','err');
+    btn.disabled=false; btn.textContent='SPIN →';
     return;
   }
 
-  // Sheet lookup — required (no offline bypass for codes)
+  // 2. Cache check (instant — avoids sheet call for recently verified codes)
+  pruneCache();
+  const cached = codeCache[todayStr()+':'+raw];
+  if (cached) {
+    if (cached.spun) {
+      inp.classList.add('err');
+      fb('Already spun today — one spin per customer.','err');
+      btn.disabled=false; btn.textContent='SPIN →';
+      return;
+    }
+    // Valid cached code — skip sheet call entirely
+    inp.classList.add('ok'); fb('','');
+    curCode=raw; btn.disabled=false; btn.textContent='SPIN →';
+    doSpin(); return;
+  }
+
+  // 3. Sheet lookup (only if not in cache)
   if (!CFG.scriptUrl) {
     inp.classList.add('err');
     fb('Paste your Apps Script URL in ⚙ setup first.','err');
-    btn.disabled = false; btn.textContent = 'SPIN →';
+    btn.disabled=false; btn.textContent='SPIN →';
     return;
   }
 
@@ -414,135 +505,163 @@ async function go() {
     const res  = await fetch(`${CFG.scriptUrl}?action=lookup&booth_code=${encodeURIComponent(raw)}`);
     const data = await res.json();
 
-    if (data.error || !data.found) {
+    if (!data.found) {
       inp.classList.add('err');
-      fb(data.message || 'Code not found — ask customer to check their survey page.','err');
-      btn.disabled = false; btn.textContent = 'SPIN →';
+      fb('Code not found — ask customer to check their survey.','err');
+      btn.disabled=false; btn.textContent='SPIN →';
       return;
     }
     if (data.spun) {
       inp.classList.add('err');
-      fb('Already used — one spin per customer.','err');
-      usedToday[todayKey(raw)] = true; saveUsed();
-      btn.disabled = false; btn.textContent = 'SPIN →';
+      fb('Already spun today — one spin per customer.','err');
+      // Cache as spun so next attempt is instant
+      codeCache[todayStr()+':'+raw] = { verified:true, spun:true, ts:Date.now() };
+      saveCache();
+      btn.disabled=false; btn.textContent='SPIN →';
       return;
     }
 
-    // Valid! Go.
-    inp.classList.add('ok');
-    fb('','');
-    curCode = raw;
-    btn.disabled = false; btn.textContent = 'SPIN →';
+    // Valid — cache it so repeat checks are instant
+    codeCache[todayStr()+':'+raw] = { verified:true, spun:false, ts:Date.now() };
+    saveCache();
+    inp.classList.add('ok'); fb('','');
+    curCode=raw; btn.disabled=false; btn.textContent='SPIN →';
     doSpin();
 
   } catch(e) {
     inp.classList.add('err');
-    fb('Network error — check internet connection.','err');
-    btn.disabled = false; btn.textContent = 'SPIN →';
+    fb('Network error — check internet.','err');
+    btn.disabled=false; btn.textContent='SPIN →';
   }
 }
 
-// ─── SPIN ANIMATION ─────────────────────────────────────────
+// ─── SPIN ────────────────────────────────────────────────────
+function weightedPick() {
+  const total=CFG.prizes.reduce((s,p)=>s+(p.weight||1),0);
+  let r=Math.random()*total;
+  for(let i=0;i<CFG.prizes.length;i++){r-=CFG.prizes[i].weight||1;if(r<=0)return i;}
+  return CFG.prizes.length-1;
+}
+
 function doSpin() {
-  spinning = true;
-  stopIdle();
+  spinning=true; stopIdle();
   document.getElementById('spinOverlay').classList.add('show');
-
-  const n      = CFG.prizes.length;
-  const arc    = (2 * Math.PI) / n;
-  const winIdx = weightedPick();
-
-  // Angle so winIdx segment centre aligns with pointer at top (−π/2)
-  const winCenter  = winIdx * arc + arc / 2;
-  const normalised = ((idleAngle % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
-  const toTarget   = ((-Math.PI/2 - winCenter) - normalised + 4*Math.PI) % (2*Math.PI);
-  const totalSpin  = (6 + Math.floor(Math.random()*4)) * 2*Math.PI + toTarget;
-
-  const startAngle = idleAngle;
-  const duration   = 4600 + Math.random()*900;
-  const t0         = performance.now();
-
-  function ease(t) { return 1 - Math.pow(1-t, 4); }
-  function frame(now) {
-    const p = Math.min((now - t0) / duration, 1);
-    idleAngle = startAngle + totalSpin * ease(p);
+  const n=CFG.prizes.length, arc=(2*Math.PI)/n;
+  const winIdx=weightedPick();
+  const winCenter=winIdx*arc+arc/2;
+  const normalised=((idleAngle%(2*Math.PI))+2*Math.PI)%(2*Math.PI);
+  const toTarget=((-Math.PI/2-winCenter)-normalised+4*Math.PI)%(2*Math.PI);
+  const totalSpin=(6+Math.floor(Math.random()*4))*2*Math.PI+toTarget;
+  const startAngle=idleAngle, duration=4600+Math.random()*900, t0=performance.now();
+  function ease(t){return 1-Math.pow(1-t,4);}
+  function frame(now){
+    const p=Math.min((now-t0)/duration,1);
+    idleAngle=startAngle+totalSpin*ease(p);
     drawWheel(idleAngle);
-    if (p < 1) { requestAnimationFrame(frame); }
-    else {
-      spinning = false;
-      document.getElementById('spinOverlay').classList.remove('show');
-      revealPrize(winIdx);
-    }
+    if(p<1){requestAnimationFrame(frame);}
+    else{spinning=false;document.getElementById('spinOverlay').classList.remove('show');showResult(winIdx);}
   }
   requestAnimationFrame(frame);
 }
 
-function weightedPick() {
-  const total = CFG.prizes.reduce((s,p) => s + (p.weight||1), 0);
-  let r = Math.random() * total;
-  for (let i = 0; i < CFG.prizes.length; i++) {
-    r -= CFG.prizes[i].weight || 1;
-    if (r <= 0) return i;
+// ─── RESULT DRAWER ───────────────────────────────────────────
+function showResult(idx) {
+  curPrize = CFG.prizes[idx];
+  const isWin = curPrize.type !== 'again';
+
+  document.getElementById('rEmoji').textContent     = EMOJIS[curPrize.type]||'🎉';
+  document.getElementById('rCode').textContent      = curCode;
+  document.getElementById('resultHeadline').textContent = isWin ? 'YOU WON' : 'TRY AGAIN';
+  document.getElementById('resultLabel').textContent = curPrize.label.replace(/[\u{1F000}-\u{1FFFF}]|[\u2600-\u27FF]/gu,'').trim();
+
+  // Reset sale selections
+  selFrag=null; selSize=null; selPrice=null; freeItem=false;
+  document.querySelectorAll('.frag-btn,.size-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('freeCheck').checked=false;
+  document.getElementById('freeToggle').classList.remove('active');
+  document.getElementById('recordBtn').disabled=true;
+  document.getElementById('saveStatus').textContent='';
+
+  // Mark used locally + update cache
+  usedToday[todayKey(curCode)]=true; saveUsed();
+  if(codeCache[todayStr()+':'+curCode]) {
+    codeCache[todayStr()+':'+curCode].spun=true; saveCache();
   }
-  return CFG.prizes.length - 1;
-}
 
-// ─── PRIZE REVEAL ────────────────────────────────────────────
-function revealPrize(idx) {
-  const p    = CFG.prizes[idx];
-  const isWin = p.type !== 'again';
-  document.getElementById('pEmoji').textContent     = EMOJIS[p.type] || '🎉';
-  document.getElementById('prizeHeadline').textContent = isWin ? 'YOU WON' : 'TRY AGAIN';
-  document.getElementById('prizeLabel').textContent  = p.label.replace(/[\u{1F000}-\u{1FFFF}]|[\u2600-\u27FF]/gu,'').trim();
-  document.getElementById('pCode').textContent       = curCode;
+  document.getElementById('resultDrawer').classList.add('show');
 
-  usedToday[todayKey(curCode)] = true;
-  saveUsed();
-
-  showPanel('prize');
-  logSpin(p);
+  // Log spin to sheet in background
+  logSpin(curPrize);
 }
 
 async function logSpin(prize) {
-  const el = document.getElementById('saveStatus');
+  if (!CFG.scriptUrl) return;
   try {
     await fetch(CFG.scriptUrl, {
-      method: 'POST', mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
         action:     'logSpin',
-        booth_code: curCode,          // just the 3 digits — matches your sheet
+        booth_code: curCode,
         spin_prize: prize.label,
         spin_type:  prize.type,
         spin_time:  new Date().toISOString(),
       })
     });
-    el.textContent = '✓ Saved to sheet.';
-  } catch(e) {
-    el.textContent = 'Could not save — note prize manually.';
-  }
+  } catch(e) {}
 }
 
-// ─── UTILS ───────────────────────────────────────────────────
-function showPanel(id) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+// ─── SALE RECORDING ─────────────────────────────────────────
+async function recordSale() {
+  if (!selFrag || !selSize) return;
+  const btn = document.getElementById('recordBtn');
+  btn.disabled=true; btn.textContent='SAVING…';
+
+  const payload = {
+    action:          'logSale',
+    booth_code:      curCode,
+    sale_fragrance:  selFrag.name,
+    sale_sku:        selFrag.id,
+    sale_size:       selSize,
+    sale_price:      selPrice,
+    sale_free_item:  freeItem,
+    sale_time:       new Date().toISOString(),
+  };
+
+  try {
+    await fetch(CFG.scriptUrl, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    document.getElementById('saveStatus').textContent='✓ Sale recorded.';
+  } catch(e) {
+    document.getElementById('saveStatus').textContent='Could not save — note manually.';
+  }
+
+  setTimeout(()=>reset(), 1200);
 }
+
+function skipSale() { reset(); }
+
+// ─── RESET ───────────────────────────────────────────────────
 function reset() {
-  curCode = null;
-  const inp = document.getElementById('codeInput');
-  inp.value = ''; inp.className = '';
+  curCode=null; curPrize=null;
+  document.getElementById('resultDrawer').classList.remove('show');
+  const inp=document.getElementById('codeInput');
+  inp.value=''; inp.className='';
   fb('','');
-  document.getElementById('spinBtn').disabled = false;
-  document.getElementById('spinBtn').textContent = 'SPIN →';
-  showPanel('main');
+  document.getElementById('spinBtn').disabled=false;
+  document.getElementById('spinBtn').textContent='SPIN →';
   startIdle();
 }
 
 // ─── INIT ────────────────────────────────────────────────────
 buildTicker();
+buildFragGrid();
 drawWheel(0);
 startIdle();
+pruneCache();
 </script>
 </body>
 </html>
