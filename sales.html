@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>OCD — Record Sale</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <style>
@@ -16,324 +16,392 @@
   --gpay:   #4285F4;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body { width: 100%; min-height: 100%; background: var(--black); color: var(--white); font-family: 'DM Sans', sans-serif; }
+html, body {
+  width: 100%; height: 100%; overflow: hidden;
+  background: var(--black); color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+}
 
-.page { max-width: 480px; margin: 0 auto; padding: 22px 20px 40px; }
+/* Full-height layout — no scroll */
+.app {
+  display: flex; flex-direction: column;
+  height: 100vh; padding: 12px 16px 10px;
+  gap: 10px;
+}
 
-/* header */
-.header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 24px; }
-.logo { font-family: 'Bebas Neue', sans-serif; font-size: 44px; line-height: 0.88; letter-spacing: 0.06em; }
-.logo-sub { font-size: 10px; font-family: 'DM Sans', sans-serif; font-weight: 300; font-style: italic; letter-spacing: 0.1em; color: var(--muted); margin-top: 4px; }
-.page-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.1em; color: var(--muted); }
+/* Header */
+.header {
+  display: flex; align-items: center;
+  justify-content: space-between; flex-shrink: 0;
+}
+.logo { font-family: 'Bebas Neue', sans-serif; font-size: 36px; line-height: 1; letter-spacing: 0.06em; }
+.logo-sub { font-size: 9px; font-family: 'DM Sans', sans-serif; font-weight: 300; font-style: italic; letter-spacing: 0.1em; color: var(--muted); }
+.page-label { font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 0.12em; color: var(--muted); }
 
-.divider { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
-
-/* code entry */
-.section-label { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; display: block; }
-
-.code-row { display: flex; gap: 10px; margin-bottom: 6px; }
-#codeInput { flex: 1; background: rgba(242,239,232,0.06); border: 1px solid var(--border); border-radius: 4px; padding: 13px 16px; font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 0.3em; color: var(--white); outline: none; text-align: center; transition: border-color 0.2s; }
-#codeInput:focus { border-color: rgba(242,239,232,0.38); }
-#codeInput.err { border-color: var(--red) !important; animation: shake 0.3s ease; }
+/* Code row */
+.code-row { display: flex; gap: 8px; flex-shrink: 0; }
+#codeInput {
+  flex: 1; background: rgba(242,239,232,0.07); border: 1px solid var(--border);
+  border-radius: 4px; padding: 10px 12px;
+  font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 0.3em;
+  color: var(--white); outline: none; text-align: center;
+  transition: border-color 0.2s;
+  /* Phone numeric keyboard */
+  inputmode: numeric;
+}
+#codeInput::placeholder { color: rgba(242,239,232,0.2); font-size: 18px; letter-spacing: 0.15em; }
+#codeInput:focus { border-color: rgba(242,239,232,0.4); }
+#codeInput.err { border-color: var(--red) !important; }
 #codeInput.ok  { border-color: var(--green) !important; }
-@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-7px)} 75%{transform:translateX(7px)} }
-#lookupBtn { background: var(--white); color: var(--black); border: none; padding: 13px 18px; font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.06em; border-radius: 4px; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
-#lookupBtn:disabled { opacity: 0.35; cursor: not-allowed; }
-.code-fb { font-size: 12px; min-height: 18px; margin-bottom: 4px; }
-.code-fb.err { color: var(--red); }
-.code-fb.ok  { color: var(--green); }
+#lookupBtn {
+  background: rgba(242,239,232,0.1); color: var(--white);
+  border: 1px solid var(--border); padding: 10px 14px;
+  font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 0.06em;
+  border-radius: 4px; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+  transition: background 0.15s;
+}
+#lookupBtn:active { background: rgba(242,239,232,0.18); }
 
-/* customer info strip */
-.customer-strip { background: rgba(61,191,114,0.07); border: 1px solid rgba(61,191,114,0.2); border-radius: 6px; padding: 12px 14px; margin-bottom: 18px; display: none; }
-.customer-strip.show { display: block; }
-.cs-row { display: flex; gap: 16px; flex-wrap: wrap; }
-.cs-item { font-size: 12px; color: var(--muted); }
-.cs-item strong { color: var(--white); font-weight: 500; display: block; font-size: 13px; }
+/* Status bar */
+.status-bar {
+  font-size: 11px; min-height: 14px; flex-shrink: 0;
+  display: flex; align-items: center; gap: 12px;
+}
+.status-bar.ok  { color: var(--green); }
+.status-bar.err { color: var(--red); }
+.status-bar.dim { color: var(--muted); }
+.cust-info { font-size: 11px; color: var(--muted); }
+.cust-info strong { color: var(--white); }
 
-/* fragrance grid */
-.frag-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; margin-bottom: 16px; }
-.frag-btn { background: rgba(242,239,232,0.04); border: 1px solid var(--border); border-radius: 8px; padding: 10px 4px; text-align: center; cursor: pointer; transition: all 0.15s; }
-.frag-color { width: 24px; height: 24px; border-radius: 50%; margin: 0 auto 6px; }
-.frag-name { font-size: 9px; letter-spacing: 0.03em; color: var(--muted); line-height: 1.3; }
-.frag-btn.selected { border-color: var(--white); background: rgba(242,239,232,0.1); }
-.frag-btn.selected .frag-name { color: var(--white); }
+/* Section label */
+.sl { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; display: block; flex-shrink: 0; }
 
-/* size grid */
-.size-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 16px; }
-.size-btn { background: rgba(242,239,232,0.04); border: 1px solid var(--border); border-radius: 6px; padding: 12px 8px; text-align: center; cursor: pointer; transition: all 0.15s; }
-.size-ml { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.06em; color: var(--muted); }
-.size-price { font-size: 11px; color: var(--muted); margin-top: 2px; }
-.size-btn.selected { border-color: var(--white); background: rgba(242,239,232,0.1); }
-.size-btn.selected .size-ml,
-.size-btn.selected .size-price { color: var(--white); }
+/* Fragrance grid — 5 across, compact */
+.frag-grid {
+  display: grid; grid-template-columns: repeat(5,1fr);
+  gap: 6px; flex-shrink: 0;
+}
+.frag-btn {
+  background: rgba(242,239,232,0.04); border: 1px solid var(--border);
+  border-radius: 6px; padding: 7px 3px; text-align: center;
+  cursor: pointer; transition: all 0.12s;
+}
+.frag-dot { width: 20px; height: 20px; border-radius: 50%; margin: 0 auto 4px; }
+.frag-lbl { font-size: 8px; color: var(--muted); line-height: 1.2; letter-spacing: 0.02em; }
+.frag-btn.sel { border-color: var(--white); background: rgba(242,239,232,0.1); }
+.frag-btn.sel .frag-lbl { color: var(--white); }
 
-/* payment */
-.payment-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
-.pay-btn { background: rgba(242,239,232,0.04); border: 1px solid var(--border); border-radius: 6px; padding: 14px 8px; text-align: center; cursor: pointer; transition: all 0.15s; }
-.pay-icon { font-size: 22px; margin-bottom: 4px; }
-.pay-label { font-size: 12px; color: var(--muted); letter-spacing: 0.06em; }
-.pay-btn.selected { border-color: var(--white); background: rgba(242,239,232,0.1); }
-.pay-btn.selected .pay-label { color: var(--white); }
-.pay-btn.gpay-btn.selected { border-color: var(--gpay); background: rgba(66,133,244,0.1); }
+/* Size row */
+.size-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; flex-shrink: 0; }
+.size-btn {
+  background: rgba(242,239,232,0.04); border: 1px solid var(--border);
+  border-radius: 6px; padding: 8px 4px; text-align: center; cursor: pointer; transition: all 0.12s;
+}
+.size-ml { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.06em; color: var(--muted); }
+.size-price { font-size: 9px; color: var(--muted); margin-top: 1px; }
+.size-btn.sel { border-color: var(--white); background: rgba(242,239,232,0.1); }
+.size-btn.sel .size-ml, .size-btn.sel .size-price { color: var(--white); }
 
-/* free item toggle */
-.free-toggle { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: rgba(61,191,114,0.05); border: 1px solid rgba(61,191,114,0.15); border-radius: 6px; cursor: pointer; margin-bottom: 16px; user-select: none; }
-.free-toggle input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--green); cursor: pointer; flex-shrink: 0; }
-.free-toggle-label { font-size: 13px; color: var(--muted); line-height: 1.4; }
-.free-toggle.active .free-toggle-label { color: var(--green); }
+/* Payment row */
+.pay-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; flex-shrink: 0; }
+.pay-btn {
+  background: rgba(242,239,232,0.04); border: 1px solid var(--border);
+  border-radius: 6px; padding: 9px 8px; text-align: center; cursor: pointer; transition: all 0.12s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.pay-icon { font-size: 16px; }
+.pay-lbl { font-size: 13px; font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.06em; color: var(--muted); }
+.pay-btn.sel { border-color: var(--white); background: rgba(242,239,232,0.1); }
+.pay-btn.sel .pay-lbl { color: var(--white); }
+.pay-btn.gpay.sel { border-color: var(--gpay); background: rgba(66,133,244,0.1); }
 
-/* notes */
-#saleNotes { width: 100%; background: rgba(242,239,232,0.05); border: 1px solid var(--border); border-radius: 6px; padding: 11px 13px; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--white); outline: none; resize: none; height: 60px; }
-#saleNotes:focus { border-color: rgba(242,239,232,0.32); }
-#saleNotes::placeholder { color: var(--muted); }
+/* Free toggle — slim */
+.free-toggle {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px;
+  background: rgba(61,191,114,0.05); border: 1px solid rgba(61,191,114,0.15);
+  border-radius: 6px; cursor: pointer; flex-shrink: 0;
+  user-select: none;
+}
+.free-toggle input[type=checkbox] {
+  width: 16px; height: 16px; accent-color: var(--green);
+  cursor: pointer; flex-shrink: 0; pointer-events: none;
+}
+.free-lbl { font-size: 12px; color: var(--muted); line-height: 1.3; pointer-events: none; }
+.free-toggle.on .free-lbl { color: var(--green); }
 
-/* submit */
-.submit-btn { width: 100%; background: var(--white); color: var(--black); border: none; padding: 16px; font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.08em; border-radius: 4px; cursor: pointer; margin-top: 8px; transition: opacity 0.2s; }
-.submit-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-.submit-btn.saving { opacity: 0.6; }
+/* Submit button */
+#submitBtn {
+  width: 100%; background: var(--white); color: var(--black);
+  border: none; padding: 13px;
+  font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.08em;
+  border-radius: 4px; cursor: pointer; flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+#submitBtn:disabled { opacity: 0.25; cursor: not-allowed; }
 
-.clear-btn { width: 100%; background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 12px; font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.08em; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+/* Success overlay */
+#successFlash {
+  position: fixed; inset: 0; background: rgba(10,10,8,0.92);
+  display: none; align-items: center; justify-content: center; z-index: 99;
+}
+#successFlash.show { display: flex; animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+.success-inner { text-align: center; }
+.success-inner .big { font-family: 'Bebas Neue', sans-serif; font-size: 56px; letter-spacing: 0.06em; color: var(--green); line-height: 1; }
+.success-inner .sm { font-size: 13px; color: var(--muted); margin-top: 6px; }
 
-/* success flash */
-.success-flash { position: fixed; inset: 0; background: rgba(61,191,114,0.12); display: none; align-items: center; justify-content: center; z-index: 99; pointer-events: none; }
-.success-flash.show { display: flex; animation: flashIn 0.3s ease; }
-@keyframes flashIn { from{opacity:0}to{opacity:1} }
-.success-msg { font-family: 'Bebas Neue', sans-serif; font-size: 48px; letter-spacing: 0.06em; color: var(--green); text-align: center; }
-
-.save-note { font-size: 11px; color: var(--muted); text-align: center; margin-top: 10px; min-height: 16px; }
-
-/* walk-in note */
-.walkin-note { font-size: 11px; color: var(--muted); line-height: 1.5; margin-bottom: 10px; }
+hr.div { border: none; border-top: 1px solid var(--border); flex-shrink: 0; margin: 0; }
 </style>
 </head>
 <body>
 
-<div class="success-flash" id="successFlash">
-  <div class="success-msg">SALE<br>RECORDED ✓</div>
+<div id="successFlash">
+  <div class="success-inner">
+    <div class="big">SALE<br>SAVED ✓</div>
+    <div class="sm">Clearing in a moment…</div>
+  </div>
 </div>
 
-<div class="page">
+<div class="app">
+
+  <!-- Header -->
   <div class="header">
-    <div class="logo">OCD<div class="logo-sub">Obsessive. Compulsive. Delicious.</div></div>
-    <div class="page-title">Record Sale</div>
+    <div>
+      <div class="logo">OCD</div>
+      <div class="logo-sub">Obsessive. Compulsive. Delicious.</div>
+    </div>
+    <div class="page-label">Record Sale</div>
   </div>
 
-  <!-- CODE LOOKUP -->
-  <span class="section-label">Booth code (from customer's survey)</span>
+  <hr class="div">
+
+  <!-- Code lookup -->
   <div class="code-row">
-    <input id="codeInput" type="text" maxlength="3" placeholder="123"
-      oninput="onCodeType(this)" onkeydown="if(event.key==='Enter')lookupCode()">
+    <input id="codeInput" type="text" inputmode="numeric" maxlength="3"
+      placeholder="123" autocomplete="off"
+      oninput="this.value=this.value.replace(/\D/g,'').slice(0,3); resetStatus();"
+      onkeydown="if(event.key==='Enter'){event.preventDefault();lookupCode();}">
     <button id="lookupBtn" onclick="lookupCode()">LOOK UP</button>
   </div>
-  <div class="code-fb" id="codeFb"></div>
-  <p class="walkin-note">No code? Leave blank and tap Look Up to record a walk-in sale.</p>
+  <div class="status-bar dim" id="statusBar">Enter code or leave blank for walk-in</div>
 
-  <!-- CUSTOMER INFO STRIP -->
-  <div class="customer-strip" id="customerStrip">
-    <div class="cs-row">
-      <div class="cs-item"><strong id="csCode">—</strong>Code</div>
-      <div class="cs-item"><strong id="csFav">—</strong>Favourite</div>
-      <div class="cs-item"><strong id="csContact">—</strong>Contact</div>
-      <div class="cs-item"><strong id="csSpun">—</strong>Spun</div>
-    </div>
-  </div>
+  <hr class="div">
 
-  <hr class="divider">
-
-  <!-- FRAGRANCE -->
-  <span class="section-label">Fragrance purchased</span>
+  <!-- Fragrance -->
+  <span class="sl">Fragrance purchased</span>
   <div class="frag-grid" id="fragGrid"></div>
 
-  <!-- SIZE -->
-  <span class="section-label">Size</span>
-  <div class="size-grid">
-    <div class="size-btn" onclick="selectSize(this,'30ml','₹999')">
+  <!-- Size -->
+  <span class="sl">Size</span>
+  <div class="size-row">
+    <div class="size-btn" onclick="pick(this,'size','30ml','₹999')">
       <div class="size-ml">30ml</div><div class="size-price">₹999</div>
     </div>
-    <div class="size-btn" onclick="selectSize(this,'50ml','₹1499')">
+    <div class="size-btn" onclick="pick(this,'size','50ml','₹1499')">
       <div class="size-ml">50ml</div><div class="size-price">₹1499</div>
     </div>
-    <div class="size-btn" onclick="selectSize(this,'100ml','₹2499')">
+    <div class="size-btn" onclick="pick(this,'size','100ml','₹2499')">
       <div class="size-ml">100ml</div><div class="size-price">₹2499</div>
     </div>
   </div>
 
-  <!-- PAYMENT -->
-  <span class="section-label">Payment method</span>
-  <div class="payment-grid">
-    <div class="pay-btn" onclick="selectPay(this,'Cash')">
-      <div class="pay-icon">💵</div>
-      <div class="pay-label">Cash</div>
+  <!-- Payment -->
+  <span class="sl">Payment</span>
+  <div class="pay-row">
+    <div class="pay-btn" onclick="pick(this,'pay','Cash')">
+      <span class="pay-icon">💵</span><span class="pay-lbl">Cash</span>
     </div>
-    <div class="pay-btn gpay-btn" onclick="selectPay(this,'GPay')">
-      <div class="pay-icon">📲</div>
-      <div class="pay-label">GPay / UPI</div>
+    <div class="pay-btn gpay" onclick="pick(this,'pay','GPay')">
+      <span class="pay-icon">📲</span><span class="pay-lbl">GPay / UPI</span>
     </div>
   </div>
 
-  <!-- FREE ITEM -->
+  <!-- Free item -->
   <div class="free-toggle" id="freeToggle" onclick="toggleFree()">
-    <input type="checkbox" id="freeCheck" onclick="event.stopPropagation(); toggleFree()">
-    <div class="free-toggle-label">Customer is also receiving a <strong>free item</strong> with this purchase</div>
+    <input type="checkbox" id="freeChk" tabindex="-1">
+    <div class="free-lbl">Customer also gets a <strong>free item</strong></div>
   </div>
 
-  <!-- NOTES -->
-  <span class="section-label">Notes (optional)</span>
-  <textarea id="saleNotes" placeholder="e.g. gifting, repeat customer, asked about SKU5…"></textarea>
+  <!-- Submit -->
+  <button id="submitBtn" disabled onclick="recordSale()">Record Sale</button>
 
-  <button class="submit-btn" id="submitBtn" onclick="recordSale()" disabled>
-    Record Sale
-  </button>
-  <button class="clear-btn" onclick="clearAll()">Clear / New Sale</button>
-  <div class="save-note" id="saveNote"></div>
 </div>
+
 <script>
-// ── CONFIG ───────────────────────────────────────────────────
+// ── CONFIG — your Apps Script URL ───────────────────────────
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby-es0gcWx9lenRwlvrhByldVHuDwBwmxxS6wfRu6iiiYTOf8dPUumBGKS6NcQXs5-ArQ/exec";
 
 const FRAGRANCES = [
-  { id:'SKU1', name:'Skinny Dip',       color:'#5B7FB5' },
-  { id:'SKU2', name:'Midnight Snack',   color:'#5A2510' },
-  { id:'SKU3', name:'Freshly Picked',   color:'#C8B89A' },
-  { id:'SKU4', name:'Still Not Over It',color:'#6B1E24' },
-  { id:'SKU5', name:'About Last Night', color:'#8A9E72' },
+  { id:'SKU1', name:'Skinny Dip',        color:'#5B7FB5' },
+  { id:'SKU2', name:'Midnight Snack',    color:'#5A2510' },
+  { id:'SKU3', name:'Freshly Picked',    color:'#C8B89A' },
+  { id:'SKU4', name:'Still Not Over It', color:'#6B1E24' },
+  { id:'SKU5', name:'About Last Night',  color:'#8A9E72' },
 ];
 
-let selCode=null, selFrag=null, selSize=null, selPrice=null, selPay=null, freeItem=false;
+// ── STATE ────────────────────────────────────────────────────
+let sel = { code: null, frag: null, fragName: null, size: null, price: null, pay: null };
+let freeItem = false;
 
-// ── BUILD UI ─────────────────────────────────────────────────
+// ── BUILD FRAG GRID ─────────────────────────────────────────
 function buildFragGrid() {
   document.getElementById('fragGrid').innerHTML = FRAGRANCES.map(f => `
-    <div class="frag-btn" onclick="selectFrag(this,'${f.id}','${f.name}')">
-      <div class="frag-color" style="background:${f.color}"></div>
-      <div class="frag-name">${f.name}</div>
+    <div class="frag-btn" data-group="frag" data-val="${f.id}" data-name="${f.name}"
+      onclick="pick(this,'frag','${f.id}','${f.name}')">
+      <div class="frag-dot" style="background:${f.color}"></div>
+      <div class="frag-lbl">${f.name.split(' ')[0]}<br>${f.name.split(' ').slice(1).join(' ')}</div>
     </div>`).join('');
 }
 
-// ── SELECTIONS ───────────────────────────────────────────────
-function selectFrag(el,id,name){
-  document.querySelectorAll('.frag-btn').forEach(b=>b.classList.remove('selected'));
-  el.classList.add('selected');
-  selFrag={id,name}; checkReady();
-}
-function selectSize(el,size,price){
-  document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('selected'));
-  el.classList.add('selected');
-  selSize=size; selPrice=price; checkReady();
-}
-function selectPay(el,method){
-  document.querySelectorAll('.pay-btn').forEach(b=>b.classList.remove('selected'));
-  el.classList.add('selected');
-  selPay=method; checkReady();
-}
-function toggleFree(){
-  freeItem=!freeItem;
-  document.getElementById('freeCheck').checked=freeItem;
-  document.getElementById('freeToggle').classList.toggle('active',freeItem);
-}
-function checkReady(){
-  document.getElementById('submitBtn').disabled=!(selFrag&&selSize&&selPay);
+// ── GENERIC PICKER ───────────────────────────────────────────
+function pick(el, group, val, extra) {
+  document.querySelectorAll(`[data-group="${group}"], .${group}-btn`).forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel');
+  if (group === 'frag') { sel.frag = val; sel.fragName = extra; }
+  if (group === 'size') { sel.size = val; sel.price = extra; }
+  if (group === 'pay')  { sel.pay = val; }
+  checkReady();
 }
 
-// ── LOOKUP ───────────────────────────────────────────────────
-function onCodeType(el){
-  el.value=el.value.replace(/\D/g,'').slice(0,3);
-  document.getElementById('customerStrip').classList.remove('show');
-  selCode=null;
-}
-function setFb(msg,cls){
-  const el=document.getElementById('codeFb');
-  el.textContent=msg;
-  el.className='code-fb'+(cls?' '+cls:'');
+// Mark size and pay buttons with data-group
+document.querySelectorAll('.size-btn').forEach(b => b.dataset.group = 'size');
+document.querySelectorAll('.pay-btn').forEach(b => b.dataset.group = 'pay');
+
+function toggleFree() {
+  freeItem = !freeItem;
+  document.getElementById('freeChk').checked = freeItem;
+  document.getElementById('freeToggle').classList.toggle('on', freeItem);
 }
 
-async function lookupCode(){
-  const raw=document.getElementById('codeInput').value.trim();
+function checkReady() {
+  document.getElementById('submitBtn').disabled = !(sel.frag && sel.size && sel.pay);
+}
 
-  if(!raw){
-    selCode='WALKIN-'+Date.now();
-    setFb('Walk-in','ok');
+// ── STATUS BAR ───────────────────────────────────────────────
+function setStatus(msg, cls) {
+  const el = document.getElementById('statusBar');
+  el.textContent = msg;
+  el.className = 'status-bar ' + (cls || 'dim');
+}
+function resetStatus() {
+  setStatus('Enter code or leave blank for walk-in', 'dim');
+  document.getElementById('codeInput').classList.remove('ok','err');
+  sel.code = null;
+}
+
+// ── CODE LOOKUP ──────────────────────────────────────────────
+async function lookupCode() {
+  const raw = document.getElementById('codeInput').value.trim();
+  const inp = document.getElementById('codeInput');
+  const btn = document.getElementById('lookupBtn');
+
+  // Walk-in — no code entered
+  if (!raw) {
+    sel.code = 'WALKIN-' + Date.now();
+    setStatus('Walk-in sale — no code', 'ok');
+    inp.classList.add('ok');
     return;
   }
 
-  try{
-    const res=await fetch(`${SCRIPT_URL}?action=lookup&booth_code=${raw}`);
-    const data=await res.json();
+  btn.textContent = '…'; btn.disabled = true;
 
-    if(data.found){
-      selCode=raw;
-      setFb('Found','ok');
-      document.getElementById('customerStrip').classList.add('show');
-      document.getElementById('csCode').textContent=raw;
-      document.getElementById('csFav').textContent=data.final_choice||'—';
-      document.getElementById('csContact').textContent=data.email||'—';
-      document.getElementById('csSpun').textContent=data.spun?'Yes':'No';
+  try {
+    const res  = await fetch(`${SCRIPT_URL}?action=lookup&booth_code=${encodeURIComponent(raw)}`);
+    const data = await res.json();
+
+    if (data.found) {
+      sel.code = raw;
+      inp.classList.add('ok');
+      const fav     = data.final_choice || '—';
+      const contact = data.email || (data.anonymous ? 'Anon' : '—');
+      const spun    = data.spun ? 'Spun ✓' : 'Not spun';
+      setStatus(`✓ ${raw} · Fav: ${fav} · ${contact} · ${spun}`, 'ok');
     } else {
-      selCode='WALKIN-'+raw;
-      setFb('Not found → Walk-in','err');
+      sel.code = 'WALKIN-' + raw;
+      inp.classList.add('err');
+      setStatus('Code not found — saved as walk-in', 'err');
     }
-  }catch(e){
-    selCode='WALKIN-'+raw;
+  } catch(e) {
+    sel.code = 'WALKIN-' + raw;
+    inp.classList.add('err');
+    setStatus('Network error — saved as walk-in', 'err');
   }
+
+  btn.textContent = 'LOOK UP'; btn.disabled = false;
 }
 
-// ── RECORD SALE (FIXED) ──────────────────────────────────────
-async function recordSale(){
-  if(!selFrag||!selSize||!selPay)return;
+// ── RECORD SALE ──────────────────────────────────────────────
+async function recordSale() {
+  if (!sel.frag || !sel.size || !sel.pay) return;
 
-  if(!selCode) selCode='WALKIN-'+Date.now();
+  // If staff never tapped Look Up, treat as walk-in
+  if (!sel.code) {
+    const raw = document.getElementById('codeInput').value.trim();
+    sel.code = raw ? 'WALKIN-' + raw : 'WALKIN-' + Date.now();
+  }
 
-  const btn=document.getElementById('submitBtn');
-  btn.disabled=true;
-  btn.textContent='SAVING…';
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = 'SAVING…';
 
-  // 🔥 USE FORMDATA (KEY FIX)
-  const formData = new FormData();
-  formData.append("action","logSale");
-  formData.append("booth_code",selCode);
-  formData.append("sale_fragrance",selFrag.name);
-  formData.append("sale_sku",selFrag.id);
-  formData.append("sale_size",selSize);
-  formData.append("sale_price",selPrice);
-  formData.append("sale_payment",selPay);
-  formData.append("sale_free_item",freeItem);
-  formData.append("sale_notes",document.getElementById('saleNotes').value.trim());
-  formData.append("sale_time",new Date().toISOString());
+  // Send as JSON — Apps Script doPost reads JSON
+  const payload = {
+    action:         'logSale',
+    booth_code:     sel.code,
+    sale_fragrance: sel.fragName,
+    sale_sku:       sel.frag,
+    sale_size:      sel.size,
+    sale_price:     sel.price,
+    sale_payment:   sel.pay,
+    sale_free_item: freeItem,   // explicit boolean — not stringified via FormData
+    sale_notes:     '',
+    sale_time:      new Date().toISOString(),
+  };
 
-  try{
-    await fetch(SCRIPT_URL,{
-      method:"POST",
-      mode:"no-cors",
-      body: formData
+  try {
+    // no-cors means we can't read the response — but the write goes through
+    await fetch(SCRIPT_URL, {
+      method:  'POST',
+      mode:    'no-cors',
+      headers: { 'Content-Type': 'text/plain' }, // text/plain bypasses CORS preflight
+      body:    JSON.stringify(payload),
     });
-
     showSuccess();
-
-  }catch(e){
-    document.getElementById('saveNote').textContent='❌ Failed';
-    btn.disabled=false;
-    btn.textContent='Record Sale';
+  } catch(e) {
+    setStatus('❌ Save failed — note manually', 'err');
+    btn.disabled = false; btn.textContent = 'Record Sale';
   }
 }
 
-// ── UI ───────────────────────────────────────────────────────
-function showSuccess(){
-  const f=document.getElementById('successFlash');
-  f.classList.add('show');
-  setTimeout(()=>{f.classList.remove('show');clearAll();},1400);
+// ── SUCCESS + RESET ──────────────────────────────────────────
+function showSuccess() {
+  document.getElementById('successFlash').classList.add('show');
+  setTimeout(() => {
+    document.getElementById('successFlash').classList.remove('show');
+    clearAll();
+  }, 1600);
 }
 
-function clearAll(){
-  selCode=null;selFrag=null;selSize=null;selPrice=null;selPay=null;freeItem=false;
-  document.getElementById('codeInput').value='';
-  document.getElementById('saleNotes').value='';
-  document.getElementById('freeCheck').checked=false;
-  document.querySelectorAll('.selected').forEach(b=>b.classList.remove('selected'));
-  document.getElementById('submitBtn').disabled=true;
+function clearAll() {
+  sel = { code: null, frag: null, fragName: null, size: null, price: null, pay: null };
+  freeItem = false;
+  document.getElementById('codeInput').value = '';
+  document.getElementById('codeInput').className = '';
+  document.getElementById('freeChk').checked = false;
+  document.getElementById('freeToggle').classList.remove('on');
+  document.querySelectorAll('.sel').forEach(b => b.classList.remove('sel'));
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('submitBtn').textContent = 'Record Sale';
+  setStatus('Enter code or leave blank for walk-in', 'dim');
 }
 
 // ── INIT ─────────────────────────────────────────────────────
 buildFragGrid();
+// Add data-group to dynamically after render
+setTimeout(() => {
+  document.querySelectorAll('.size-btn').forEach(b => b.dataset.group = 'size');
+  document.querySelectorAll('.pay-btn').forEach(b => b.dataset.group = 'pay');
+}, 0);
 </script>
 </body>
 </html>
