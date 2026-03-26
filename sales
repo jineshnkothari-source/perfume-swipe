@@ -147,11 +147,11 @@ html, body { width: 100%; min-height: 100%; background: var(--black); color: var
   <!-- SIZE -->
   <span class="section-label">Size</span>
   <div class="size-grid">
-    <div class="size-btn" onclick="selectSize(this,'30ml','₹999')">
-      <div class="size-ml">30ml</div><div class="size-price">₹999</div>
+    <div class="size-btn" onclick="selectSize(this,'5ml','₹100')">
+      <div class="size-ml">5ml</div><div class="size-price">₹100</div>
     </div>
-    <div class="size-btn" onclick="selectSize(this,'50ml','₹1499')">
-      <div class="size-ml">50ml</div><div class="size-price">₹1499</div>
+    <div class="size-btn" onclick="selectSize(this,'50ml','₹1099')">
+      <div class="size-ml">50ml</div><div class="size-price">₹1099</div>
     </div>
     <div class="size-btn" onclick="selectSize(this,'100ml','₹2499')">
       <div class="size-ml">100ml</div><div class="size-price">₹2499</div>
@@ -193,7 +193,7 @@ html, body { width: 100%; min-height: 100%; background: var(--black); color: var
 // Paste your Apps Script URL here once
 let SCRIPT_URL = localStorage.getItem('ocdSalesUrl') || '';
 if (!SCRIPT_URL) {
-  SCRIPT_URL = prompt('Paste your Apps Script URL:') || '';
+  SCRIPT_URL = prompt('https://script.google.com/macros/s/AKfycbyhzedIvtzD6cVsyQSToZVTsDfFJUA5N0AXRL47t9QXKNJPQFyRep51npQCHXQzyvRKIw/exec') || '';
   if (SCRIPT_URL) localStorage.setItem('ocdSalesUrl', SCRIPT_URL);
 }
 
