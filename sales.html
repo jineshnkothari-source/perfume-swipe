@@ -2,214 +2,73 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OCD — Record Sale</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+
 <style>
-:root {
-  --black:  #0A0A08;
-  --white:  #F2EFE8;
-  --border: rgba(242,239,232,0.13);
-  --muted:  rgba(242,239,232,0.38);
-  --red:    #E8372A;
-  --green:  #3DBF72;
-  --gpay:   #4285F4;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body { width: 100%; min-height: 100%; background: var(--black); color: var(--white); font-family: 'DM Sans', sans-serif; }
-
-.page { max-width: 480px; margin: 0 auto; padding: 22px 20px 40px; }
-
-/* header */
-.header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 24px; }
-.logo { font-family: 'Bebas Neue', sans-serif; font-size: 44px; line-height: 0.88; letter-spacing: 0.06em; }
-.logo-sub { font-size: 10px; font-family: 'DM Sans', sans-serif; font-weight: 300; font-style: italic; letter-spacing: 0.1em; color: var(--muted); margin-top: 4px; }
-.page-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.1em; color: var(--muted); }
-
-.divider { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
-
-/* code entry */
-.section-label { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; display: block; }
-
-.code-row { display: flex; gap: 10px; margin-bottom: 6px; }
-#codeInput { flex: 1; background: rgba(242,239,232,0.06); border: 1px solid var(--border); border-radius: 4px; padding: 13px 16px; font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 0.3em; color: var(--white); outline: none; text-align: center; transition: border-color 0.2s; }
-#codeInput:focus { border-color: rgba(242,239,232,0.38); }
-#codeInput.err { border-color: var(--red) !important; animation: shake 0.3s ease; }
-#codeInput.ok  { border-color: var(--green) !important; }
-@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-7px)} 75%{transform:translateX(7px)} }
-#lookupBtn { background: var(--white); color: var(--black); border: none; padding: 13px 18px; font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.06em; border-radius: 4px; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
-#lookupBtn:disabled { opacity: 0.35; cursor: not-allowed; }
-.code-fb { font-size: 12px; min-height: 18px; margin-bottom: 4px; }
-.code-fb.err { color: var(--red); }
-.code-fb.ok  { color: var(--green); }
-
-/* customer info strip */
-.customer-strip { background: rgba(61,191,114,0.07); border: 1px solid rgba(61,191,114,0.2); border-radius: 6px; padding: 12px 14px; margin-bottom: 18px; display: none; }
-.customer-strip.show { display: block; }
-.cs-row { display: flex; gap: 16px; flex-wrap: wrap; }
-.cs-item { font-size: 12px; color: var(--muted); }
-.cs-item strong { color: var(--white); font-weight: 500; display: block; font-size: 13px; }
-
-/* fragrance grid */
-.frag-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; margin-bottom: 16px; }
-.frag-btn { background: rgba(242,239,232,0.04); border: 1px solid var(--border); border-radius: 8px; padding: 10px 4px; text-align: center; cursor: pointer; transition: all 0.15s; }
-.frag-color { width: 24px; height: 24px; border-radius: 50%; margin: 0 auto 6px; }
-.frag-name { font-size: 9px; letter-spacing: 0.03em; color: var(--muted); line-height: 1.3; }
-.frag-btn.selected { border-color: var(--white); background: rgba(242,239,232,0.1); }
-.frag-btn.selected .frag-name { color: var(--white); }
-
-/* size grid */
-.size-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 16px; }
-.size-btn { background: rgba(242,239,232,0.04); border: 1px solid var(--border); border-radius: 6px; padding: 12px 8px; text-align: center; cursor: pointer; transition: all 0.15s; }
-.size-ml { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.06em; color: var(--muted); }
-.size-price { font-size: 11px; color: var(--muted); margin-top: 2px; }
-.size-btn.selected { border-color: var(--white); background: rgba(242,239,232,0.1); }
-.size-btn.selected .size-ml,
-.size-btn.selected .size-price { color: var(--white); }
-
-/* payment */
-.payment-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
-.pay-btn { background: rgba(242,239,232,0.04); border: 1px solid var(--border); border-radius: 6px; padding: 14px 8px; text-align: center; cursor: pointer; transition: all 0.15s; }
-.pay-icon { font-size: 22px; margin-bottom: 4px; }
-.pay-label { font-size: 12px; color: var(--muted); letter-spacing: 0.06em; }
-.pay-btn.selected { border-color: var(--white); background: rgba(242,239,232,0.1); }
-.pay-btn.selected .pay-label { color: var(--white); }
-.pay-btn.gpay-btn.selected { border-color: var(--gpay); background: rgba(66,133,244,0.1); }
-
-/* free item toggle */
-.free-toggle { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: rgba(61,191,114,0.05); border: 1px solid rgba(61,191,114,0.15); border-radius: 6px; cursor: pointer; margin-bottom: 16px; user-select: none; }
-.free-toggle input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--green); cursor: pointer; flex-shrink: 0; }
-.free-toggle-label { font-size: 13px; color: var(--muted); line-height: 1.4; }
-.free-toggle.active .free-toggle-label { color: var(--green); }
-
-/* notes */
-#saleNotes { width: 100%; background: rgba(242,239,232,0.05); border: 1px solid var(--border); border-radius: 6px; padding: 11px 13px; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--white); outline: none; resize: none; height: 60px; }
-#saleNotes:focus { border-color: rgba(242,239,232,0.32); }
-#saleNotes::placeholder { color: var(--muted); }
-
-/* submit */
-.submit-btn { width: 100%; background: var(--white); color: var(--black); border: none; padding: 16px; font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.08em; border-radius: 4px; cursor: pointer; margin-top: 8px; transition: opacity 0.2s; }
-.submit-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-.submit-btn.saving { opacity: 0.6; }
-
-.clear-btn { width: 100%; background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 12px; font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.08em; border-radius: 4px; cursor: pointer; margin-top: 10px; }
-
-/* success flash */
-.success-flash { position: fixed; inset: 0; background: rgba(61,191,114,0.12); display: none; align-items: center; justify-content: center; z-index: 99; pointer-events: none; }
-.success-flash.show { display: flex; animation: flashIn 0.3s ease; }
-@keyframes flashIn { from{opacity:0}to{opacity:1} }
-.success-msg { font-family: 'Bebas Neue', sans-serif; font-size: 48px; letter-spacing: 0.06em; color: var(--green); text-align: center; }
-
-.save-note { font-size: 11px; color: var(--muted); text-align: center; margin-top: 10px; min-height: 16px; }
-
-/* walk-in note */
-.walkin-note { font-size: 11px; color: var(--muted); line-height: 1.5; margin-bottom: 10px; }
+body { background:#0A0A08; color:#F2EFE8; font-family:sans-serif; }
+.page { max-width:420px; margin:auto; padding:20px; }
+button { padding:12px; width:100%; margin-top:10px; }
+.frag-btn,.size-btn,.pay-btn { border:1px solid #444; padding:10px; margin:5px; cursor:pointer; }
+.selected { background:#fff; color:#000; }
 </style>
 </head>
+
 <body>
-
-<div class="success-flash" id="successFlash">
-  <div class="success-msg">SALE<br>RECORDED ✓</div>
-</div>
-
 <div class="page">
-  <div class="header">
-    <div class="logo">OCD<div class="logo-sub">Obsessive. Compulsive. Delicious.</div></div>
-    <div class="page-title">Record Sale</div>
-  </div>
 
-  <!-- CODE LOOKUP -->
-  <span class="section-label">Booth code (from customer's survey)</span>
-  <div class="code-row">
-    <input id="codeInput" type="text" maxlength="3" placeholder="123"
-      oninput="onCodeType(this)" onkeydown="if(event.key==='Enter')lookupCode()">
-    <button id="lookupBtn" onclick="lookupCode()">LOOK UP</button>
-  </div>
-  <div class="code-fb" id="codeFb"></div>
-  <p class="walkin-note">No code? Leave blank and tap Look Up to record a walk-in sale.</p>
+<h2>Record Sale</h2>
 
-  <!-- CUSTOMER INFO STRIP -->
-  <div class="customer-strip" id="customerStrip">
-    <div class="cs-row">
-      <div class="cs-item"><strong id="csCode">—</strong>Code</div>
-      <div class="cs-item"><strong id="csFav">—</strong>Favourite</div>
-      <div class="cs-item"><strong id="csContact">—</strong>Contact</div>
-      <div class="cs-item"><strong id="csSpun">—</strong>Spun</div>
-    </div>
-  </div>
+<input id="codeInput" placeholder="Enter Code" oninput="onCodeType(this)" />
 
-  <hr class="divider">
+<h3>Fragrance</h3>
+<div id="fragGrid"></div>
 
-  <!-- FRAGRANCE -->
-  <span class="section-label">Fragrance purchased</span>
-  <div class="frag-grid" id="fragGrid"></div>
-
-  <!-- SIZE -->
-  <span class="section-label">Size</span>
-  <div class="size-grid">
-    <div class="size-btn" onclick="selectSize(this,'5ml','₹100')">
-      <div class="size-ml">5ml</div><div class="size-price">₹100</div>
-    </div>
-    <div class="size-btn" onclick="selectSize(this,'50ml','₹1099')">
-      <div class="size-ml">50ml</div><div class="size-price">₹1099</div>
-    </div>
-    <div class="size-btn" onclick="selectSize(this,'100ml','₹2499')">
-      <div class="size-ml">100ml</div><div class="size-price">₹2499</div>
-    </div>
-  </div>
-
-  <!-- PAYMENT -->
-  <span class="section-label">Payment method</span>
-  <div class="payment-grid">
-    <div class="pay-btn" onclick="selectPay(this,'Cash')">
-      <div class="pay-icon">💵</div>
-      <div class="pay-label">Cash</div>
-    </div>
-    <div class="pay-btn gpay-btn" onclick="selectPay(this,'GPay')">
-      <div class="pay-icon">📲</div>
-      <div class="pay-label">GPay / UPI</div>
-    </div>
-  </div>
-
-  <!-- FREE ITEM -->
-  <div class="free-toggle" id="freeToggle" onclick="toggleFree()">
-    <input type="checkbox" id="freeCheck" onclick="event.stopPropagation(); toggleFree()">
-    <div class="free-toggle-label">Customer is also receiving a <strong>free item</strong> with this purchase</div>
-  </div>
-
-  <!-- NOTES -->
-  <span class="section-label">Notes (optional)</span>
-  <textarea id="saleNotes" placeholder="e.g. gifting, repeat customer, asked about SKU5…"></textarea>
-
-  <button class="submit-btn" id="submitBtn" onclick="recordSale()" disabled>
-    Record Sale
-  </button>
-  <button class="clear-btn" onclick="clearAll()">Clear / New Sale</button>
-  <div class="save-note" id="saveNote"></div>
+<h3>Size</h3>
+<div>
+<button class="size-btn" onclick="selectSize(this,'5ml','100')">5ml</button>
+<button class="size-btn" onclick="selectSize(this,'50ml','1099')">50ml</button>
+<button class="size-btn" onclick="selectSize(this,'100ml','2499')">100ml</button>
 </div>
+
+<h3>Payment</h3>
+<div>
+<button class="pay-btn" onclick="selectPay(this,'Cash')">Cash</button>
+<button class="pay-btn" onclick="selectPay(this,'GPay')">GPay</button>
+</div>
+
+<label>
+<input type="checkbox" id="freeCheck" onclick="toggleFree()"> Free Item
+</label>
+
+<textarea id="saleNotes" placeholder="Notes"></textarea>
+
+<button id="submitBtn" onclick="recordSale()" disabled>Record Sale</button>
+
+</div>
+
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby-es0gcWx9lenRwlvrhByldVHuDwBwmxxS6wfRu6iiiYTOf8dPUumBGKS6NcQXs5-ArQ/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhzedIvtzD6cVsyQSToZVTsDfFJUA5N0AXRL47t9QXKNJPQFyRep51npQCHXQzyvRKIw/exec";
 
 const FRAGRANCES = [
-  { id:'SKU1', name:'Skinny Dip',       color:'#5B7FB5' },
-  { id:'SKU2', name:'Midnight Snack',   color:'#5A2510' },
-  { id:'SKU3', name:'Freshly Picked',   color:'#C8B89A' },
-  { id:'SKU4', name:'Still Not Over It',color:'#6B1E24' },
-  { id:'SKU5', name:'About Last Night', color:'#8A9E72' },
+  { id:'SKU1', name:'Skinny Dip' },
+  { id:'SKU2', name:'Midnight Snack' },
+  { id:'SKU3', name:'Freshly Picked' },
+  { id:'SKU4', name:'Still Not Over It' },
+  { id:'SKU5', name:'About Last Night' }
 ];
 
 let selCode=null, selFrag=null, selSize=null, selPrice=null, selPay=null, freeItem=false;
 
-// BUILD GRID
-function buildFragGrid() {
-  document.getElementById('fragGrid').innerHTML = FRAGRANCES.map(f => `
-    <div class="frag-btn" onclick="selectFrag(this,'${f.id}','${f.name}')">
-      <div class="frag-color" style="background:${f.color}"></div>
-      <div class="frag-name">${f.name}</div>
-    </div>`).join('');
+// build UI
+function buildFragGrid(){
+  document.getElementById('fragGrid').innerHTML =
+    FRAGRANCES.map(f =>
+      `<button class="frag-btn" onclick="selectFrag(this,'${f.id}','${f.name}')">${f.name}</button>`
+    ).join('');
 }
 
-// SELECTORS
+// selections
 function selectFrag(el,id,name){
   document.querySelectorAll('.frag-btn').forEach(b=>b.classList.remove('selected'));
   el.classList.add('selected');
@@ -232,64 +91,52 @@ function selectPay(el,method){
 }
 
 function toggleFree(){
-  freeItem=!freeItem;
-  document.getElementById('freeCheck').checked=freeItem;
+  freeItem=document.getElementById('freeCheck').checked;
 }
 
 function checkReady(){
-  document.getElementById('submitBtn').disabled=!(selFrag&&selSize&&selPay);
+  document.getElementById('submitBtn').disabled=!(selFrag && selSize && selPay);
 }
 
-// CODE INPUT
+// code input
 function onCodeType(el){
   el.value=el.value.replace(/\D/g,'').slice(0,3);
   selCode=el.value||null;
 }
 
-// 🚀 FINAL SAVE FUNCTION
+// 🚀 SAVE FUNCTION (WORKING)
 async function recordSale(){
 
-  if(!selFrag||!selSize||!selPay) return;
+  if(!selFrag || !selSize || !selPay) return;
 
   let code = selCode || ('WALKIN-'+Date.now());
 
-  const params = new URLSearchParams();
-  params.append("action","logSale");
-  params.append("booth_code",code);
-  params.append("sale_fragrance",selFrag.name);
-  params.append("sale_sku",selFrag.id);
-  params.append("sale_size",selSize);
-  params.append("sale_price",selPrice);
-  params.append("sale_payment",selPay);
-  params.append("sale_free_item",freeItem);
-  params.append("sale_notes",document.getElementById('saleNotes').value.trim());
-  params.append("sale_time",new Date().toISOString());
-
-  const btn=document.getElementById('submitBtn');
-  btn.disabled=true;
-  btn.textContent="SAVING...";
+  const payload = {
+    action:'logSale',
+    booth_code:code,
+    sale_fragrance:selFrag.name,
+    sale_sku:selFrag.id,
+    sale_size:selSize,
+    sale_price:selPrice,
+    sale_payment:selPay,
+    sale_free_item:freeItem,
+    sale_notes:document.getElementById('saleNotes').value.trim(),
+    sale_time:new Date().toISOString()
+  };
 
   try{
     await fetch(SCRIPT_URL,{
-      method:"POST",
-      body:params
+      method:'POST',
+      mode:'no-cors',   // IMPORTANT
+      body: JSON.stringify(payload)
     });
 
-    showSuccess();
+    alert("Saved ✅");
+    clearAll();
 
   }catch(e){
-    console.error(e);
-    document.getElementById('saveNote').textContent="❌ Failed";
-    btn.disabled=false;
-    btn.textContent="Record Sale";
+    alert("Error ❌");
   }
-}
-
-// UI
-function showSuccess(){
-  const flash=document.getElementById('successFlash');
-  flash.classList.add('show');
-  setTimeout(()=>{flash.classList.remove('show');clearAll();},1200);
 }
 
 function clearAll(){
@@ -297,14 +144,12 @@ function clearAll(){
   document.getElementById('codeInput').value='';
   document.getElementById('saleNotes').value='';
   document.getElementById('freeCheck').checked=false;
-  document.querySelectorAll('.frag-btn,.size-btn,.pay-btn').forEach(b=>b.classList.remove('selected'));
+  document.querySelectorAll('.selected').forEach(b=>b.classList.remove('selected'));
   document.getElementById('submitBtn').disabled=true;
-  document.getElementById('submitBtn').textContent='Record Sale';
-  document.getElementById('saveNote').textContent='';
 }
 
-// INIT
 buildFragGrid();
 </script>
+
 </body>
 </html>
