@@ -307,41 +307,46 @@ async function lookupCode() {
 async function recordSale() {
   if (!selFrag || !selSize || !selPay) return;
 
+  // Auto assign walk-in code if not looked up
   if (!selCode) selCode = 'WALKIN-' + Date.now();
 
   const btn = document.getElementById('submitBtn');
-  btn.disabled=true; btn.textContent='SAVING…'; btn.classList.add('saving');
+  btn.disabled = true;
+  btn.textContent = 'SAVING…';
+  btn.classList.add('saving');
 
   const payload = {
-    action:         'logSale',
-    booth_code:     selCode,
+    action: 'logSale',
+    booth_code: selCode,
     sale_fragrance: selFrag.name,
-    sale_sku:       selFrag.id,
-    sale_size:      selSize,
-    sale_price:     selPrice,
-    sale_payment:   selPay,
+    sale_sku: selFrag.id,
+    sale_size: selSize,
+    sale_price: selPrice,
+    sale_payment: selPay,
     sale_free_item: freeItem,
-    sale_notes:     document.getElementById('saleNotes').value.trim(),
-    sale_time:      new Date().toISOString(),
+    sale_notes: document.getElementById('saleNotes').value.trim(),
+    sale_time: new Date().toISOString(),
   };
 
-  console.log("Sending payload:", payload);
-
   try {
-    const res = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    await fetch("https://script.google.com/macros/s/AKfycbyhzedIvtzD6cVsyQSToZVTsDfFJUA5N0AXRL47t9QXKNJPQFyRep51npQCHXQzyvRKIw/exec", {
+      method: "POST",
+      mode: "no-cors",   // 🔥 REQUIRED for Google Apps Script
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify(payload)
     });
 
-    const text = await res.text();
-    console.log("Server response:", text);
-
+    // Success UI
     showSuccess();
-  } catch(e) {
-    console.error("Save error:", e);
-    document.getElementById('saveNote').textContent = '❌ Failed to save — check connection';
-    btn.disabled=false; btn.textContent='Record Sale'; btn.classList.remove('saving');
+
+  } catch (e) {
+    console.error("Save failed:", e);
+    document.getElementById('saveNote').textContent = '❌ Failed to save';
+    btn.disabled = false;
+    btn.textContent = 'Record Sale';
+    btn.classList.remove('saving');
   }
 }
 
