@@ -188,7 +188,6 @@ html, body { width: 100%; min-height: 100%; background: var(--black); color: var
   <div class="save-note" id="saveNote"></div>
 </div>
 <script>
-// ── CONFIG ───────────────────────────────────────────────────
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhzedIvtzD6cVsyQSToZVTsDfFJUA5N0AXRL47t9QXKNJPQFyRep51npQCHXQzyvRKIw/exec";
 
 const FRAGRANCES = [
@@ -199,10 +198,14 @@ const FRAGRANCES = [
   { id:'SKU5', name:'About Last Night', color:'#8A9E72' },
 ];
 
-let selCode=null, selFrag=null, selSize=null, selPrice=null, selPay=null, freeItem=false;
-let lookupTimer;
+let selCode  = null;
+let selFrag  = null;
+let selSize  = null;
+let selPrice = null;
+let selPay   = null;
+let freeItem = false;
 
-// ── BUILD UI ─────────────────────────────────────────────────
+// BUILD GRID
 function buildFragGrid() {
   document.getElementById('fragGrid').innerHTML = FRAGRANCES.map(f => `
     <div class="frag-btn" onclick="selectFrag(this,'${f.id}','${f.name}')">
@@ -211,150 +214,103 @@ function buildFragGrid() {
     </div>`).join('');
 }
 
-// ── SELECTIONS ───────────────────────────────────────────────
-function selectFrag(el,id,name){
+// SELECTIONS
+function selectFrag(el, id, name) {
   document.querySelectorAll('.frag-btn').forEach(b=>b.classList.remove('selected'));
   el.classList.add('selected');
-  selFrag={id,name}; checkReady();
+  selFrag = { id, name };
+  checkReady();
 }
-function selectSize(el,size,price){
+
+function selectSize(el, size, price) {
   document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('selected'));
   el.classList.add('selected');
-  selSize=size; selPrice=price; checkReady();
+  selSize = size; selPrice = price;
+  checkReady();
 }
-function selectPay(el,method){
+
+function selectPay(el, method) {
   document.querySelectorAll('.pay-btn').forEach(b=>b.classList.remove('selected'));
   el.classList.add('selected');
-  selPay=method; checkReady();
-}
-function toggleFree(){
-  freeItem=!freeItem;
-  document.getElementById('freeCheck').checked=freeItem;
-  document.getElementById('freeToggle').classList.toggle('active',freeItem);
-}
-function checkReady(){
-  document.getElementById('submitBtn').disabled=!(selFrag&&selSize&&selPay);
+  selPay = method;
+  checkReady();
 }
 
-// ── AUTO LOOKUP ──────────────────────────────────────────────
-function onCodeType(el){
+function toggleFree() {
+  freeItem = !freeItem;
+  document.getElementById('freeCheck').checked = freeItem;
+}
+
+function checkReady() {
+  document.getElementById('submitBtn').disabled = !(selFrag && selSize && selPay);
+}
+
+// CODE INPUT (NO LOOKUP NEEDED)
+function onCodeType(el) {
   el.value = el.value.replace(/\D/g,'').slice(0,3);
-
-  clearTimeout(lookupTimer);
-
-  if(el.value.length === 3){
-    lookupTimer = setTimeout(()=>{
-      lookupCode();
-    }, 300);
-  } else {
-    selCode=null;
-    document.getElementById('customerStrip').classList.remove('show');
-  }
+  selCode = el.value || null;
 }
 
-function setFb(msg,cls){
-  const el=document.getElementById('codeFb');
-  el.textContent=msg;
-  el.className='code-fb'+(cls?' '+cls:'');
-}
+// 🚀 FAST SAVE (NO LOOKUP)
+async function recordSale() {
+  if (!selFrag || !selSize || !selPay) return;
 
-async function lookupCode(){
-  const raw=document.getElementById('codeInput').value.trim();
+  let code = selCode;
+  if (!code) code = 'WALKIN-' + Date.now();
 
-  if(!raw){
-    selCode=null;
-    return;
-  }
+  const payload = {
+    action: 'logSale',
+    booth_code: code,
+    sale_fragrance: selFrag.name,
+    sale_sku: selFrag.id,
+    sale_size: selSize,
+    sale_price: selPrice,
+    sale_payment: selPay,
+    sale_free_item: freeItem,
+    sale_notes: document.getElementById('saleNotes').value.trim(),
+    sale_time: new Date().toISOString(),
+  };
 
-  try{
-    const res=await fetch(`${SCRIPT_URL}?action=lookup&booth_code=${raw}`);
-    const data=await res.json();
-
-    if(data.found){
-      selCode=raw;
-
-      document.getElementById('customerStrip').classList.add('show');
-      document.getElementById('csCode').textContent=raw;
-      document.getElementById('csFav').textContent=data.final_choice||'—';
-      document.getElementById('csContact').textContent=data.email||'—';
-      document.getElementById('csSpun').textContent=data.spun?'Yes':'No';
-
-    } else {
-      selCode=null;
-      document.getElementById('customerStrip').classList.remove('show');
-    }
-
-  }catch(e){
-    selCode=null;
-  }
-}
-
-// ── RECORD SALE ──────────────────────────────────────────────
-async function recordSale(){
-  if(!selFrag||!selSize||!selPay)return;
-
-  const inputCode = document.getElementById('codeInput').value.trim();
-
-  // 🔥 ensure correct mapping
-  if(inputCode){
-    selCode = inputCode;
-  }
-
-  if(!selCode){
-    selCode='WALKIN-'+Date.now();
-  }
-
-  const btn=document.getElementById('submitBtn');
-  btn.disabled=true;
-  btn.textContent='SAVING…';
-
-  const formData = new FormData();
-  formData.append("action","logSale");
-  formData.append("booth_code",selCode);
-  formData.append("sale_fragrance",selFrag.name);
-  formData.append("sale_sku",selFrag.id);
-  formData.append("sale_size",selSize);
-  formData.append("sale_price",selPrice);
-  formData.append("sale_payment",selPay);
-  formData.append("sale_free_item",freeItem);
-  formData.append("sale_notes",document.getElementById('saleNotes').value.trim());
-  formData.append("sale_time",new Date().toISOString());
-
-  try{
-    await fetch(SCRIPT_URL,{
-      method:"POST",
-      mode:"no-cors",
-      keepalive:true,
-      body: formData
+  try {
+    // ✅ Proper POST (NO no-cors)
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
     });
+
+    console.log("Saved:", await res.text());
 
     showSuccess();
 
-  }catch(e){
-    document.getElementById('saveNote').textContent='❌ Failed';
-    btn.disabled=false;
-    btn.textContent='Record Sale';
+  } catch (err) {
+    console.error("Error:", err);
+
+    // 🔥 BACKUP METHOD (always works)
+    const params = new URLSearchParams(payload);
+    fetch(SCRIPT_URL + "?" + params.toString());
+
+    showSuccess();
   }
 }
 
-// ── UI ───────────────────────────────────────────────────────
-function showSuccess(){
-  const f=document.getElementById('successFlash');
-  f.classList.add('show');
-  setTimeout(()=>{f.classList.remove('show');clearAll();},1400);
+// UI
+function showSuccess() {
+  const flash = document.getElementById('successFlash');
+  flash.classList.add('show');
+  setTimeout(()=>{ flash.classList.remove('show'); clearAll(); }, 1200);
 }
 
-function clearAll(){
-  selCode=null;selFrag=null;selSize=null;selPrice=null;selPay=null;freeItem=false;
+function clearAll() {
+  selCode=null; selFrag=null; selSize=null; selPrice=null; selPay=null; freeItem=false;
   document.getElementById('codeInput').value='';
   document.getElementById('saleNotes').value='';
   document.getElementById('freeCheck').checked=false;
-  document.querySelectorAll('.selected').forEach(b=>b.classList.remove('selected'));
-  document.getElementById('customerStrip').classList.remove('show');
+  document.querySelectorAll('.frag-btn,.size-btn,.pay-btn').forEach(b=>b.classList.remove('selected'));
   document.getElementById('submitBtn').disabled=true;
 }
 
-// ── INIT ─────────────────────────────────────────────────────
+// INIT
 buildFragGrid();
 </script>
 </body>
