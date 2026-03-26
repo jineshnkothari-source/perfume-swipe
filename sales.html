@@ -198,12 +198,7 @@ const FRAGRANCES = [
   { id:'SKU5', name:'About Last Night', color:'#8A9E72' },
 ];
 
-let selCode  = null;
-let selFrag  = null;
-let selSize  = null;
-let selPrice = null;
-let selPay   = null;
-let freeItem = false;
+let selCode=null, selFrag=null, selSize=null, selPrice=null, selPay=null, freeItem=false;
 
 // BUILD GRID
 function buildFragGrid() {
@@ -214,100 +209,98 @@ function buildFragGrid() {
     </div>`).join('');
 }
 
-// SELECTIONS
-function selectFrag(el, id, name) {
+// SELECTORS
+function selectFrag(el,id,name){
   document.querySelectorAll('.frag-btn').forEach(b=>b.classList.remove('selected'));
   el.classList.add('selected');
-  selFrag = { id, name };
+  selFrag={id,name};
   checkReady();
 }
 
-function selectSize(el, size, price) {
+function selectSize(el,size,price){
   document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('selected'));
   el.classList.add('selected');
-  selSize = size; selPrice = price;
+  selSize=size; selPrice=price;
   checkReady();
 }
 
-function selectPay(el, method) {
+function selectPay(el,method){
   document.querySelectorAll('.pay-btn').forEach(b=>b.classList.remove('selected'));
   el.classList.add('selected');
-  selPay = method;
+  selPay=method;
   checkReady();
 }
 
-function toggleFree() {
-  freeItem = !freeItem;
-  document.getElementById('freeCheck').checked = freeItem;
+function toggleFree(){
+  freeItem=!freeItem;
+  document.getElementById('freeCheck').checked=freeItem;
 }
 
-function checkReady() {
-  document.getElementById('submitBtn').disabled = !(selFrag && selSize && selPay);
+function checkReady(){
+  document.getElementById('submitBtn').disabled=!(selFrag&&selSize&&selPay);
 }
 
-// CODE INPUT (NO LOOKUP NEEDED)
-function onCodeType(el) {
-  el.value = el.value.replace(/\D/g,'').slice(0,3);
-  selCode = el.value || null;
+// CODE INPUT
+function onCodeType(el){
+  el.value=el.value.replace(/\D/g,'').slice(0,3);
+  selCode=el.value||null;
 }
 
-// 🚀 FAST SAVE (NO LOOKUP)
-async function recordSale() {
-  if (!selFrag || !selSize || !selPay) return;
+// 🚀 FINAL SAVE FUNCTION
+async function recordSale(){
 
-  let code = selCode;
-  if (!code) code = 'WALKIN-' + Date.now();
+  if(!selFrag||!selSize||!selPay) return;
 
-  const payload = {
-    action: 'logSale',
-    booth_code: code,
-    sale_fragrance: selFrag.name,
-    sale_sku: selFrag.id,
-    sale_size: selSize,
-    sale_price: selPrice,
-    sale_payment: selPay,
-    sale_free_item: freeItem,
-    sale_notes: document.getElementById('saleNotes').value.trim(),
-    sale_time: new Date().toISOString(),
-  };
+  let code = selCode || ('WALKIN-'+Date.now());
 
-  try {
-    // ✅ Proper POST (NO no-cors)
-    const res = await fetch(SCRIPT_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+  const params = new URLSearchParams();
+  params.append("action","logSale");
+  params.append("booth_code",code);
+  params.append("sale_fragrance",selFrag.name);
+  params.append("sale_sku",selFrag.id);
+  params.append("sale_size",selSize);
+  params.append("sale_price",selPrice);
+  params.append("sale_payment",selPay);
+  params.append("sale_free_item",freeItem);
+  params.append("sale_notes",document.getElementById('saleNotes').value.trim());
+  params.append("sale_time",new Date().toISOString());
+
+  const btn=document.getElementById('submitBtn');
+  btn.disabled=true;
+  btn.textContent="SAVING...";
+
+  try{
+    await fetch(SCRIPT_URL,{
+      method:"POST",
+      body:params
     });
 
-    console.log("Saved:", await res.text());
-
     showSuccess();
 
-  } catch (err) {
-    console.error("Error:", err);
-
-    // 🔥 BACKUP METHOD (always works)
-    const params = new URLSearchParams(payload);
-    fetch(SCRIPT_URL + "?" + params.toString());
-
-    showSuccess();
+  }catch(e){
+    console.error(e);
+    document.getElementById('saveNote').textContent="❌ Failed";
+    btn.disabled=false;
+    btn.textContent="Record Sale";
   }
 }
 
 // UI
-function showSuccess() {
-  const flash = document.getElementById('successFlash');
+function showSuccess(){
+  const flash=document.getElementById('successFlash');
   flash.classList.add('show');
-  setTimeout(()=>{ flash.classList.remove('show'); clearAll(); }, 1200);
+  setTimeout(()=>{flash.classList.remove('show');clearAll();},1200);
 }
 
-function clearAll() {
+function clearAll(){
   selCode=null; selFrag=null; selSize=null; selPrice=null; selPay=null; freeItem=false;
   document.getElementById('codeInput').value='';
   document.getElementById('saleNotes').value='';
   document.getElementById('freeCheck').checked=false;
   document.querySelectorAll('.frag-btn,.size-btn,.pay-btn').forEach(b=>b.classList.remove('selected'));
   document.getElementById('submitBtn').disabled=true;
+  document.getElementById('submitBtn').textContent='Record Sale';
+  document.getElementById('saveNote').textContent='';
 }
 
 // INIT
