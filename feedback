@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>How was your obsession?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#1a0d12;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh}
+  #app{min-height:100vh}
+  .screen{display:none;flex-direction:column;min-height:100vh;padding:2rem 1.5rem}
+  .screen.active{display:flex}
+  .tag{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#ee2b8c;font-weight:600;margin-bottom:0.5rem}
+  .q-title{font-size:22px;font-weight:600;line-height:1.3;margin-bottom:0.4rem}
+  .q-sub{font-size:14px;color:rgba(255,255,255,0.45);margin-bottom:1.5rem}
+  .prog{width:100%;height:2px;background:rgba(255,255,255,0.08);border-radius:2px;margin-bottom:2rem}
+  .prog-fill{height:2px;background:#ee2b8c;border-radius:2px;transition:width 0.4s ease}
+  .scent-list{display:flex;flex-direction:column;gap:10px}
+  .scent-btn{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:14px;padding:1rem 1.25rem;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all 0.15s ease;text-align:left;width:100%}
+  .scent-btn:hover{background:rgba(238,43,140,0.1);border-color:rgba(238,43,140,0.35)}
+  .scent-btn.selected{background:rgba(238,43,140,0.16);border-color:#ee2b8c}
+  .scent-btn:disabled{opacity:0.2;pointer-events:none}
+
+  /* ── SCENT ICON CIRCLE
+     To swap emoji: find each .scent-icon span and change the character.
+     To use an image instead: replace <span>🌹</span> with <img src="your-image.png" style="width:24px;height:24px"> */
+  .scent-icon{width:42px;height:42px;border-radius:21px;background:rgba(238,43,140,0.12);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+
+  .scent-name{font-size:15px;font-weight:600;color:#fff}
+  .scent-desc{font-size:12px;color:rgba(255,255,255,0.4);margin-top:2px}
+  .check{width:20px;height:20px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.2);margin-left:auto;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;font-size:11px;color:transparent}
+  .scent-btn.selected .check{background:#ee2b8c;border-color:#ee2b8c;color:#fff}
+
+  .exp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:1.25rem}
+  .exp-btn{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:14px;padding:1rem 0.75rem;text-align:center;cursor:pointer;transition:all 0.15s ease;display:flex;flex-direction:column;align-items:center;gap:8px;width:100%}
+  .exp-btn:hover{background:rgba(238,43,140,0.1);border-color:rgba(238,43,140,0.35)}
+  .exp-btn.selected{background:rgba(238,43,140,0.16);border-color:#ee2b8c}
+
+  /* ── EXPERIENCE EMOJIS
+     To change: find each .exp-icon span and swap the emoji */
+  .exp-icon{font-size:24px}
+  .exp-label{font-size:12px;color:rgba(255,255,255,0.8);line-height:1.3}
+
+  /* ── OPEN TEXT BOX
+     To change placeholder text: find the textarea and edit the placeholder attribute */
+  .feedback-box{width:100%;background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.12);border-radius:14px;padding:1rem;color:#fff;font-size:14px;font-family:inherit;resize:none;outline:none;line-height:1.6;transition:border-color 0.15s}
+  .feedback-box:focus{border-color:rgba(238,43,140,0.5)}
+  .feedback-box::placeholder{color:rgba(255,255,255,0.25)}
+
+  .cta-btn{width:100%;background:#ee2b8c;border:none;border-radius:99px;padding:1rem;color:#fff;font-size:15px;font-weight:600;cursor:pointer;margin-top:1.25rem;letter-spacing:0.3px}
+  .cta-btn:disabled{opacity:0.3;cursor:default}
+
+  .thank-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:1rem}
+
+  /* ── THANK YOU ICON
+     To change: find .thank-icon span and swap the emoji */
+  .thank-icon{width:80px;height:80px;border-radius:40px;background:rgba(238,43,140,0.12);border:1px solid rgba(238,43,140,0.25);display:flex;align-items:center;justify-content:center;font-size:40px}
+  .summary-pill{background:rgba(238,43,140,0.12);border:0.5px solid rgba(238,43,140,0.3);border-radius:99px;padding:7px 18px;font-size:13px;color:#ee2b8c}
+
+  .intro-hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:0.75rem;padding-bottom:1rem}
+
+  /* ── HERO ICON
+     To change: find .hero-icon span and swap the emoji
+     To use a logo image: replace <span>🌸</span> with <img src="your-logo.png" style="width:44px"> */
+  .hero-icon{width:88px;height:88px;border-radius:44px;background:rgba(238,43,140,0.1);border:1px solid rgba(238,43,140,0.2);display:flex;align-items:center;justify-content:center;font-size:44px}
+
+  .step-dots{display:flex;gap:6px;justify-content:center;margin-top:0.5rem}
+  .dot{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,0.12);transition:all 0.3s}
+  .dot.active{width:20px;background:#ee2b8c}
+  .optional-tag{font-size:11px;color:rgba(255,255,255,0.3);letter-spacing:1px;margin-bottom:0.5rem}
+  .spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:8px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+
+<div id="app">
+
+  <!-- ═══════════════════════════════
+       INTRO SCREEN
+       Edit headline and subtext below
+       ═══════════════════════════════ -->
+  <div id="s-intro" class="screen active">
+    <div class="intro-hero">
+      <!-- HERO ICON EMOJI — swap 🌸 to change -->
+      <div class="hero-icon"><span>🌸</span></div>
+      <div class="tag">your discovery set</div>
+      <!-- INTRO HEADLINE — edit below -->
+      <h1 style="font-size:26px;font-weight:600;line-height:1.3">You've tried them all.<br>Now spill.</h1>
+      <!-- INTRO SUBTEXT — edit below -->
+      <p style="font-size:15px;color:rgba(255,255,255,0.5);line-height:1.6;max-width:270px">Tell us which ones got under your skin.</p>
+      <div class="step-dots">
+        <div class="dot active"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+    </div>
+    <!-- CTA BUTTON TEXT — edit below -->
+    <button class="cta-btn" onclick="showScreen('s-fav')">Let's do it →</button>
+  </div>
+
+  <!-- ═══════════════════════════════
+       STEP 1 — FAVOURITE SCENT
+       ═══════════════════════════════ -->
+  <div id="s-fav" class="screen">
+    <div class="tag">Step 1 of 3</div>
+    <div class="prog"><div class="prog-fill" style="width:33%"></div></div>
+    <!-- STEP 1 TITLE — edit below -->
+    <p class="q-title">Which one won?</p>
+    <p class="q-sub">The one you keep reaching for</p>
+    <div class="scent-list">
+
+      <!-- SCENT 1 — emoji: 🌹 | Change name, desc, and emoji here -->
+      <button class="scent-btn" onclick="pickFav('about last night',this)">
+        <div class="scent-icon"><span>🌹</span></div> <!-- SCENT 1 EMOJI -->
+        <div style="flex:1">
+          <div class="scent-name">about last night</div> <!-- SCENT 1 NAME -->
+          <div class="scent-desc">impossible to forget even if you tried.</div> <!-- SCENT 1 DESC -->
+        </div>
+        <div class="check">✓</div>
+      </button>
+
+      <!-- SCENT 2 — emoji: 🌸 | Change name, desc, and emoji here -->
+      <button class="scent-btn" onclick="pickFav('freshly picked',this)">
+        <div class="scent-icon"><span>🌸</span></div> <!-- SCENT 2 EMOJI -->
+        <div style="flex:1">
+          <div class="scent-name">freshly picked</div> <!-- SCENT 2 NAME -->
+          <div class="scent-desc">not your grandma's roses.</div> <!-- SCENT 2 DESC -->
+        </div>
+        <div class="check">✓</div>
+      </button>
+
+      <!-- SCENT 3 — emoji: 🍑 | Change name, desc, and emoji here -->
+      <button class="scent-btn" onclick="pickFav('midnight snack',this)">
+        <div class="scent-icon"><span>🍑</span></div> <!-- SCENT 3 EMOJI -->
+        <div style="flex:1">
+          <div class="scent-name">midnight snack</div> <!-- SCENT 3 NAME -->
+          <div class="scent-desc">like you ate and left no crumbs.</div> <!-- SCENT 3 DESC -->
+        </div>
+        <div class="check">✓</div>
+      </button>
+
+      <!-- SCENT 4 — emoji: 🏖 | Change name, desc, and emoji here -->
+      <button class="scent-btn" onclick="pickFav('skinny dip',this)">
+        <div class="scent-icon"><span>🏖</span></div> <!-- SCENT 4 EMOJI -->
+        <div style="flex:1">
+          <div class="scent-name">skinny dip</div> <!-- SCENT 4 NAME -->
+          <div class="scent-desc">like a freshly shaven jawline.</div> <!-- SCENT 4 DESC -->
+        </div>
+        <div class="check">✓</div>
+      </button>
+
+      <!-- SCENT 5 — emoji: 🌙 | Change name, desc, and emoji here -->
+      <button class="scent-btn" onclick="pickFav('still not over it',this)">
+        <div class="scent-icon"><span>🌙</span></div> <!-- SCENT 5 EMOJI -->
+        <div style="flex:1">
+          <div class="scent-name">still not over it</div> <!-- SCENT 5 NAME -->
+          <div class="scent-desc">lives in your head rent free.</div> <!-- SCENT 5 DESC -->
+        </div>
+        <div class="check">✓</div>
+      </button>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════
+       STEP 2 — RUNNERS UP (multi-select)
+       Scent list is built dynamically from JS
+       ═══════════════════════════════ -->
+  <div id="s-second" class="screen">
+    <div class="tag">Step 2 of 3</div>
+    <div class="prog"><div class="prog-fill" style="width:66%"></div></div>
+    <!-- STEP 2 TITLE — edit below -->
+    <p class="q-title">Any runners-up?</p>
+    <p class="q-sub">Pick as many as you like</p>
+    <div class="scent-list" id="second-list" style="flex:1"></div>
+    <button class="cta-btn" style="margin-top:1.25rem" onclick="showScreen('s-exp')">Continue →</button>
+  </div>
+
+  <!-- ═══════════════════════════════
+       STEP 3 — EXPERIENCE + OPEN TEXT
+       ═══════════════════════════════ -->
+  <div id="s-exp" class="screen">
+    <div class="tag">Step 3 of 3</div>
+    <div class="prog"><div class="prog-fill" style="width:100%"></div></div>
+    <!-- STEP 3 TITLE — edit below -->
+    <p class="q-title">How was the experience?</p>
+    <p class="q-sub">Website · delivery · packaging</p>
+    <div class="exp-grid">
+
+      <!-- EXP OPTION 1 — emoji: 🔥 | label below -->
+      <button class="exp-btn" onclick="pickExp('obsessed with everything',this)">
+        <span class="exp-icon">🔥</span> <!-- EXP 1 EMOJI -->
+        <span class="exp-label">Obsessed with everything</span> <!-- EXP 1 LABEL -->
+      </button>
+
+      <!-- EXP OPTION 2 — emoji: ✨ -->
+      <button class="exp-btn" onclick="pickExp('pretty smooth',this)">
+        <span class="exp-icon">✨</span> <!-- EXP 2 EMOJI -->
+        <span class="exp-label">Pretty smooth overall</span> <!-- EXP 2 LABEL -->
+      </button>
+
+      <!-- EXP OPTION 3 — emoji: 😐 -->
+      <button class="exp-btn" onclick="pickExp('okay had a moment',this)">
+        <span class="exp-icon">😐</span> <!-- EXP 3 EMOJI -->
+        <span class="exp-label">Okay, had a moment</span> <!-- EXP 3 LABEL -->
+      </button>
+
+      <!-- EXP OPTION 4 — emoji: 😬 -->
+      <button class="exp-btn" onclick="pickExp('not great',this)">
+        <span class="exp-icon">😬</span> <!-- EXP 4 EMOJI -->
+        <span class="exp-label">Not great honestly</span> <!-- EXP 4 LABEL -->
+      </button>
+
+    </div>
+
+    <!-- OPEN TEXT — optional field
+         To change placeholder: edit the placeholder attribute below -->
+    <p class="optional-tag">optional</p>
+    <textarea
+      id="free-text"
+      class="feedback-box"
+      rows="3"
+      placeholder="Leave us obsessed with your feedback..."
+    ></textarea>
+
+    <button class="cta-btn" id="exp-next" disabled onclick="submitForm()">Submit →</button>
+  </div>
+
+  <!-- ═══════════════════════════════
+       THANK YOU SCREEN
+       Edit headline and subtext below
+       ═══════════════════════════════ -->
+  <div id="s-thanks" class="screen">
+    <div class="thank-center">
+      <!-- THANK YOU ICON EMOJI — swap 🫶 to change -->
+      <div class="thank-icon"><span>🫶</span></div>
+      <div class="tag" style="display:block;text-align:center">obsession confirmed</div>
+      <!-- THANK YOU HEADLINE — edit below -->
+      <h2 style="font-size:24px;font-weight:600;line-height:1.3">You're the best.</h2>
+      <div id="summary-fav" class="summary-pill"></div>
+      <!-- THANK YOU SUBTEXT — edit below -->
+      <p style="font-size:14px;color:rgba(255,255,255,0.45);line-height:1.6;max-width:250px">We'll make sure your full size is worth every rupee.</p>
+      <p style="font-size:12px;color:rgba(255,255,255,0.2);margin-top:0.5rem;letter-spacing:1px">— fix.myocd</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─────────────────────────────────────────
+// CONFIG — only edit these two lines
+// ─────────────────────────────────────────
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwurxoxR2HMu_hRxiVUQ8a97is_XBKWSd0BlXU_s3l9f59NNVcpCp1KIbsQA71HufA2Ig/exec";
+
+// ─────────────────────────────────────────
+// SCENT DATA
+// To add/remove scents also update the HTML buttons above in Step 1
+// ─────────────────────────────────────────
+const perfumes = [
+  { name: "about last night",  desc: "impossible to forget even if you tried.", icon: "🌹" },
+  { name: "freshly picked",    desc: "not your grandma's roses.",               icon: "🌸" },
+  { name: "midnight snack",    desc: "like you ate and left no crumbs.",        icon: "🍑" },
+  { name: "skinny dip",        desc: "like a freshly shaven jawline.",          icon: "🏖" },
+  { name: "still not over it", desc: "lives in your head rent free.",           icon: "🌙" }
+];
+
+// ─────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────
+const state = { fav: null, seconds: [], exp: null };
+
+// Read order_id from URL — KwikEngage passes ?order_id={{order_id}}
+const params   = new URLSearchParams(window.location.search);
+const orderId  = params.get("order_id") || "unknown";
+
+// ─────────────────────────────────────────
+// NAVIGATION
+// ─────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo(0, 0);
+}
+
+// ─────────────────────────────────────────
+// STEP 1 — pick favourite
+// ─────────────────────────────────────────
+function pickFav(name, el) {
+  document.querySelectorAll("#s-fav .scent-btn").forEach(b => b.classList.remove("selected"));
+  el.classList.add("selected");
+  state.fav = name;
+  setTimeout(() => { buildSecondList(); showScreen("s-second"); }, 300);
+}
+
+// ─────────────────────────────────────────
+// STEP 2 — build runners-up list (excludes favourite)
+// ─────────────────────────────────────────
+function buildSecondList() {
+  state.seconds = [];
+  const list = document.getElementById("second-list");
+  list.innerHTML = "";
+  perfumes.forEach(p => {
+    const btn = document.createElement("button");
+    btn.className = "scent-btn";
+    btn.innerHTML = `
+      <div class="scent-icon"><span>${p.icon}</span></div>
+      <div style="flex:1">
+        <div class="scent-name">${p.name}</div>
+        <div class="scent-desc">${p.desc}</div>
+      </div>
+      <div class="check">✓</div>`;
+    if (p.name === state.fav) {
+      btn.disabled = true;
+    } else {
+      btn.onclick = () => toggleSecond(p.name, btn);
+    }
+    list.appendChild(btn);
+  });
+}
+
+function toggleSecond(name, el) {
+  if (state.seconds.includes(name)) {
+    state.seconds = state.seconds.filter(s => s !== name);
+    el.classList.remove("selected");
+  } else {
+    state.seconds.push(name);
+    el.classList.add("selected");
+  }
+}
+
+// ─────────────────────────────────────────
+// STEP 3 — pick experience rating
+// ─────────────────────────────────────────
+function pickExp(val, el) {
+  document.querySelectorAll("#s-exp .exp-btn").forEach(b => b.classList.remove("selected"));
+  el.classList.add("selected");
+  state.exp = val;
+  document.getElementById("exp-next").disabled = false;
+}
+
+// ─────────────────────────────────────────
+// SUBMIT — posts to Google Sheet
+// ─────────────────────────────────────────
+function submitForm() {
+  const btn      = document.getElementById("exp-next");
+  const feedback = document.getElementById("free-text").value.trim();
+
+  btn.disabled  = true;
+  btn.innerHTML = '<span class="spinner"></span>Saving...';
+
+  const payload = {
+    order_id:    orderId,
+    favourite:   state.fav,
+    runners_up:  state.seconds.join(" | "),
+    experience:  state.exp,
+    feedback:    feedback
+  };
+
+  fetch(SCRIPT_URL, {
+    method:  "POST",
+    mode:    "no-cors",
+    body:    JSON.stringify(payload)
+  })
+  .then(() => showThankYou())
+  .catch(() => showThankYou()); // show thanks regardless — no-cors won't confirm success
+}
+
+// ─────────────────────────────────────────
+// THANK YOU
+// ─────────────────────────────────────────
+function showThankYou() {
+  document.getElementById("summary-fav").textContent = "✦ " + state.fav;
+  showScreen("s-thanks");
+}
+</script>
+
+</body>
+</html>
