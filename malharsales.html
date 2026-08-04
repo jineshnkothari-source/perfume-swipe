@@ -58,18 +58,63 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--black);color:v
 .success-inner .sm{font-size:13px;color:var(--muted);margin-top:6px;}
 hr.div{border:none;border-top:1px solid var(--border);flex-shrink:0;margin:0;}
 .sel-summary{font-size:10px;color:var(--green);min-height:13px;flex-shrink:0;letter-spacing:0.03em;}
+.stock-btn{background:rgba(242,239,232,0.1);color:var(--white);border:1px solid var(--border);padding:7px 12px;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:0.06em;border-radius:4px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+/* Stock overlay */
+#stockOverlay{position:fixed;inset:0;z-index:50;background:var(--black);display:none;flex-direction:column;padding:12px 16px 10px;gap:10px;overflow-y:auto;}
+#stockOverlay.open{display:flex;}
+.stock-header{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.stock-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.06em;}
+.stock-date{font-size:11px;color:var(--muted);}
+.stock-close{background:transparent;border:1px solid var(--border);color:var(--muted);padding:7px 12px;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:0.06em;border-radius:4px;cursor:pointer;}
+.stock-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex-shrink:0;}
+.stock-tab-btn{background:rgba(242,239,232,0.04);border:1px solid var(--border);border-radius:6px;padding:10px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:0.08em;color:var(--muted);cursor:pointer;}
+.stock-tab-btn.active{border-color:var(--white);background:rgba(242,239,232,0.12);color:var(--white);}
+.sku-block{border:1px solid var(--border);border-radius:8px;padding:10px;flex-shrink:0;}
+.sku-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.sku-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;}
+.sku-name{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:0.05em;}
+.size-line{display:grid;grid-template-columns:52px 1fr;align-items:center;gap:10px;padding:6px 0;border-top:1px solid var(--border);}
+.size-line:first-of-type{border-top:none;}
+.size-lbl{font-size:12px;color:var(--muted);}
+.stepper{display:flex;align-items:center;gap:8px;justify-content:flex-end;}
+.stepper button{width:28px;height:28px;border-radius:5px;border:1px solid var(--border);background:rgba(242,239,232,0.06);color:var(--white);font-size:16px;line-height:1;cursor:pointer;}
+.stepper input{width:44px;text-align:center;background:transparent;border:none;color:var(--white);font-family:'Bebas Neue',sans-serif;font-size:17px;outline:none;-moz-appearance:textfield;}
+.stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.stat-row{display:flex;justify-content:flex-end;gap:10px;font-size:10px;color:var(--muted);}
+.stat-row b{color:var(--white);font-weight:500;}
+#stockSubmitBtn{width:100%;background:var(--white);color:var(--black);border:none;padding:13px;font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:0.08em;border-radius:4px;cursor:pointer;flex-shrink:0;}
+#stockSubmitBtn:disabled{opacity:0.3;cursor:not-allowed;}
+.refresh-lbl{font-size:10px;color:var(--muted);text-align:right;text-decoration:underline;cursor:pointer;}
 </style>
 </head>
 <body>
 <div id="successFlash">
   <div class="success-inner">
-    <div class="big">SALE<br>SAVED ✓</div>
+    <div class="big" id="successBig">SALE<br>SAVED ✓</div>
     <div class="sm">Clearing in a moment…</div>
   </div>
+</div>
+<div id="stockOverlay">
+  <div class="stock-header">
+    <div class="stock-title">STOCK REGISTER</div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="stock-date" id="stockDateLbl"></div>
+      <button class="stock-close" onclick="closeStock()">✕ Close</button>
+    </div>
+  </div>
+  <hr class="div">
+  <div class="stock-tabs">
+    <div class="stock-tab-btn active" id="stockTabStart" onclick="switchStockTab('start')">START DAY</div>
+    <div class="stock-tab-btn" id="stockTabEnd" onclick="switchStockTab('end')">END DAY</div>
+  </div>
+  <div class="status-bar dim" id="stockStatusBar">Enter qty taken to the fest today</div>
+  <div id="stockListWrap"></div>
+  <button id="stockSubmitBtn" onclick="submitStockTab()">Save Opening Stock</button>
 </div>
 <div class="app">
   <div class="header">
     <div class="page-label">Record Sale</div>
+    <button class="stock-btn" onclick="openStock()">📦 Stock</button>
   </div>
   <hr class="div">
   <div class="code-row">
@@ -228,9 +273,10 @@ async function recordSale(){
   }catch(e){setStatus('❌ Save failed — note manually','err');btn.disabled=false;btn.textContent='Record Sale';}
 }
 
-function showSuccess(){
+function showSuccess(label, afterFn){
+  document.getElementById('successBig').innerHTML = label || 'SALE<br>SAVED ✓';
   document.getElementById('successFlash').classList.add('show');
-  setTimeout(()=>{document.getElementById('successFlash').classList.remove('show');clearAll();},1600);
+  setTimeout(()=>{document.getElementById('successFlash').classList.remove('show');(afterFn||clearAll)();},1500);
 }
 function clearAll(){
   selFrags=new Set();selSizes=new Set();selPay=null;freeItem=false;
@@ -251,6 +297,140 @@ function warmup(){fetch(SCRIPT_URL+'?action=ping',{mode:'no-cors'}).catch(()=>{}
 
 buildFragGrid();
 warmup();
+
+// ═══════════════════════════════════════════════════════
+//  STOCK REGISTER — Start Day / End Day, embedded overlay
+//  Reuses SCRIPT_URL and FRAGRANCES defined above.
+// ═══════════════════════════════════════════════════════
+const SIZES = ['5ml','50ml','Cap'];
+const stockTodayKey = new Date().toISOString().slice(0,10);
+document.getElementById('stockDateLbl').textContent = stockTodayKey;
+
+let currentStockTab = 'start';
+let endDayData = null;
+
+function openStock(){
+  document.getElementById('stockOverlay').classList.add('open');
+  switchStockTab('start');
+}
+function closeStock(){
+  document.getElementById('stockOverlay').classList.remove('open');
+}
+
+function setStockStatus(msg,cls){const el=document.getElementById('stockStatusBar');el.textContent=msg;el.className='status-bar '+(cls||'dim');}
+
+function switchStockTab(tab){
+  currentStockTab = tab;
+  document.getElementById('stockTabStart').classList.toggle('active', tab==='start');
+  document.getElementById('stockTabEnd').classList.toggle('active', tab==='end');
+  if(tab==='start'){
+    setStockStatus('Enter qty taken to the fest today','dim');
+    document.getElementById('stockSubmitBtn').textContent='Save Opening Stock';
+    renderStockStartDay();
+  } else {
+    setStockStatus('Loading today\u2019s opening stock…','dim');
+    document.getElementById('stockSubmitBtn').textContent='Save Closing Stock';
+    loadStockEndDay();
+  }
+}
+
+function renderStockStartDay(){
+  let html='';
+  FRAGRANCES.forEach(f=>{
+    html+='<div class="sku-block"><div class="sku-head"><div class="sku-dot" style="background:'+f.color+'"></div><div class="sku-name">'+f.name+'</div></div>';
+    SIZES.forEach(sz=>{
+      const id='stockstart_'+f.id.replace(/\s+/g,'_')+'_'+sz;
+      html+='<div class="size-line"><div class="size-lbl">'+sz+'</div>'
+        +'<div class="stepper">'
+        +'<button onclick="stepStock(\''+id+'\',-1)">−</button>'
+        +'<input id="'+id+'" type="number" min="0" value="0" inputmode="numeric">'
+        +'<button onclick="stepStock(\''+id+'\',1)">+</button>'
+        +'</div></div>';
+    });
+    html+='</div>';
+  });
+  document.getElementById('stockListWrap').innerHTML=html;
+}
+
+function stepStock(id,delta){
+  const el=document.getElementById(id);
+  const v=Math.max(0,(parseInt(el.value)||0)+delta);
+  el.value=v;
+}
+
+async function loadStockEndDay(){
+  document.getElementById('stockListWrap').innerHTML='<div class="stat-row" style="justify-content:center;padding:20px 0;">Loading…</div>';
+  try{
+    const res=await fetch(SCRIPT_URL+'?action=getOpeningStock&date='+stockTodayKey);
+    const data=await res.json();
+    if(!data.items || !data.items.length){
+      document.getElementById('stockListWrap').innerHTML='<div class="stat-row" style="justify-content:center;padding:20px 0;">No opening stock logged for today yet. Use Start Day first.</div>';
+      setStockStatus('No opening stock found for today','err');
+      return;
+    }
+    endDayData=data.items;
+    renderStockEndDay();
+    setStockStatus('Enter what actually came back to warehouse','dim');
+  }catch(e){
+    setStockStatus('Network error loading stock','err');
+    document.getElementById('stockListWrap').innerHTML='<div class="stat-row" style="justify-content:center;padding:20px 0;">Could not load. <span class="refresh-lbl" onclick="loadStockEndDay()">Retry</span></div>';
+  }
+}
+
+function renderStockEndDay(){
+  let html='';
+  FRAGRANCES.forEach(f=>{
+    const rowsForFrag = endDayData.filter(it=>it.sku===f.id);
+    if(!rowsForFrag.length) return;
+    html+='<div class="sku-block"><div class="sku-head"><div class="sku-dot" style="background:'+f.color+'"></div><div class="sku-name">'+f.name+'</div></div>';
+    rowsForFrag.forEach(it=>{
+      const id='stockend_'+it.sku.replace(/\s+/g,'_')+'_'+it.size;
+      html+='<div class="size-line"><div class="size-lbl">'+it.size+'</div>'
+        +'<div class="stepper"><input id="'+id+'" type="number" min="0" placeholder="0" inputmode="numeric"></div></div>'
+        +'<div class="stat-row">Opening <b>'+it.opening+'</b> · Sold <b>'+it.sold+'</b> · Free <b>'+it.free+'</b> · Expected back <b>'+it.expected+'</b></div>';
+    });
+    html+='</div>';
+  });
+  document.getElementById('stockListWrap').innerHTML=html;
+}
+
+async function submitStockTab(){
+  const btn=document.getElementById('stockSubmitBtn');
+  btn.disabled=true;
+  const origText=btn.textContent;
+  btn.textContent='SAVING…';
+
+  if(currentStockTab==='start'){
+    const items=[];
+    FRAGRANCES.forEach(f=>{
+      SIZES.forEach(sz=>{
+        const el=document.getElementById('stockstart_'+f.id.replace(/\s+/g,'_')+'_'+sz);
+        const qty=parseInt(el.value)||0;
+        if(qty>0) items.push({sku:f.id, fragrance:f.name, size:sz, qty:qty});
+      });
+    });
+    if(!items.length){ setStockStatus('Enter at least one quantity','err'); btn.disabled=false; btn.textContent=origText; return; }
+    try{
+      await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'logOpeningStock', date:stockTodayKey, items:items})});
+      showSuccess('STOCK<br>OUT ✓', ()=>{});
+    }catch(e){ setStockStatus('Save failed — try again','err'); }
+  } else {
+    if(!endDayData){ btn.disabled=false; btn.textContent=origText; return; }
+    const items=[];
+    endDayData.forEach(it=>{
+      const el=document.getElementById('stockend_'+it.sku.replace(/\s+/g,'_')+'_'+it.size);
+      const actual=el && el.value!=='' ? parseInt(el.value) : null;
+      if(actual!==null) items.push({sku:it.sku, size:it.size, actual:actual});
+    });
+    if(!items.length){ setStockStatus('Enter counted quantities first','err'); btn.disabled=false; btn.textContent=origText; return; }
+    try{
+      await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'logClosingStock', date:stockTodayKey, items:items})});
+      showSuccess('STOCK<br>IN ✓', loadStockEndDay);
+    }catch(e){ setStockStatus('Save failed — try again','err'); }
+  }
+  btn.disabled=false;
+  btn.textContent=origText;
+}
 </script>
 </body>
 </html>
