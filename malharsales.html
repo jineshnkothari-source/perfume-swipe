@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>OCD — Record Sale</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root{--black:#0A0A08;--white:#F2EFE8;--border:rgba(242,239,232,0.13);--muted:rgba(242,239,232,0.38);--red:#E8372A;--green:#3DBF72;--gpay:#4285F4;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--black);color:var(--white);font-family:'DM Sans',sans-serif;}
+.app{display:flex;flex-direction:column;height:100vh;padding:12px 16px 10px;gap:10px;}
+.header{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.page-label{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.06em;}
+.code-row{display:flex;gap:8px;flex-shrink:0;}
+#codeInput{flex:1;background:rgba(242,239,232,0.07);border:1px solid var(--border);border-radius:4px;padding:10px 12px;font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:0.3em;color:var(--white);outline:none;text-align:center;transition:border-color 0.2s;-webkit-appearance:none;}
+#codeInput::placeholder{color:rgba(242,239,232,0.2);font-size:18px;}
+#codeInput:focus{border-color:rgba(242,239,232,0.4);}
+#codeInput.err{border-color:var(--red)!important;}
+#codeInput.ok{border-color:var(--green)!important;}
+#lookupBtn{background:rgba(242,239,232,0.1);color:var(--white);border:1px solid var(--border);padding:10px 14px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:0.06em;border-radius:4px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.status-bar{font-size:11px;min-height:14px;flex-shrink:0;}
+.status-bar.ok{color:var(--green);}
+.status-bar.err{color:var(--red);}
+.status-bar.dim{color:var(--muted);}
+.sl{font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;display:block;flex-shrink:0;}
+.multi-note{font-size:9px;color:var(--muted);margin-bottom:6px;flex-shrink:0;letter-spacing:0.04em;}
+.frag-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;flex-shrink:0;}
+.frag-btn{background:rgba(242,239,232,0.04);border:1px solid var(--border);border-radius:6px;padding:7px 3px;text-align:center;cursor:pointer;transition:all 0.12s;}
+.frag-dot{width:20px;height:20px;border-radius:50%;margin:0 auto 4px;}
+.frag-lbl{font-size:8px;color:var(--muted);line-height:1.2;}
+.frag-btn.sel{border-color:var(--white);background:rgba(242,239,232,0.12);}
+.frag-btn.sel .frag-lbl{color:var(--white);}
+.size-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;flex-shrink:0;}
+.size-btn{background:rgba(242,239,232,0.04);border:1px solid var(--border);border-radius:6px;padding:8px 4px;text-align:center;cursor:pointer;transition:all 0.12s;}
+.size-ml{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.06em;color:var(--muted);}
+.size-price{font-size:9px;color:var(--muted);margin-top:1px;}
+.size-btn.sel{border-color:var(--white);background:rgba(242,239,232,0.12);}
+.size-btn.sel .size-ml,.size-btn.sel .size-price{color:var(--white);}
+.pay-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex-shrink:0;}
+.pay-btn{background:rgba(242,239,232,0.04);border:1px solid var(--border);border-radius:6px;padding:9px 8px;text-align:center;cursor:pointer;transition:all 0.12s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.pay-icon{font-size:16px;}
+.pay-lbl{font-size:13px;font-family:'Bebas Neue',sans-serif;letter-spacing:0.06em;color:var(--muted);}
+.pay-btn.sel{border-color:var(--white);background:rgba(242,239,232,0.12);}
+.pay-btn.sel .pay-lbl{color:var(--white);}
+.pay-btn.gpay.sel{border-color:var(--gpay);background:rgba(66,133,244,0.1);}
+.free-toggle{display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(61,191,114,0.05);border:1px solid rgba(61,191,114,0.15);border-radius:6px;cursor:pointer;flex-shrink:0;user-select:none;}
+.free-toggle input[type=checkbox]{width:16px;height:16px;accent-color:var(--green);cursor:pointer;flex-shrink:0;pointer-events:none;}
+.free-lbl{font-size:12px;color:var(--muted);line-height:1.3;pointer-events:none;}
+.free-toggle.on .free-lbl{color:var(--green);}
+#submitBtn{width:100%;background:var(--white);color:var(--black);border:none;padding:13px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.08em;border-radius:4px;cursor:pointer;flex-shrink:0;transition:opacity 0.2s;}
+#submitBtn:disabled{opacity:0.25;cursor:not-allowed;}
+#successFlash{position:fixed;inset:0;background:rgba(10,10,8,0.92);display:none;align-items:center;justify-content:center;z-index:99;}
+#successFlash.show{display:flex;animation:fadeIn 0.2s ease;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.success-inner{text-align:center;}
+.success-inner .big{font-family:'Bebas Neue',sans-serif;font-size:56px;letter-spacing:0.06em;color:var(--green);line-height:1;}
+.success-inner .sm{font-size:13px;color:var(--muted);margin-top:6px;}
+hr.div{border:none;border-top:1px solid var(--border);flex-shrink:0;margin:0;}
+.sel-summary{font-size:10px;color:var(--green);min-height:13px;flex-shrink:0;letter-spacing:0.03em;}
+</style>
+</head>
+<body>
+<div id="successFlash">
+  <div class="success-inner">
+    <div class="big">SALE<br>SAVED ✓</div>
+    <div class="sm">Clearing in a moment…</div>
+  </div>
+</div>
+<div class="app">
+  <div class="header">
+    <div class="page-label">Record Sale</div>
+  </div>
+  <hr class="div">
+  <div class="code-row">
+    <input id="codeInput" type="text" inputmode="numeric" maxlength="3" placeholder="123" autocomplete="off"
+      oninput="this.value=this.value.replace(/\D/g,'').slice(0,3);resetStatus();"
+      onkeydown="if(event.key==='Enter'){event.preventDefault();lookupCode();}">
+    <button id="lookupBtn" onclick="lookupCode()">LOOK UP</button>
+  </div>
+  <div class="status-bar dim" id="statusBar">Enter code or leave blank for walk-in</div>
+  <hr class="div">
+  <span class="sl">Fragrance(s) purchased</span>
+  <div class="multi-note">Tap multiple if buying more than one</div>
+  <div class="frag-grid" id="fragGrid"></div>
+  <div class="sel-summary" id="fragSummary"></div>
+  <span class="sl">Size(s)</span>
+  <div class="multi-note">Tap multiple if buying different sizes</div>
+  <div class="size-row" id="sizeRow">
+    <div class="size-btn" data-val="5ml" data-price="100" onclick="toggleSize(this)">
+      <div class="size-ml">5ml</div><div class="size-price">₹100</div>
+    </div>
+    <div class="size-btn" data-val="50ml" data-price="1099" onclick="toggleSize(this)">
+      <div class="size-ml">50ml</div><div class="size-price">₹1099</div>
+    </div>
+    <div class="size-btn" data-val="Cap" data-price="199" onclick="toggleSize(this)">
+      <div class="size-ml">Cap</div><div class="size-price">₹199</div>
+    </div>
+  </div>
+  <div class="sel-summary" id="sizeSummary"></div>
+  <span class="sl">Payment</span>
+  <div class="pay-row">
+    <div class="pay-btn" onclick="selectPay(this,'Cash')"><span class="pay-icon">💵</span><span class="pay-lbl">Cash</span></div>
+    <div class="pay-btn gpay" onclick="selectPay(this,'GPay')"><span class="pay-icon">📲</span><span class="pay-lbl">GPay / UPI</span></div>
+  </div>
+  <div class="free-toggle" id="freeToggle" onclick="toggleFree()">
+    <input type="checkbox" id="freeChk" tabindex="-1">
+    <div class="free-lbl">Customer also gets a <strong>free item</strong></div>
+  </div>
+  <button id="submitBtn" disabled onclick="recordSale()">Record Sale</button>
+</div>
+<script>
+const SCRIPT_URL = 'PASTE_YOUR_NEW_SHEET_APPS_SCRIPT_URL_HERE';
+
+// Real, purchasable SKUs — NOT the Mystery EDP/Mist blind-test line.
+// The Mystery names only exist on the swipe/feedback page; they aren't for sale.
+const FRAGRANCES = [
+  {id:'SKU1', name:'Skinny Dip',        color:'#5B7FB5'},
+  {id:'SKU2', name:'Midnight Snack',    color:'#5A2510'},
+  {id:'SKU3', name:'Freshly Picked',    color:'#C8B89A'},
+  {id:'SKU4', name:'Still Not Over It', color:'#6B1E24'},
+  {id:'SKU5', name:'About Last Night',  color:'#8A9E72'},
+];
+
+let selFrags = new Set();
+let selSizes = new Set();
+let selPay   = null;
+let selCode  = null;
+let freeItem = false;
+
+const PRICES = {'5ml':100,'50ml':1099,'Cap':199};
+
+function buildFragGrid(){
+  document.getElementById('fragGrid').innerHTML=FRAGRANCES.map(f=>
+    '<div class="frag-btn" data-id="'+f.id+'" data-name="'+f.name+'" onclick="toggleFrag(this,\''+f.id+'\',\''+f.name+'\')">'
+    +'<div class="frag-dot" style="background:'+f.color+'"></div>'
+    +'<div class="frag-lbl">'+f.name.split(' ')[0]+'<br>'+f.name.split(' ').slice(1).join(' ')+'</div></div>'
+  ).join('');
+}
+
+function toggleFrag(el, id, name){
+  if(selFrags.has(id)){selFrags.delete(id);el.classList.remove('sel');}
+  else{selFrags.add(id);el.classList.add('sel');}
+  updateFragSummary();checkReady();
+}
+function updateFragSummary(){
+  const names=[];
+  document.querySelectorAll('.frag-btn.sel').forEach(b=>names.push(b.dataset.name));
+  document.getElementById('fragSummary').textContent=names.length?'Selected: '+names.join(' | '):'';
+}
+
+function toggleSize(el){
+  const val=el.dataset.val;
+  if(selSizes.has(val)){selSizes.delete(val);el.classList.remove('sel');}
+  else{selSizes.add(val);el.classList.add('sel');}
+  updateSizeSummary();checkReady();
+}
+function updateSizeSummary(){
+  const parts=[];
+  selSizes.forEach(s=>parts.push(s+' ₹'+PRICES[s]));
+  document.getElementById('sizeSummary').textContent=parts.length?'Selected: '+parts.join(' | '):'';
+}
+
+function selectPay(el,method){
+  document.querySelectorAll('.pay-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');selPay=method;checkReady();
+}
+
+function toggleFree(){
+  freeItem=!freeItem;
+  document.getElementById('freeChk').checked=freeItem;
+  document.getElementById('freeToggle').classList.toggle('on',freeItem);
+}
+
+function checkReady(){
+  document.getElementById('submitBtn').disabled=!(selFrags.size>0&&selSizes.size>0&&selPay);
+}
+
+function setStatus(msg,cls){const el=document.getElementById('statusBar');el.textContent=msg;el.className='status-bar '+(cls||'dim');}
+function resetStatus(){setStatus('Enter code or leave blank for walk-in','dim');document.getElementById('codeInput').classList.remove('ok','err');selCode=null;}
+
+async function lookupCode(){
+  const raw=document.getElementById('codeInput').value.trim();
+  const inp=document.getElementById('codeInput');
+  const btn=document.getElementById('lookupBtn');
+  if(!raw){selCode='WALKIN-'+Date.now();setStatus('Walk-in sale — no code','ok');inp.classList.add('ok');return;}
+  btn.textContent='…';btn.disabled=true;
+  try{
+    const res=await fetch(SCRIPT_URL+'?action=lookup&booth_code='+encodeURIComponent(raw));
+    const data=await res.json();
+    if(data.found){
+      selCode=raw;inp.classList.add('ok');
+      const edp=data.final_choice_edp||'—', mist=data.final_choice_mist||'—';
+      setStatus('✓ '+raw+' · EDP: '+edp+' · Mist: '+mist+(data.spun?' · Spun ✓':''),'ok');
+    }else{selCode='WALKIN-'+raw;inp.classList.add('err');setStatus('Not found — walk-in','err');}
+  }catch(e){selCode='WALKIN-'+raw;inp.classList.add('err');setStatus('Network error — walk-in','err');}
+  btn.textContent='LOOK UP';btn.disabled=false;
+}
+
+async function recordSale(){
+  if(!selFrags.size||!selSizes.size||!selPay)return;
+  if(!selCode){const raw=document.getElementById('codeInput').value.trim();selCode=raw?'WALKIN-'+raw:'WALKIN-'+Date.now();}
+  const btn=document.getElementById('submitBtn');
+  btn.disabled=true;btn.textContent='SAVING…';
+
+  const fragNames=[],fragIds=[];
+  document.querySelectorAll('.frag-btn.sel').forEach(b=>{fragNames.push(b.dataset.name);fragIds.push(b.dataset.id);});
+  const sizes=[...selSizes];
+  const prices=sizes.map(s=>'₹'+PRICES[s]);
+  const totalPrice=sizes.reduce((s,sz)=>s+PRICES[sz],0);
+
+  const payload={
+    action:'logSale',
+    booth_code:selCode,
+    sale_fragrance:fragNames.join(' | '),
+    sale_sku:fragIds.join(' | '),
+    sale_size:sizes.join(' | '),
+    sale_price:prices.join(' | '),
+    sale_total:'₹'+totalPrice,
+    sale_payment:selPay,
+    sale_free_item:freeItem,
+    sale_notes:'',
+    sale_time:new Date().toISOString(),
+  };
+  try{
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
+    showSuccess();
+  }catch(e){setStatus('❌ Save failed — note manually','err');btn.disabled=false;btn.textContent='Record Sale';}
+}
+
+function showSuccess(){
+  document.getElementById('successFlash').classList.add('show');
+  setTimeout(()=>{document.getElementById('successFlash').classList.remove('show');clearAll();},1600);
+}
+function clearAll(){
+  selFrags=new Set();selSizes=new Set();selPay=null;freeItem=false;
+  document.getElementById('codeInput').value='';
+  document.getElementById('codeInput').className='';
+  document.getElementById('freeChk').checked=false;
+  document.getElementById('freeToggle').classList.remove('on');
+  document.querySelectorAll('.sel').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('submitBtn').disabled=true;
+  document.getElementById('submitBtn').textContent='Record Sale';
+  document.getElementById('fragSummary').textContent='';
+  document.getElementById('sizeSummary').textContent='';
+  setStatus('Enter code or leave blank for walk-in','dim');
+  selCode=null;
+}
+
+function warmup(){fetch(SCRIPT_URL+'?action=ping',{mode:'no-cors'}).catch(()=>{});}
+
+buildFragGrid();
+warmup();
+</script>
+</body>
+</html>
