@@ -50,24 +50,31 @@ tailwind.config = {
 </div>
 
 <!-- FINAL CHOICE -->
-<div id="finalChoice" class="hidden fixed inset-0 bg-bg flex flex-col p-6 text-center">
+<div id="finalChoice" class="hidden fixed inset-0 bg-bg flex flex-col p-6 overflow-y-auto">
 
-<h1 class="text-2xl font-extrabold mb-2">
+<h1 class="text-2xl font-extrabold mb-1 text-center">
 Which one are you low-key obsessed with?
 </h1>
 
-<p class="text-white/70 text-sm mb-3">
-Then choose your preferred size.
+<p class="text-white/70 text-sm mb-5 text-center">
+Pick one EDP and one Mist below.
 </p>
 
-<div id="choices" class="flex flex-col gap-2"></div>
-
-<div class="mt-4">
-<h2 class="text-lg font-bold mb-2">Choose your size</h2>
-<div id="sizes" class="grid grid-cols-3 gap-2"></div>
+<div class="space-y-2">
+  <h2 class="text-lg font-bold">Mystery EDP</h2>
+  <div id="edpChoices" class="flex flex-col gap-2"></div>
+  <textarea id="edpRemarks" placeholder="Tell us why none of these? (optional)"
+    class="hidden w-full p-3 rounded-xl text-black text-sm mt-1" rows="2"></textarea>
 </div>
 
-<button onclick="lockFinalChoice()" class="w-full bg-primary py-3 rounded-full font-bold mt-4">
+<div class="space-y-2 mt-6">
+  <h2 class="text-lg font-bold">Mystery Mist</h2>
+  <div id="mistChoices" class="flex flex-col gap-2"></div>
+  <textarea id="mistRemarks" placeholder="Tell us why none of these? (optional)"
+    class="hidden w-full p-3 rounded-xl text-black text-sm mt-1" rows="2"></textarea>
+</div>
+
+<button onclick="lockFinalChoice()" class="w-full bg-primary py-3 rounded-full font-bold mt-6 mb-4">
 Lock my obsession →
 </button>
 
@@ -113,40 +120,33 @@ Follow the Obsession →
 
 <script>
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby14oG4VLcpZOjvbjtBGV1UmtgXy27sqnrGFNwFggnZoTRZcuEIpZ8Hs3Sf00sIzKDAOA/exec";
+const SCRIPT_URL = "PASTE_YOUR_NEW_SHEET_APPS_SCRIPT_URL_HERE";
 const INSTAGRAM_URL = "https://www.instagram.com/fix.myocd?igsh=MWtvZGZpNG1vNXF2YQ==";
-const SOURCE = "Test";
+const SOURCE = "Mystery Launch Test";
 
 const sessionId = crypto.randomUUID();
 
 let boothCode = null;
 
+// 3 EDPs + 3 Mists — blind-test naming, swap "img" for your real filenames.
 let perfumes = [
 
-{ name: "about last night", desc: "impossible to forget even if you tried.", img: "about-last-night.png" },
-
-{ name: "freshly picked", desc: "not your grandma's roses.", img: "freshly-picked.png" },
-
-{ name: "midnight snack", desc: "like you ate and left no crumbs.", img: "midnight-snack.png" },
-
-{ name: "skinny dip", desc: "like a freshly shaven jawline.", img: "skinny-dip.png" },
-
-{ name: "still not over it", desc: "lives in your head rent free.", img: "still-not-over-it.png" }
+  { key: "Mystery EDP 1",  name: "mystery edp 1",  desc: "impossible to forget even if you tried.", img: "mystery-edp-1.png" },
+  { key: "Mystery EDP 2",  name: "mystery edp 2",  desc: "not your grandma's roses.", img: "mystery-edp-2.png" },
+  { key: "Mystery EDP 3",  name: "mystery edp 3",  desc: "like you ate and left no crumbs.", img: "mystery-edp-3.png" },
+  { key: "Mystery Mist 1", name: "mystery mist 1", desc: "like a freshly shaven jawline.", img: "mystery-mist-1.png" },
+  { key: "Mystery Mist 2", name: "mystery mist 2", desc: "lives in your head rent free.", img: "mystery-mist-2.png" },
+  { key: "Mystery Mist 3", name: "mystery mist 3", desc: "the new one. no notes yet — you tell us.", img: "mystery-mist-3.png" }
 
 ];
 
-const sizeOptions = [
-
-{ ml: "5ml", price: 100 },
-{ ml: "20ml", price: 549 },
-{ ml: "50ml", price: 1099 }
-
-];
+const EDP_OPTIONS = perfumes.filter(p => p.key.startsWith("Mystery EDP")).map(p => p.key);
+const MIST_OPTIONS = perfumes.filter(p => p.key.startsWith("Mystery Mist")).map(p => p.key);
 
 let i = 0;
 let liked = [];
-let finalChoice = null;
-let preferredSize = null;
+let edpChoice = null;
+let mistChoice = null;
 let startX = 0;
 
 const card = document.getElementById("card");
@@ -209,7 +209,7 @@ descEl.textContent = perfumes[i].desc;
 
 function like(){
 
-liked.push(perfumes[i].name);
+liked.push(perfumes[i].key);
 next();
 
 }
@@ -230,106 +230,61 @@ render();
 
 
 
-/* FINAL CHOICE */
+/* FINAL CHOICE — two independent sections: EDP and Mist */
 
-function showFinalChoice(){
+function buildChoiceSection(containerId, options, remarksElId, onSelect){
 
-const c = document.getElementById("choices");
-c.innerHTML="";
+const c = document.getElementById(containerId);
+c.innerHTML = "";
 
-perfumes.forEach(p=>{
+options.forEach(opt=>{
 
 const b=document.createElement("button");
-
 b.className="w-full border border-white/30 rounded-full py-2 text-sm";
-
-b.innerText=p.name;
-
-b.onclick=()=>selectFinalChoice(p.name,b);
-
+b.innerText=opt;
+b.onclick=()=>onSelect(opt,b,containerId,remarksElId);
 c.appendChild(b);
 
 });
 
 const none=document.createElement("button");
-
 none.className="w-full border border-white/30 rounded-full py-2 text-sm text-white/70";
-
-none.innerText="Not Obsessed with any (yet)";
-
-none.onclick=()=>selectFinalChoice("NONE",none);
-
+none.innerText="None of these (yet)";
+none.onclick=()=>onSelect("NONE",none,containerId,remarksElId);
 c.appendChild(none);
 
+}
 
+function showFinalChoice(){
 
-const s=document.getElementById("sizes");
-
-s.innerHTML="";
-
-sizeOptions.forEach(x=>{
-
-const b=document.createElement("button");
-
-b.className="border border-white/30 rounded-xl py-3 text-sm";
-
-b.innerHTML=`<div class="font-bold">${x.ml}</div><div class="text-white/70">₹${x.price}</div>`;
-
-b.onclick=()=>selectSize(x.ml,b);
-
-s.appendChild(b);
-
-});
-
-
+buildChoiceSection("edpChoices", EDP_OPTIONS, "edpRemarks", selectEdp);
+buildChoiceSection("mistChoices", MIST_OPTIONS, "mistRemarks", selectMist);
 
 document.getElementById("finalChoice").classList.remove("hidden");
 
 }
 
+function selectEdp(v,btn){
 
-
-function selectFinalChoice(v,btn){
-
-document.querySelectorAll("#choices button").forEach(b=>b.classList.remove("bg-primary"));
-
+document.querySelectorAll("#edpChoices button").forEach(b=>b.classList.remove("bg-primary"));
 btn.classList.add("bg-primary");
+edpChoice = v;
 
-finalChoice=v;
-
-const sizes=document.getElementById("sizes");
-
-if(v==="NONE"){
-
-preferredSize="NONE";
-
-sizes.classList.add("opacity-40");
-
-document.querySelectorAll("#sizes button").forEach(b=>b.disabled=true);
+const remarks = document.getElementById("edpRemarks");
+if(v==="NONE") remarks.classList.remove("hidden");
+else { remarks.classList.add("hidden"); remarks.value=""; }
 
 }
 
-else{
+function selectMist(v,btn){
 
-preferredSize=null;
-
-sizes.classList.remove("opacity-40");
-
-document.querySelectorAll("#sizes button").forEach(b=>b.disabled=false);
-
-}
-
-}
-
-
-
-function selectSize(v,btn){
-
-document.querySelectorAll("#sizes button").forEach(b=>b.classList.remove("bg-primary"));
-
+document.querySelectorAll("#mistChoices button").forEach(b=>b.classList.remove("bg-primary"));
 btn.classList.add("bg-primary");
+mistChoice = v;
 
-preferredSize=v;
+const remarks = document.getElementById("mistRemarks");
+if(v==="NONE") remarks.classList.remove("hidden");
+else { remarks.classList.add("hidden"); remarks.value=""; }
 
 }
 
@@ -339,28 +294,17 @@ preferredSize=v;
 
 function lockFinalChoice(){
 
-if(!finalChoice) return alert("Select an option");
-
-if(finalChoice!=="NONE" && !preferredSize)
-return alert("Select size");
+if(!edpChoice) return alert("Pick one Mystery EDP option (or None)");
+if(!mistChoice) return alert("Pick one Mystery Mist option (or None)");
 
 document.getElementById("finalChoice").classList.add("hidden");
-
 document.getElementById("email").classList.remove("hidden");
 
-
-
 if(!boothCode){
-
 boothCode = Math.floor(100 + Math.random()*900).toString();
-
 }
 
-
-
 document.getElementById("boothCodeText").innerText = boothCode;
-
-
 
 fetch(SCRIPT_URL,{
 method:"POST",
@@ -369,11 +313,12 @@ body:JSON.stringify({
 
 session_id:sessionId,
 booth_code:boothCode,
-final_choice:finalChoice,
+final_choice_edp:edpChoice,
+remarks_edp: document.getElementById("edpRemarks").value.trim(),
+final_choice_mist:mistChoice,
+remarks_mist: document.getElementById("mistRemarks").value.trim(),
 liked:liked.join(" | "),
-preferred_size:preferredSize,
 source:SOURCE,
-mobile:"",
 anonymous:true,
 time:new Date().toISOString()
 
@@ -391,17 +336,10 @@ function submitMobile(){
 
 const mobile = document.getElementById("mobileInput").value.trim();
 
-
-
 if(mobile && !/^[6-9]\d{9}$/.test(mobile)){
-
 alert("Enter a valid 10 digit mobile number");
-
 return;
-
 }
-
-
 
 fetch(SCRIPT_URL,{
 
@@ -419,12 +357,8 @@ anonymous:!mobile
 
 });
 
-
-
 setTimeout(()=>{
-
 window.location.href = INSTAGRAM_URL;
-
 },200);
 
 }
@@ -434,47 +368,31 @@ window.location.href = INSTAGRAM_URL;
 /* SWIPE */
 
 card.addEventListener("touchstart",e=>startX=e.touches[0].clientX);
-
 card.addEventListener("touchmove",e=>move(e.touches[0].clientX));
-
 card.addEventListener("touchend",e=>end(e.changedTouches[0].clientX));
-
-
 
 function move(x){
 
 const dx=x-startX;
-
 card.style.transform=`translateX(${dx}px) rotate(${dx/20}deg)`;
-
 likeOverlay.style.opacity=dx>60?1:0;
-
 skipOverlay.style.opacity=dx<-60?1:0;
 
 }
 
-
-
 function end(x){
 
 const dx=x-startX;
-
 if(dx>120) like();
-
 else if(dx<-120) skip();
-
 else resetCard();
 
 }
 
-
-
 function resetCard(){
 
 card.style.transform="translateX(0)";
-
 likeOverlay.style.opacity=0;
-
 skipOverlay.style.opacity=0;
 
 }
@@ -484,7 +402,6 @@ skipOverlay.style.opacity=0;
 /* INIT */
 
 preGenerateBoothCode();
-
 render();
 
 </script>
