@@ -6,7 +6,7 @@
 <title>OCD — Record Sale</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <style>
-:root{--black:#0A0A08;--white:#F2EFE8;--border:rgba(242,239,232,0.13);--muted:rgba(242,239,232,0.38);--red:#E8372A;--green:#3DBF72;--gpay:#4285F4;}
+:root{--black:#0A0A08;--white:#F2EFE8;--border:rgba(242,239,232,0.13);--muted:rgba(242,239,232,0.38);--red:#E8372A;--green:#3DBF72;--gpay:#4285F4;--gold:#D4A857;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{width:100%;background:var(--black);color:var(--white);font-family:'DM Sans',sans-serif;}
 .app{display:flex;flex-direction:column;min-height:100vh;padding:12px 16px 20px;gap:10px;}
@@ -25,6 +25,13 @@ html,body{width:100%;background:var(--black);color:var(--white);font-family:'DM 
 .status-bar.dim{color:var(--muted);}
 .sl{font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;display:block;flex-shrink:0;}
 .multi-note{font-size:9px;color:var(--muted);margin-bottom:6px;flex-shrink:0;letter-spacing:0.04em;}
+.cust-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex-shrink:0;}
+.cust-input{background:rgba(242,239,232,0.07);border:1px solid var(--border);border-radius:6px;padding:9px 10px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--white);outline:none;-webkit-appearance:none;}
+.cust-input::placeholder{color:var(--muted);}
+.cust-input:focus{border-color:rgba(242,239,232,0.4);}
+.gender-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;flex-shrink:0;}
+.gender-btn{background:rgba(242,239,232,0.04);border:1px solid var(--border);border-radius:6px;padding:8px 4px;text-align:center;font-size:12px;color:var(--muted);cursor:pointer;}
+.gender-btn.sel{border-color:var(--white);background:rgba(242,239,232,0.12);color:var(--white);}
 .frag-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;flex-shrink:0;}
 .frag-btn{background:rgba(242,239,232,0.04);border:1px solid var(--border);border-radius:6px;padding:7px 3px;text-align:center;cursor:pointer;transition:all 0.12s;}
 .frag-dot{width:20px;height:20px;border-radius:50%;margin:0 auto 4px;}
@@ -45,30 +52,32 @@ html,body{width:100%;background:var(--black);color:var(--white);font-family:'DM 
 .merch-dot{width:20px;height:20px;border-radius:50%;margin:0 auto 4px;}
 .merch-lbl{font-size:9px;color:var(--muted);line-height:1.2;}
 .merch-price{font-size:8px;color:var(--muted);margin-top:2px;}
+.promo-grid{display:flex;flex-direction:column;gap:6px;flex-shrink:0;}
+.promo-btn{background:rgba(212,168,87,0.06);border:1px solid rgba(212,168,87,0.3);border-radius:6px;padding:9px 12px;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.promo-btn:active{background:rgba(212,168,87,0.16);}
+.promo-btn:disabled{opacity:0.3;cursor:not-allowed;}
+.promo-lbl{font-size:12px;color:var(--gold);font-weight:500;}
+.promo-sub{font-size:9px;color:var(--muted);margin-top:2px;}
+.promo-arrow{font-size:14px;color:var(--gold);flex-shrink:0;}
 .cart-box{border:1px solid var(--border);border-radius:8px;padding:2px 10px;flex-shrink:0;min-height:20px;}
 .cart-empty{font-size:11px;color:var(--muted);padding:8px 0;text-align:center;}
 .cart-line{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--border);gap:8px;}
 .cart-line:first-child{border-top:none;}
 .cart-name{font-size:12px;flex:1;min-width:0;}
 .cart-name .sz{color:var(--muted);}
+.cart-name .promo-tag{color:var(--gold);font-size:9px;margin-left:4px;}
 .cart-qty{display:flex;align-items:center;gap:6px;flex-shrink:0;}
 .cart-qty button{width:22px;height:22px;border-radius:4px;border:1px solid var(--border);background:rgba(242,239,232,0.06);color:var(--white);font-size:14px;line-height:1;cursor:pointer;}
 .cart-qty .n{font-family:'Bebas Neue',sans-serif;font-size:14px;min-width:14px;text-align:center;}
 .cart-price{font-size:11px;color:var(--muted);min-width:44px;text-align:right;flex-shrink:0;}
 .cart-total{display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid var(--border);font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:0.04em;}
-.pay-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;flex-shrink:0;}
+.pay-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex-shrink:0;}
 .pay-btn{background:rgba(242,239,232,0.04);border:1px solid var(--border);border-radius:6px;padding:9px 6px;text-align:center;cursor:pointer;transition:all 0.12s;display:flex;align-items:center;justify-content:center;gap:6px;}
 .pay-icon{font-size:15px;}
 .pay-lbl{font-size:12px;font-family:'Bebas Neue',sans-serif;letter-spacing:0.05em;color:var(--muted);}
 .pay-btn.sel{border-color:var(--white);background:rgba(242,239,232,0.12);}
 .pay-btn.sel .pay-lbl{color:var(--white);}
 .pay-btn.gpay.sel{border-color:var(--gpay);background:rgba(66,133,244,0.1);}
-.pay-btn.free-pay.sel{border-color:var(--green);background:rgba(61,191,114,0.12);}
-.pay-btn.free-pay.sel .pay-lbl{color:var(--green);}
-.free-toggle{display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(61,191,114,0.05);border:1px solid rgba(61,191,114,0.15);border-radius:6px;cursor:pointer;flex-shrink:0;user-select:none;}
-.free-toggle input[type=checkbox]{width:16px;height:16px;accent-color:var(--green);cursor:pointer;flex-shrink:0;pointer-events:none;}
-.free-lbl{font-size:12px;color:var(--muted);line-height:1.3;pointer-events:none;}
-.free-toggle.on .free-lbl{color:var(--green);}
 #submitBtn{width:100%;background:var(--white);color:var(--black);border:none;padding:13px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.08em;border-radius:4px;cursor:pointer;flex-shrink:0;transition:opacity 0.2s;}
 #submitBtn:disabled{opacity:0.25;cursor:not-allowed;}
 #successFlash{position:fixed;inset:0;background:rgba(10,10,8,0.92);display:none;align-items:center;justify-content:center;z-index:99;}
@@ -79,15 +88,14 @@ html,body{width:100%;background:var(--black);color:var(--white);font-family:'DM 
 .success-inner .sm{font-size:13px;color:var(--muted);margin-top:6px;}
 hr.div{border:none;border-top:1px solid var(--border);flex-shrink:0;margin:0;}
 .stock-btn{background:rgba(242,239,232,0.1);color:var(--white);border:1px solid var(--border);padding:7px 12px;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:0.06em;border-radius:4px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
-/* Stock overlay */
 #stockOverlay{position:fixed;inset:0;z-index:50;background:var(--black);display:none;flex-direction:column;padding:12px 16px 20px;gap:10px;overflow-y:auto;}
 #stockOverlay.open{display:flex;}
 .stock-header{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
 .stock-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.06em;}
 .stock-date{font-size:11px;color:var(--muted);}
 .stock-close{background:transparent;border:1px solid var(--border);color:var(--muted);padding:7px 12px;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:0.06em;border-radius:4px;cursor:pointer;}
-.stock-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex-shrink:0;}
-.stock-tab-btn{background:rgba(242,239,232,0.04);border:1px solid var(--border);border-radius:6px;padding:10px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:0.08em;color:var(--muted);cursor:pointer;}
+.stock-tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;flex-shrink:0;}
+.stock-tab-btn{background:rgba(242,239,232,0.04);border:1px solid var(--border);border-radius:6px;padding:10px 4px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:0.05em;color:var(--muted);cursor:pointer;}
 .stock-tab-btn.active{border-color:var(--white);background:rgba(242,239,232,0.12);color:var(--white);}
 .sku-block{border:1px solid var(--border);border-radius:8px;padding:10px;flex-shrink:0;}
 .sku-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
@@ -129,6 +137,7 @@ hr.div{border:none;border-top:1px solid var(--border);flex-shrink:0;margin:0;}
   <hr class="div">
   <div class="stock-tabs">
     <div class="stock-tab-btn active" id="stockTabStart" onclick="switchStockTab('start')">START DAY</div>
+    <div class="stock-tab-btn" id="stockTabRestock" onclick="switchStockTab('restock')">+ RESTOCK</div>
     <div class="stock-tab-btn" id="stockTabEnd" onclick="switchStockTab('end')">END DAY</div>
   </div>
   <div class="status-bar dim" id="stockStatusBar">Enter qty taken to the fest today</div>
@@ -149,6 +158,17 @@ hr.div{border:none;border-top:1px solid var(--border);flex-shrink:0;margin:0;}
   </div>
   <div class="status-bar dim" id="statusBar">Enter code or leave blank for walk-in</div>
   <hr class="div">
+  <span class="sl">Customer (optional, speeds up follow-up)</span>
+  <div class="cust-row">
+    <input id="custName" class="cust-input" type="text" placeholder="Name">
+    <input id="custMobile" class="cust-input" type="tel" placeholder="Mobile">
+  </div>
+  <div class="gender-row">
+    <div class="gender-btn" data-val="Male" onclick="pickGender(this)">Male</div>
+    <div class="gender-btn" data-val="Female" onclick="pickGender(this)">Female</div>
+    <div class="gender-btn" data-val="Other" onclick="pickGender(this)">Other</div>
+  </div>
+  <hr class="div">
   <span class="sl">Fragrance</span>
   <div class="multi-note">Tap multiple to buy together — then pick one size for all of them</div>
   <div class="frag-grid" id="fragGrid"></div>
@@ -157,24 +177,20 @@ hr.div{border:none;border-top:1px solid var(--border);flex-shrink:0;margin:0;}
   <button id="addFragBtn" disabled onclick="addFragToCart()">+ Add to Cart</button>
   <span class="sl">Merch (tap to add)</span>
   <div class="merch-grid" id="merchGrid"></div>
+  <span class="sl">🎡 Spin-Wheel Prizes</span>
+  <div class="promo-grid" id="promoGrid"></div>
   <span class="sl">Cart</span>
   <div class="cart-box" id="cartBox"></div>
   <span class="sl">Payment</span>
   <div class="pay-row">
     <div class="pay-btn" onclick="selectPay(this,'Cash')"><span class="pay-icon">💵</span><span class="pay-lbl">Cash</span></div>
     <div class="pay-btn gpay" onclick="selectPay(this,'GPay')"><span class="pay-icon">📲</span><span class="pay-lbl">GPay</span></div>
-    <div class="pay-btn free-pay" onclick="selectPay(this,'Free')"><span class="pay-icon">🎁</span><span class="pay-lbl">Free</span></div>
-  </div>
-  <div class="free-toggle" id="freeToggle" onclick="toggleFree()">
-    <input type="checkbox" id="freeChk" tabindex="-1">
-    <div class="free-lbl">Customer also gets a <strong>free item</strong></div>
   </div>
   <button id="submitBtn" disabled onclick="recordSale()">Record Sale</button>
 </div>
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz7Si1mKP1X85N6hZ1GA15JUMTMaAwIVGpbwzG-Dvc_C8YXfSEp87BYM4ppsPo3Qs9i/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2_6ToQGolv2hxsKR_geSnGR1xDkyLomv_JvGmxRIfLIFG0MJtCtRo-bhiiig4mbs4/exec';
 
-// Real, purchasable fragrance SKUs — each comes in 5ml or 50ml.
 const FRAGRANCES = [
   {id:'SKU1', name:'Skinny Dip',        color:'#5B7FB5'},
   {id:'SKU2', name:'Midnight Snack',    color:'#5A2510'},
@@ -182,21 +198,22 @@ const FRAGRANCES = [
   {id:'SKU4', name:'Still Not Over It', color:'#6B1E24'},
   {id:'SKU5', name:'About Last Night',  color:'#8A9E72'},
 ];
-const FRAG_SIZES = [{val:'5ml',price:100},{val:'50ml',price:1099}];
+const FRAG_SIZES = [{val:'5ml',price:200},{val:'50ml',price:770}];
 
-// Standalone merch — NOT sizes of a fragrance. Single line item each.
 const MERCH = [
-  {id:'CAP',       name:'Cap',            price:199, color:'#8B7355'},
+  {id:'CAP',       name:'Cap',            price:300, color:'#8B7355'},
   {id:'TOTE',      name:'Tote Bag',       price:199, color:'#4A5568'},
   {id:'DISCOVERY', name:'Discovery Set',  price:399, color:'#8B5A83'},
 ];
 
 let selFragIds = new Set();
 let selSize    = null;
-let cart       = []; // [{sku, name, size, price}] — one entry per unit
+let cart       = [];
 let selPay     = null;
 let selCode    = null;
-let freeItem   = false;
+let selGender  = null;
+let usedCapPromoThisSale = false;
+let capPromoRemaining = null;
 
 function buildFragGrid(){
   document.getElementById('fragGrid').innerHTML = FRAGRANCES.map(f=>
@@ -238,7 +255,6 @@ function addFragToCart(){
     const f = FRAGRANCES.find(x=>x.id===id);
     cart.push({sku:f.id, name:f.name, size:s.val, price:s.price});
   });
-  // clear selection after adding so the next pick starts fresh
   selFragIds = new Set();
   selSize = null;
   document.querySelectorAll('#fragGrid .frag-btn.sel, #sizeRow .size-btn.sel').forEach(b=>b.classList.remove('sel'));
@@ -251,28 +267,36 @@ function addMerchToCart(id){
   renderCart(); checkSubmitReady();
 }
 
-function cartKey(c){ return c.sku+'|'+c.size; }
+function pickGender(el){
+  const val = el.dataset.val;
+  const already = el.classList.contains('sel');
+  document.querySelectorAll('.gender-btn').forEach(b=>b.classList.remove('sel'));
+  if(!already){ el.classList.add('sel'); selGender = val; } else { selGender = null; }
+}
+
+function cartHasSize(size){ return cart.some(c=>c.size===size); }
+function cartKey(c){ return c.sku+'|'+c.size+'|'+c.price; }
 
 function renderCart(){
   const box = document.getElementById('cartBox');
   if(!cart.length){ box.innerHTML = '<div class="cart-empty">Cart is empty</div>'; return; }
 
-  // group by sku+size for display
   const groups = {};
   cart.forEach(c=>{
     const k = cartKey(c);
-    if(!groups[k]) groups[k] = {name:c.name, size:c.size, price:c.price, sku:c.sku, qty:0};
+    if(!groups[k]) groups[k] = {name:c.name, size:c.size, price:c.price, sku:c.sku, promo:c.promo, qty:0};
     groups[k].qty++;
   });
 
   let html = '';
   Object.values(groups).forEach(g=>{
     const sizeLbl = g.size==='Unit' ? '' : ' <span class="sz">('+g.size+')</span>';
+    const promoTag = g.promo ? ' <span class="promo-tag">🎡 promo</span>' : '';
     html += '<div class="cart-line">'
-      + '<div class="cart-name">'+g.name+sizeLbl+'</div>'
-      + '<div class="cart-qty"><button onclick="cartAdjust(\''+g.sku+'\',\''+g.size+'\',-1)">−</button>'
+      + '<div class="cart-name">'+g.name+sizeLbl+promoTag+'</div>'
+      + '<div class="cart-qty"><button onclick="cartAdjust(\''+g.sku+'\',\''+g.size+'\','+g.price+',-1)">−</button>'
       + '<span class="n">'+g.qty+'</span>'
-      + '<button onclick="cartAdjust(\''+g.sku+'\',\''+g.size+'\',1)">+</button></div>'
+      + '<button onclick="cartAdjust(\''+g.sku+'\',\''+g.size+'\','+g.price+',1)">+</button></div>'
       + '<div class="cart-price">₹'+(g.price*g.qty)+'</div>'
       + '</div>';
   });
@@ -281,26 +305,72 @@ function renderCart(){
   box.innerHTML = html;
 }
 
-function cartAdjust(sku,size,delta){
+function cartAdjust(sku,size,price,delta){
   if(delta>0){
-    const existing = cart.find(c=>c.sku===sku && c.size===size);
-    if(existing) cart.push({sku:existing.sku,name:existing.name,size:existing.size,price:existing.price});
+    const existing = cart.find(c=>c.sku===sku && c.size===size && c.price===price);
+    if(existing) cart.push({sku:existing.sku,name:existing.name,size:existing.size,price:existing.price,promo:existing.promo});
   } else {
-    const idx = cart.map(c=>c.sku+'|'+c.size).lastIndexOf(sku+'|'+size);
-    if(idx!==-1) cart.splice(idx,1);
+    const idx = cart.map(c=>c.sku+'|'+c.size+'|'+c.price).lastIndexOf(sku+'|'+size+'|'+price);
+    if(idx!==-1){
+      if(cart[idx].sku==='CAP' && cart[idx].promo==='FREECAP50') usedCapPromoThisSale = false;
+      cart.splice(idx,1);
+    }
   }
+  renderCart(); checkSubmitReady();
+}
+
+function buildPromoGrid(){
+  document.getElementById('promoGrid').innerHTML =
+    '<div class="promo-btn" onclick="applyDS50()">'
+      +'<div><div class="promo-lbl">50% off Discovery Set</div><div class="promo-sub">Requires a 50ml in cart</div></div>'
+      +'<div class="promo-arrow">+</div></div>'
+    +'<div class="promo-btn" onclick="applyFreeVial()">'
+      +'<div><div class="promo-lbl">Free 5ml Vial</div><div class="promo-sub">With any purchase</div></div>'
+      +'<div class="promo-arrow">+</div></div>'
+    +'<div class="promo-btn" id="capPromoBtn" onclick="applyFreeCap50()">'
+      +'<div><div class="promo-lbl">Free Cap with 50ml</div><div class="promo-sub" id="capPromoSub">Checking availability…</div></div>'
+      +'<div class="promo-arrow">+</div></div>';
+}
+
+async function loadPromoStatus(){
+  try{
+    const res = await fetch(SCRIPT_URL+'?action=getPromoStatus');
+    const data = await res.json();
+    capPromoRemaining = (typeof data.cap_promo_remaining === 'number') ? data.cap_promo_remaining : 0;
+  }catch(e){ capPromoRemaining = 0; }
+  updateCapPromoUI();
+}
+function updateCapPromoUI(){
+  const btn = document.getElementById('capPromoBtn');
+  const sub = document.getElementById('capPromoSub');
+  if(capPromoRemaining === null){ sub.textContent = 'Checking availability…'; return; }
+  if(capPromoRemaining <= 0){ sub.textContent = 'Sold out — limit reached'; btn.disabled = true; }
+  else { sub.textContent = 'First 10 only — '+capPromoRemaining+' left'; btn.disabled = false; }
+}
+
+function applyDS50(){
+  if(!cartHasSize('50ml')){ alert('Add a 50ml fragrance to the cart first.'); return; }
+  cart.push({sku:'DISCOVERY', name:'Discovery Set', size:'Unit', price:200, promo:'DS50'});
+  renderCart(); checkSubmitReady();
+}
+function applyFreeVial(){
+  if(!cart.length){ alert('This is "free with purchase" — add something to the cart first.'); return; }
+  cart.push({sku:'FREEVIAL', name:'Free Vial (Any Scent)', size:'5ml', price:0, promo:'FREEVIAL'});
+  renderCart(); checkSubmitReady();
+}
+function applyFreeCap50(){
+  if(capPromoRemaining !== null && capPromoRemaining <= 0){ alert('This promo has hit its limit of 10 redemptions.'); return; }
+  if(!cartHasSize('50ml')){ alert('Add a 50ml fragrance to the cart first.'); return; }
+  cart.push({sku:'CAP', name:'Cap', size:'Unit', price:0, promo:'FREECAP50'});
+  usedCapPromoThisSale = true;
+  if(capPromoRemaining !== null) capPromoRemaining--;
+  updateCapPromoUI();
   renderCart(); checkSubmitReady();
 }
 
 function selectPay(el,method){
   document.querySelectorAll('.pay-btn').forEach(b=>b.classList.remove('sel'));
   el.classList.add('sel');selPay=method;checkSubmitReady();
-}
-
-function toggleFree(){
-  freeItem=!freeItem;
-  document.getElementById('freeChk').checked=freeItem;
-  document.getElementById('freeToggle').classList.toggle('on',freeItem);
 }
 
 function checkSubmitReady(){
@@ -321,8 +391,11 @@ async function lookupCode(){
     const data=await res.json();
     if(data.found){
       selCode=raw;inp.classList.add('ok');
-      const edp=data.final_choice_edp||'—', mist=data.final_choice_mist||'—';
-      setStatus('✓ '+raw+' · EDP: '+edp+' · Mist: '+mist+(data.spun?' · Spun ✓':''),'ok');
+      setStatus('✓ Code '+raw+' found','ok');
+      if(data.mobile){
+        const mEl = document.getElementById('custMobile');
+        if(!mEl.value) mEl.value = data.mobile;
+      }
     }else{selCode='WALKIN-'+raw;inp.classList.add('err');setStatus('Not found — walk-in','err');}
   }catch(e){selCode='WALKIN-'+raw;inp.classList.add('err');setStatus('Network error — walk-in','err');}
   btn.textContent='LOOK UP';btn.disabled=false;
@@ -335,7 +408,9 @@ async function recordSale(){
   btn.disabled=true;btn.textContent='SAVING…';
 
   const totalPrice = cart.reduce((s,c)=>s+c.price,0);
-  const isFreeGiveaway = selPay === 'Free';
+  const hasFreeLine = cart.some(c=>c.price===0);
+  const promosUsed = [...new Set(cart.filter(c=>c.promo).map(c=>c.promo))].join(', ');
+
   const payload={
     action:'logSale',
     booth_code:selCode,
@@ -343,11 +418,16 @@ async function recordSale(){
     sale_sku:cart.map(c=>c.sku).join(' | '),
     sale_size:cart.map(c=>c.size).join(' | '),
     sale_price:cart.map(c=>'₹'+c.price).join(' | '),
-    sale_total: isFreeGiveaway ? '₹0 (retail value ₹'+totalPrice+')' : '₹'+totalPrice,
+    sale_total:'₹'+totalPrice,
     sale_payment:selPay,
-    sale_free_item: isFreeGiveaway ? true : freeItem,
-    sale_notes: isFreeGiveaway ? 'Spin-wheel / giveaway — no charge' : '',
+    sale_free_item: hasFreeLine,
+    sale_notes: hasFreeLine ? 'Includes free promo item(s)' : '',
     sale_time:new Date().toISOString(),
+    sale_customer_name: document.getElementById('custName').value.trim(),
+    sale_customer_gender: selGender || '',
+    sale_customer_mobile: document.getElementById('custMobile').value.trim(),
+    sale_promo_applied: promosUsed,
+    used_cap_promo: usedCapPromoThisSale,
   };
   try{
     await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
@@ -361,31 +441,30 @@ function showSuccess(label, afterFn){
   setTimeout(()=>{document.getElementById('successFlash').classList.remove('show');(afterFn||clearAll)();},1500);
 }
 function clearAll(){
-  selFragIds=new Set();selSize=null;cart=[];selPay=null;freeItem=false;
+  selFragIds=new Set();selSize=null;cart=[];selPay=null;selGender=null;
+  usedCapPromoThisSale=false;
   document.getElementById('codeInput').value='';
   document.getElementById('codeInput').className='';
-  document.getElementById('freeChk').checked=false;
-  document.getElementById('freeToggle').classList.remove('on');
-  document.querySelectorAll('.frag-btn.sel,.size-btn.sel,.pay-btn.sel').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('custName').value='';
+  document.getElementById('custMobile').value='';
+  document.querySelectorAll('.frag-btn.sel,.size-btn.sel,.pay-btn.sel,.gender-btn.sel').forEach(b=>b.classList.remove('sel'));
   document.getElementById('addFragBtn').disabled=true;
   document.getElementById('submitBtn').disabled=true;
   document.getElementById('submitBtn').textContent='Record Sale';
   renderCart();
   setStatus('Enter code or leave blank for walk-in','dim');
   selCode=null;
+  loadPromoStatus();
 }
 
 function warmup(){fetch(SCRIPT_URL+'?action=ping',{mode:'no-cors'}).catch(()=>{});}
 
 buildFragGrid();
+buildPromoGrid();
 renderCart();
 warmup();
+loadPromoStatus();
 
-// ═══════════════════════════════════════════════════════
-//  STOCK REGISTER — Start Day / End Day, embedded overlay
-//  Combined catalog: fragrances × (5ml,50ml) + merch × (Unit)
-//  Start Day locks any SKU+Size that already has opening stock saved.
-// ═══════════════════════════════════════════════════════
 const STOCK_PRODUCTS = [
   ...FRAGRANCES.map(f=>({id:f.id, name:f.name, color:f.color, sizes:FRAG_SIZES.map(s=>s.val)})),
   ...MERCH.map(m=>({id:m.id, name:m.name, color:m.color, sizes:['Unit']})),
@@ -396,7 +475,8 @@ document.getElementById('stockDateLbl').textContent = stockTodayKey;
 
 let currentStockTab = 'start';
 let endDayData = null;
-let startDayExisting = null; // {sku|size: openingQty} for today, once loaded
+let startDayExisting = null;
+let restockContext = null;
 
 function openStock(){
   document.getElementById('stockOverlay').classList.add('open');
@@ -411,10 +491,14 @@ function setStockStatus(msg,cls){const el=document.getElementById('stockStatusBa
 function switchStockTab(tab){
   currentStockTab = tab;
   document.getElementById('stockTabStart').classList.toggle('active', tab==='start');
+  document.getElementById('stockTabRestock').classList.toggle('active', tab==='restock');
   document.getElementById('stockTabEnd').classList.toggle('active', tab==='end');
   if(tab==='start'){
     document.getElementById('stockSubmitBtn').textContent='Save Opening Stock';
     loadStockStartDay();
+  } else if(tab==='restock'){
+    document.getElementById('stockSubmitBtn').textContent='Save Restock';
+    loadRestockContext();
   } else {
     setStockStatus('Loading today\u2019s opening stock…','dim');
     document.getElementById('stockSubmitBtn').textContent='Save Closing Stock';
@@ -422,7 +506,6 @@ function switchStockTab(tab){
   }
 }
 
-// Loads what's already been saved today so those rows render locked.
 async function loadStockStartDay(){
   setStockStatus('Checking today\u2019s saved opening stock…','dim');
   document.getElementById('stockListWrap').innerHTML='<div class="stat-row" style="justify-content:center;padding:20px 0;">Loading…</div>';
@@ -464,6 +547,46 @@ function renderStockStartDay(){
   document.getElementById('stockListWrap').innerHTML=html;
 }
 
+async function loadRestockContext(){
+  setStockStatus('Loading today\u2019s stock so far…','dim');
+  document.getElementById('stockListWrap').innerHTML='<div class="stat-row" style="justify-content:center;padding:20px 0;">Loading…</div>';
+  try{
+    const res=await fetch(SCRIPT_URL+'?action=getOpeningStock&date='+stockTodayKey);
+    const data=await res.json();
+    restockContext = {};
+    (data.items||[]).forEach(it=>{ restockContext[it.sku+'|'+it.size] = it; });
+    renderRestock();
+    setStockStatus('Only items with Start Day already saved can be restocked','dim');
+  }catch(e){
+    restockContext = {};
+    renderRestock();
+    setStockStatus('Could not load — network error','err');
+  }
+}
+
+function renderRestock(){
+  let html='';
+  STOCK_PRODUCTS.forEach(p=>{
+    const rowsForProd = p.sizes.filter(sz => restockContext && restockContext[p.id+'|'+sz]);
+    if(!rowsForProd.length) return;
+    html+='<div class="sku-block"><div class="sku-head"><div class="sku-dot" style="background:'+p.color+'"></div><div class="sku-name">'+p.name+'</div></div>';
+    rowsForProd.forEach(sz=>{
+      const it = restockContext[p.id+'|'+sz];
+      const id='stockrestock_'+p.id.replace(/\s+/g,'_')+'_'+sz;
+      html+='<div class="size-line"><div class="size-lbl">'+sz+'</div>'
+        +'<div class="stepper">'
+        +'<button onclick="stepStock(\''+id+'\',-1)">−</button>'
+        +'<input id="'+id+'" type="number" min="0" value="0" inputmode="numeric">'
+        +'<button onclick="stepStock(\''+id+'\',1)">+</button>'
+        +'</div></div>'
+        +'<div class="stat-row">Opening <b>'+it.opening+'</b> · Already restocked today <b>'+it.restocked+'</b></div>';
+    });
+    html+='</div>';
+  });
+  if(!html) html = '<div class="stat-row" style="justify-content:center;padding:20px 0;">No Start Day stock saved yet today — nothing to restock.</div>';
+  document.getElementById('stockListWrap').innerHTML=html;
+}
+
 function stepStock(id,delta){
   const el=document.getElementById(id);
   const v=Math.max(0,(parseInt(el.value)||0)+delta);
@@ -497,9 +620,10 @@ function renderStockEndDay(){
     html+='<div class="sku-block"><div class="sku-head"><div class="sku-dot" style="background:'+p.color+'"></div><div class="sku-name">'+p.name+'</div></div>';
     rowsForProd.forEach(it=>{
       const id='stockend_'+it.sku.replace(/\s+/g,'_')+'_'+it.size;
+      const inwardNote = it.restocked ? (' + Restocked <b>'+it.restocked+'</b>') : '';
       html+='<div class="size-line"><div class="size-lbl">'+it.size+'</div>'
         +'<div class="stepper"><input id="'+id+'" type="number" min="0" placeholder="0" inputmode="numeric"></div></div>'
-        +'<div class="stat-row">Opening <b>'+it.opening+'</b> · Sold <b>'+it.sold+'</b> · Free <b>'+it.free+'</b> · Expected back <b>'+it.expected+'</b></div>';
+        +'<div class="stat-row">Opening <b>'+it.opening+'</b>'+inwardNote+' · Sold <b>'+it.sold+'</b> · Free <b>'+it.free+'</b> · Expected back <b>'+it.expected+'</b></div>';
     });
     html+='</div>';
   });
@@ -517,7 +641,7 @@ async function submitStockTab(){
     STOCK_PRODUCTS.forEach(p=>{
       p.sizes.forEach(sz=>{
         const el=document.getElementById('stockstart_'+p.id.replace(/\s+/g,'_')+'_'+sz);
-        if(!el) return; // locked rows have no input — skip
+        if(!el) return;
         const qty=parseInt(el.value)||0;
         if(qty>0) items.push({sku:p.id, fragrance:p.name, size:sz, qty:qty});
       });
@@ -526,6 +650,21 @@ async function submitStockTab(){
     try{
       await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'logOpeningStock', date:stockTodayKey, items:items})});
       showSuccess('STOCK<br>OUT ✓', loadStockStartDay);
+    }catch(e){ setStockStatus('Save failed — try again','err'); }
+  } else if(currentStockTab==='restock'){
+    const items=[];
+    STOCK_PRODUCTS.forEach(p=>{
+      p.sizes.forEach(sz=>{
+        const el=document.getElementById('stockrestock_'+p.id.replace(/\s+/g,'_')+'_'+sz);
+        if(!el) return;
+        const qty=parseInt(el.value)||0;
+        if(qty>0) items.push({sku:p.id, size:sz, qty:qty});
+      });
+    });
+    if(!items.length){ setStockStatus('Enter at least one restock quantity','err'); btn.disabled=false; btn.textContent=origText; return; }
+    try{
+      await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'logRestock', date:stockTodayKey, items:items})});
+      showSuccess('STOCK<br>IN (RESTOCK) ✓', loadRestockContext);
     }catch(e){ setStockStatus('Save failed — try again','err'); }
   } else {
     if(!endDayData){ btn.disabled=false; btn.textContent=origText; return; }
