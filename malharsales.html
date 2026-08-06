@@ -52,13 +52,13 @@ html,body{width:100%;background:var(--black);color:var(--white);font-family:'DM 
 .merch-dot{width:20px;height:20px;border-radius:50%;margin:0 auto 4px;}
 .merch-lbl{font-size:9px;color:var(--muted);line-height:1.2;}
 .merch-price{font-size:8px;color:var(--muted);margin-top:2px;}
-.promo-grid{display:flex;flex-direction:column;gap:6px;flex-shrink:0;}
-.promo-btn{background:rgba(212,168,87,0.06);border:1px solid rgba(212,168,87,0.3);border-radius:6px;padding:9px 12px;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;}
-.promo-btn:active{background:rgba(212,168,87,0.16);}
-.promo-btn:disabled{opacity:0.3;cursor:not-allowed;}
-.promo-lbl{font-size:12px;color:var(--gold);font-weight:500;}
-.promo-sub{font-size:9px;color:var(--muted);margin-top:2px;}
-.promo-arrow{font-size:14px;color:var(--gold);flex-shrink:0;}
+.promo-toggle-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex-shrink:0;}
+.promo-toggle{background:rgba(212,168,87,0.05);border:1px solid rgba(212,168,87,0.25);border-radius:6px;padding:9px 8px;text-align:center;cursor:pointer;transition:all 0.12s;}
+.promo-toggle.sel{border-color:var(--gold);background:rgba(212,168,87,0.18);}
+.promo-toggle.disabled{opacity:0.35;cursor:not-allowed;}
+.promo-toggle-lbl{font-size:12px;color:var(--gold);font-weight:500;}
+.promo-toggle-sub{font-size:9px;color:var(--muted);margin-top:2px;}
+#applyPromoBtn{width:100%;background:rgba(212,168,87,0.1);border:1px solid rgba(212,168,87,0.35);color:var(--gold);padding:10px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:0.06em;border-radius:6px;cursor:pointer;flex-shrink:0;}
 .cart-box{border:1px solid var(--border);border-radius:8px;padding:2px 10px;flex-shrink:0;min-height:20px;}
 .cart-empty{font-size:11px;color:var(--muted);padding:8px 0;text-align:center;}
 .cart-line{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--border);gap:8px;}
@@ -177,8 +177,10 @@ hr.div{border:none;border-top:1px solid var(--border);flex-shrink:0;margin:0;}
   <button id="addFragBtn" disabled onclick="addFragToCart()">+ Add to Cart</button>
   <span class="sl">Merch (tap to add)</span>
   <div class="merch-grid" id="merchGrid"></div>
-  <span class="sl">🎡 Spin-Wheel Prizes</span>
-  <div class="promo-grid" id="promoGrid"></div>
+  <span class="sl">🎡 Spin-Wheel Prize — select what they won</span>
+  <div class="multi-note">Any combination — tap all that apply, then Apply</div>
+  <div class="promo-toggle-grid" id="promoToggleGrid"></div>
+  <button id="applyPromoBtn" onclick="applyPromoSelection()">Apply Prize to Cart</button>
   <span class="sl">Cart</span>
   <div class="cart-box" id="cartBox"></div>
   <span class="sl">Payment</span>
@@ -189,7 +191,7 @@ hr.div{border:none;border-top:1px solid var(--border);flex-shrink:0;margin:0;}
   <button id="submitBtn" disabled onclick="recordSale()">Record Sale</button>
 </div>
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz7Si1mKP1X85N6hZ1GA15JUMTMaAwIVGpbwzG-Dvc_C8YXfSEp87BYM4ppsPo3Qs9i/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwlpDXk6OAR9Udoru2_PrQKIFKTB5Wq1woIL4DpKCyQzQr3L-fQk0JPfV-JnDz3BSIw/exec';
 
 const FRAGRANCES = [
   {id:'SKU1', name:'Skinny Dip',        color:'#5B7FB5'},
@@ -212,8 +214,6 @@ let cart       = [];
 let selPay     = null;
 let selCode    = null;
 let selGender  = null;
-let usedCapPromoThisSale = false;
-let capPromoRemaining = null;
 
 function buildFragGrid(){
   document.getElementById('fragGrid').innerHTML = FRAGRANCES.map(f=>
@@ -274,7 +274,6 @@ function pickGender(el){
   if(!already){ el.classList.add('sel'); selGender = val; } else { selGender = null; }
 }
 
-function cartHasSize(size){ return cart.some(c=>c.size===size); }
 function cartKey(c){ return c.sku+'|'+c.size+'|'+c.price; }
 
 function renderCart(){
@@ -311,67 +310,62 @@ function cartAdjust(sku,size,price,delta){
     if(existing) cart.push({sku:existing.sku,name:existing.name,size:existing.size,price:existing.price,promo:existing.promo});
   } else {
     const idx = cart.map(c=>c.sku+'|'+c.size+'|'+c.price).lastIndexOf(sku+'|'+size+'|'+price);
-    if(idx!==-1){
-      if(cart[idx].sku==='CAP' && cart[idx].promo==='FREECAP50') usedCapPromoThisSale = false;
-      cart.splice(idx,1);
-    }
+    if(idx!==-1) cart.splice(idx,1);
   }
   renderCart(); checkSubmitReady();
 }
 
+// Every spin-wheel prize is some combination of these 4 building blocks.
+const PROMO_TYPES = [
+  {id:'FREEVIAL', label:'Free Vial',        needsFragrance:true},
+  {id:'FREECAP',  label:'Free Cap'},
+  {id:'FREETOTE', label:'Free Tote Bag'},
+  {id:'DS50',     label:'50% off Disc. Set'},
+];
+let selPromos = new Set();
+
 function buildPromoGrid(){
-  document.getElementById('promoGrid').innerHTML =
-    '<div class="promo-btn" onclick="applyDS50()">'
-      +'<div><div class="promo-lbl">50% off Discovery Set</div><div class="promo-sub">Requires a 50ml in cart</div></div>'
-      +'<div class="promo-arrow">+</div></div>'
-    +'<div class="promo-btn" onclick="applyFreeVial()">'
-      +'<div><div class="promo-lbl">Free 5ml Vial</div><div class="promo-sub">Tap the fragrance chip(s) above first, then this</div></div>'
-      +'<div class="promo-arrow">+</div></div>'
-    +'<div class="promo-btn" id="capPromoBtn" onclick="applyFreeCap50()">'
-      +'<div><div class="promo-lbl">Free Cap with 50ml</div><div class="promo-sub" id="capPromoSub">Checking availability…</div></div>'
-      +'<div class="promo-arrow">+</div></div>';
+  document.getElementById('promoToggleGrid').innerHTML = PROMO_TYPES.map(p=>{
+    const subText = p.needsFragrance ? 'Tap fragrance chip(s) first' : '';
+    return '<div class="promo-toggle" data-id="'+p.id+'" onclick="togglePromo(this,\''+p.id+'\')">'
+      +'<div class="promo-toggle-lbl">'+p.label+'</div>'
+      +'<div class="promo-toggle-sub">'+subText+'</div></div>';
+  }).join('');
 }
 
-async function loadPromoStatus(){
-  try{
-    const res = await fetch(SCRIPT_URL+'?action=getPromoStatus');
-    const data = await res.json();
-    capPromoRemaining = (typeof data.cap_promo_remaining === 'number') ? data.cap_promo_remaining : 0;
-  }catch(e){ capPromoRemaining = 0; }
-  updateCapPromoUI();
-}
-function updateCapPromoUI(){
-  const btn = document.getElementById('capPromoBtn');
-  const sub = document.getElementById('capPromoSub');
-  if(capPromoRemaining === null){ sub.textContent = 'Checking availability…'; return; }
-  if(capPromoRemaining <= 0){ sub.textContent = 'Sold out — limit reached'; btn.disabled = true; }
-  else { sub.textContent = 'First 10 only — '+capPromoRemaining+' left'; btn.disabled = false; }
+function togglePromo(el,id){
+  if(selPromos.has(id)){ selPromos.delete(id); el.classList.remove('sel'); }
+  else{ selPromos.add(id); el.classList.add('sel'); }
 }
 
-function applyDS50(){
-  if(!cartHasSize('50ml')){ alert('Add a 50ml fragrance to the cart first.'); return; }
-  cart.push({sku:'DISCOVERY', name:'Discovery Set', size:'Unit', price:200, promo:'DS50'});
-  renderCart(); checkSubmitReady();
-}
-function applyFreeVial(){
-  if(!cart.length){ alert('This is "free with purchase" — add something to the cart first.'); return; }
-  if(!selFragIds.size){ alert('Tap which fragrance(s) the free vial is for, then tap this again.'); return; }
-  selFragIds.forEach(id=>{
-    const f = FRAGRANCES.find(x=>x.id===id);
-    cart.push({sku:f.id, name:f.name, size:'5ml', price:0, promo:'FREEVIAL'});
-  });
-  selFragIds = new Set();
-  document.querySelectorAll('#fragGrid .frag-btn.sel').forEach(b=>b.classList.remove('sel'));
-  checkAddReady();
-  renderCart(); checkSubmitReady();
-}
-function applyFreeCap50(){
-  if(capPromoRemaining !== null && capPromoRemaining <= 0){ alert('This promo has hit its limit of 10 redemptions.'); return; }
-  if(!cartHasSize('50ml')){ alert('Add a 50ml fragrance to the cart first.'); return; }
-  cart.push({sku:'CAP', name:'Cap', size:'Unit', price:0, promo:'FREECAP50'});
-  usedCapPromoThisSale = true;
-  if(capPromoRemaining !== null) capPromoRemaining--;
-  updateCapPromoUI();
+function applyPromoSelection(){
+  if(!selPromos.size){ alert('Select at least one prize component first.'); return; }
+  if(selPromos.has('FREEVIAL') && !selFragIds.size){
+    alert('Free Vial needs a fragrance — tap the fragrance chip(s) above first, then Apply again.');
+    return;
+  }
+
+  if(selPromos.has('FREEVIAL')){
+    selFragIds.forEach(id=>{
+      const f = FRAGRANCES.find(x=>x.id===id);
+      cart.push({sku:f.id, name:f.name, size:'5ml', price:0, promo:'FREEVIAL'});
+    });
+    selFragIds = new Set();
+    document.querySelectorAll('#fragGrid .frag-btn.sel').forEach(b=>b.classList.remove('sel'));
+    checkAddReady();
+  }
+  if(selPromos.has('FREECAP')){
+    cart.push({sku:'CAP', name:'Cap', size:'Unit', price:0, promo:'FREECAP'});
+  }
+  if(selPromos.has('FREETOTE')){
+    cart.push({sku:'TOTE', name:'Tote Bag', size:'Unit', price:0, promo:'FREETOTE'});
+  }
+  if(selPromos.has('DS50')){
+    cart.push({sku:'DISCOVERY', name:'Discovery Set', size:'Unit', price:200, promo:'DS50'});
+  }
+
+  selPromos = new Set();
+  document.querySelectorAll('.promo-toggle.sel').forEach(b=>b.classList.remove('sel'));
   renderCart(); checkSubmitReady();
 }
 
@@ -434,7 +428,6 @@ async function recordSale(){
     sale_customer_gender: selGender || '',
     sale_customer_mobile: document.getElementById('custMobile').value.trim(),
     sale_promo_applied: promosUsed,
-    used_cap_promo: usedCapPromoThisSale,
   };
   try{
     await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
@@ -449,19 +442,18 @@ function showSuccess(label, afterFn){
 }
 function clearAll(){
   selFragIds=new Set();selSize=null;cart=[];selPay=null;selGender=null;
-  usedCapPromoThisSale=false;
+  selPromos=new Set();
   document.getElementById('codeInput').value='';
   document.getElementById('codeInput').className='';
   document.getElementById('custName').value='';
   document.getElementById('custMobile').value='';
-  document.querySelectorAll('.frag-btn.sel,.size-btn.sel,.pay-btn.sel,.gender-btn.sel').forEach(b=>b.classList.remove('sel'));
+  document.querySelectorAll('.frag-btn.sel,.size-btn.sel,.pay-btn.sel,.gender-btn.sel,.promo-toggle.sel').forEach(b=>b.classList.remove('sel'));
   document.getElementById('addFragBtn').disabled=true;
   document.getElementById('submitBtn').disabled=true;
   document.getElementById('submitBtn').textContent='Record Sale';
   renderCart();
   setStatus('Enter code or leave blank for walk-in','dim');
   selCode=null;
-  loadPromoStatus();
 }
 
 function warmup(){fetch(SCRIPT_URL+'?action=ping',{mode:'no-cors'}).catch(()=>{});}
@@ -470,7 +462,6 @@ buildFragGrid();
 buildPromoGrid();
 renderCart();
 warmup();
-loadPromoStatus();
 
 const STOCK_PRODUCTS = [
   ...FRAGRANCES.map(f=>({id:f.id, name:f.name, color:f.color, sizes:FRAG_SIZES.map(s=>s.val)})),
