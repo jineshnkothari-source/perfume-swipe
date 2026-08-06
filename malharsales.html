@@ -189,7 +189,7 @@ hr.div{border:none;border-top:1px solid var(--border);flex-shrink:0;margin:0;}
   <button id="submitBtn" disabled onclick="recordSale()">Record Sale</button>
 </div>
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2_6ToQGolv2hxsKR_geSnGR1xDkyLomv_JvGmxRIfLIFG0MJtCtRo-bhiiig4mbs4/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz7Si1mKP1X85N6hZ1GA15JUMTMaAwIVGpbwzG-Dvc_C8YXfSEp87BYM4ppsPo3Qs9i/exec';
 
 const FRAGRANCES = [
   {id:'SKU1', name:'Skinny Dip',        color:'#5B7FB5'},
@@ -198,10 +198,10 @@ const FRAGRANCES = [
   {id:'SKU4', name:'Still Not Over It', color:'#6B1E24'},
   {id:'SKU5', name:'About Last Night',  color:'#8A9E72'},
 ];
-const FRAG_SIZES = [{val:'5ml',price:200},{val:'50ml',price:770}];
+const FRAG_SIZES = [{val:'5ml',price:100},{val:'50ml',price:1099}];
 
 const MERCH = [
-  {id:'CAP',       name:'Cap',            price:300, color:'#8B7355'},
+  {id:'CAP',       name:'Cap',            price:199, color:'#8B7355'},
   {id:'TOTE',      name:'Tote Bag',       price:199, color:'#4A5568'},
   {id:'DISCOVERY', name:'Discovery Set',  price:399, color:'#8B5A83'},
 ];
@@ -325,7 +325,7 @@ function buildPromoGrid(){
       +'<div><div class="promo-lbl">50% off Discovery Set</div><div class="promo-sub">Requires a 50ml in cart</div></div>'
       +'<div class="promo-arrow">+</div></div>'
     +'<div class="promo-btn" onclick="applyFreeVial()">'
-      +'<div><div class="promo-lbl">Free 5ml Vial</div><div class="promo-sub">With any purchase</div></div>'
+      +'<div><div class="promo-lbl">Free 5ml Vial</div><div class="promo-sub">Tap the fragrance chip(s) above first, then this</div></div>'
       +'<div class="promo-arrow">+</div></div>'
     +'<div class="promo-btn" id="capPromoBtn" onclick="applyFreeCap50()">'
       +'<div><div class="promo-lbl">Free Cap with 50ml</div><div class="promo-sub" id="capPromoSub">Checking availability…</div></div>'
@@ -355,7 +355,14 @@ function applyDS50(){
 }
 function applyFreeVial(){
   if(!cart.length){ alert('This is "free with purchase" — add something to the cart first.'); return; }
-  cart.push({sku:'FREEVIAL', name:'Free Vial (Any Scent)', size:'5ml', price:0, promo:'FREEVIAL'});
+  if(!selFragIds.size){ alert('Tap which fragrance(s) the free vial is for, then tap this again.'); return; }
+  selFragIds.forEach(id=>{
+    const f = FRAGRANCES.find(x=>x.id===id);
+    cart.push({sku:f.id, name:f.name, size:'5ml', price:0, promo:'FREEVIAL'});
+  });
+  selFragIds = new Set();
+  document.querySelectorAll('#fragGrid .frag-btn.sel').forEach(b=>b.classList.remove('sel'));
+  checkAddReady();
   renderCart(); checkSubmitReady();
 }
 function applyFreeCap50(){
