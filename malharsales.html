@@ -22,6 +22,7 @@ html,body{width:100%;background:var(--black);color:var(--white);font-family:'DM 
 .status-bar{font-size:11px;min-height:14px;flex-shrink:0;}
 .status-bar.ok{color:var(--green);}
 .status-bar.err{color:var(--red);}
+.status-bar.warn{color:var(--gold);}
 .status-bar.dim{color:var(--muted);}
 .sl{font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;display:block;flex-shrink:0;}
 .multi-note{font-size:9px;color:var(--muted);margin-bottom:6px;flex-shrink:0;letter-spacing:0.04em;}
@@ -191,7 +192,7 @@ hr.div{border:none;border-top:1px solid var(--border);flex-shrink:0;margin:0;}
   <button id="submitBtn" disabled onclick="recordSale()">Record Sale</button>
 </div>
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwlpDXk6OAR9Udoru2_PrQKIFKTB5Wq1woIL4DpKCyQzQr3L-fQk0JPfV-JnDz3BSIw/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyvk0fY25NMMiQgmKhKGVcC2Z7Fv4l0utdB_spqOGGxfec2oyjSALjq7lzzQpxj1Rvb/exec';
 
 const FRAGRANCES = [
   {id:'SKU1', name:'Skinny Dip',        color:'#5B7FB5'},
@@ -392,12 +393,23 @@ async function lookupCode(){
     const data=await res.json();
     if(data.found){
       selCode=raw;inp.classList.add('ok');
-      setStatus('✓ Code '+raw+' found','ok');
       if(data.mobile){
         const mEl = document.getElementById('custMobile');
         if(!mEl.value) mEl.value = data.mobile;
       }
-    }else{selCode='WALKIN-'+raw;inp.classList.add('err');setStatus('Not found — walk-in','err');}
+      if(data.existing_sales_count > 0){
+        setStatus('⚠ Code '+raw+' already has '+data.existing_sales_count+' sale(s) today — last '+data.existing_sales_last_total+' at '+data.existing_sales_last_time+'. Different customer? Double-check the code.','warn');
+      } else {
+        setStatus('✓ Code '+raw+' found','ok');
+      }
+    }else{
+      selCode='WALKIN-'+raw;inp.classList.add('err');
+      if(data.existing_sales_count > 0){
+        setStatus('Not found in survey — but this code already has '+data.existing_sales_count+' sale(s) today. Typo? Logging as walk-in.','warn');
+      } else {
+        setStatus('Not found — walk-in','err');
+      }
+    }
   }catch(e){selCode='WALKIN-'+raw;inp.classList.add('err');setStatus('Network error — walk-in','err');}
   btn.textContent='LOOK UP';btn.disabled=false;
 }
