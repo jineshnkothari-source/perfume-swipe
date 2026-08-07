@@ -57,7 +57,7 @@ Which one are you most obsessed with?
 </h1>
 
 <p class="text-white/70 text-sm mb-5 text-center">
-Pick one EDP and one Mist below.
+Pick your EDP and Mist below.
 </p>
 
 <div class="space-y-2">
@@ -72,6 +72,11 @@ Pick one EDP and one Mist below.
   <div id="mistChoices" class="flex flex-col gap-2"></div>
   <textarea id="mistRemarks" placeholder="Tell us why none of these? (optional)"
     class="hidden w-full p-3 rounded-xl text-black text-sm mt-1" rows="2"></textarea>
+</div>
+
+<div class="space-y-2 mt-6">
+  <h2 class="text-lg font-bold">Would you wear these two layered together?</h2>
+  <div id="layeringChoices" class="flex flex-col gap-2"></div>
 </div>
 
 <button onclick="lockFinalChoice()" class="w-full bg-primary py-3 rounded-full font-bold mt-6 mb-4">
@@ -108,8 +113,11 @@ Drop your number for early access
 <input
 id="mobileInput"
 type="tel"
+inputmode="numeric"
+maxlength="10"
 placeholder="Enter mobile number"
 class="w-full p-4 rounded-full text-black"
+oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)"
 />
 
 <button onclick="submitMobile()" class="w-full bg-primary py-4 rounded-full font-bold">
@@ -120,7 +128,7 @@ Follow the Obsession →
 
 <script>
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyvk0fY25NMMiQgmKhKGVcC2Z7Fv4l0utdB_spqOGGxfec2oyjSALjq7lzzQpxj1Rvb/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbypx3Mbd0Ht0lf1AGHnBpzC_g4UeM1zffnsPORzfBmLUROG8xdz2PxuSvb77e5i8MRg/exec";
 const INSTAGRAM_URL = "https://www.instagram.com/fix.myocd?igsh=MWtvZGZpNG1vNXF2YQ==";
 const SOURCE = "Mystery Launch Test";
 
@@ -128,11 +136,10 @@ const sessionId = crypto.randomUUID();
 
 let boothCode = null;
 
-// 2 EDPs + 3 Mists — blind-test naming, swap "img" for your real filenames.
+// 1 EDP + 3 Mists — blind-test naming, swap "img" for your real filenames.
 let perfumes = [
 
   { key: "Mystery EDP 1",  name: "MYSTERY EDP 1",  desc: "", img: "silhouette.png" },
-  { key: "Mystery EDP 2",  name: "MYSTERY EDP 2",  desc: "", img: "silhouette.png" },
   { key: "Mystery Mist 1", name: "MYSTERY MIST 1", desc: "", img: "silhouette.png" },
   { key: "Mystery Mist 2", name: "MYSTERY MIST 2", desc: "", img: "silhouette.png" },
   { key: "Mystery Mist 3", name: "MYSTERY MIST 3", desc: "", img: "silhouette.png" }
@@ -141,11 +148,13 @@ let perfumes = [
 
 const EDP_OPTIONS = perfumes.filter(p => p.key.startsWith("Mystery EDP")).map(p => p.key);
 const MIST_OPTIONS = perfumes.filter(p => p.key.startsWith("Mystery Mist")).map(p => p.key);
+const LAYERING_OPTIONS = ["Yes", "No", "Maybe"];
 
 let i = 0;
 let liked = [];
 let edpChoice = null;
 let mistChoice = null;
+let layeringChoice = null;
 let startX = 0;
 
 const card = document.getElementById("card");
@@ -229,7 +238,7 @@ render();
 
 
 
-/* FINAL CHOICE — two independent sections: EDP and Mist */
+/* FINAL CHOICE — EDP, Mist, and layering, each independent */
 
 function buildChoiceSection(containerId, options, remarksElId, onSelect){
 
@@ -259,6 +268,16 @@ function showFinalChoice(){
 buildChoiceSection("edpChoices", EDP_OPTIONS, "edpRemarks", selectEdp);
 buildChoiceSection("mistChoices", MIST_OPTIONS, "mistRemarks", selectMist);
 
+const lc = document.getElementById("layeringChoices");
+lc.innerHTML = "";
+LAYERING_OPTIONS.forEach(opt=>{
+  const b=document.createElement("button");
+  b.className="w-full border border-white/30 rounded-full py-2 text-sm";
+  b.innerText=opt;
+  b.onclick=()=>selectLayering(opt,b);
+  lc.appendChild(b);
+});
+
 document.getElementById("finalChoice").classList.remove("hidden");
 
 }
@@ -287,13 +306,21 @@ else { remarks.classList.add("hidden"); remarks.value=""; }
 
 }
 
+function selectLayering(v,btn){
+
+document.querySelectorAll("#layeringChoices button").forEach(b=>b.classList.remove("bg-primary"));
+btn.classList.add("bg-primary");
+layeringChoice = v;
+
+}
+
 
 
 /* LOCK */
 
 function lockFinalChoice(){
 
-if(!edpChoice) return alert("Pick one Mystery EDP option (or None)");
+if(!edpChoice) return alert("Pick the Mystery EDP option (or None)");
 if(!mistChoice) return alert("Pick one Mystery Mist option (or None)");
 
 document.getElementById("finalChoice").classList.add("hidden");
@@ -316,6 +343,7 @@ final_choice_edp:edpChoice,
 remarks_edp: document.getElementById("edpRemarks").value.trim(),
 final_choice_mist:mistChoice,
 remarks_mist: document.getElementById("mistRemarks").value.trim(),
+layering_preference: layeringChoice || "",
 liked:liked.join(" | "),
 source:SOURCE,
 anonymous:true,
