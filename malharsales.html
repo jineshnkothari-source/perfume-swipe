@@ -89,6 +89,18 @@ html,body{width:100%;background:var(--black);color:var(--white);font-family:'DM 
 .success-inner .sm{font-size:13px;color:var(--muted);margin-top:6px;}
 hr.div{border:none;border-top:1px solid var(--border);flex-shrink:0;margin:0;}
 .stock-btn{background:rgba(242,239,232,0.1);color:var(--white);border:1px solid var(--border);padding:7px 12px;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:0.06em;border-radius:4px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.header-btns{display:flex;gap:6px;flex-shrink:0;}
+#totalsOverlay{position:fixed;inset:0;z-index:55;background:var(--black);display:none;flex-direction:column;padding:12px 16px 20px;gap:12px;}
+#totalsOverlay.open{display:flex;}
+.totals-header{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.totals-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.06em;}
+.totals-grid{display:flex;flex-direction:column;gap:8px;flex-shrink:0;}
+.totals-card{border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;justify-content:space-between;align-items:baseline;}
+.totals-card.hero{background:rgba(242,239,232,0.06);}
+.totals-lbl{font-size:12px;color:var(--muted);letter-spacing:0.04em;}
+.totals-val{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.04em;}
+.totals-card.hero .totals-val{font-size:40px;color:var(--green);}
+.totals-sub{font-size:11px;color:var(--muted);text-align:center;margin-top:4px;}
 #stockOverlay{position:fixed;inset:0;z-index:50;background:var(--black);display:none;flex-direction:column;padding:12px 16px 20px;gap:10px;overflow-y:auto;}
 #stockOverlay.open{display:flex;}
 .stock-header{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
@@ -145,10 +157,23 @@ hr.div{border:none;border-top:1px solid var(--border);flex-shrink:0;margin:0;}
   <div id="stockListWrap"></div>
   <button id="stockSubmitBtn" onclick="submitStockTab()">Save Opening Stock</button>
 </div>
+<div id="totalsOverlay">
+  <div class="totals-header">
+    <div class="totals-title">TODAY'S TOTALS</div>
+    <button class="stock-close" onclick="closeTotals()">✕ Close</button>
+  </div>
+  <hr class="div">
+  <div class="totals-grid" id="totalsGrid">
+    <div class="stat-row" style="justify-content:center;padding:20px 0;">Loading…</div>
+  </div>
+</div>
 <div class="app">
   <div class="header">
     <div class="page-label">Record Sale</div>
-    <button class="stock-btn" onclick="openStock()">📦 Stock</button>
+    <div class="header-btns">
+      <button class="stock-btn" onclick="openTotals()">💰 Totals</button>
+      <button class="stock-btn" onclick="openStock()">📦 Stock</button>
+    </div>
   </div>
   <hr class="div">
   <div class="code-row">
@@ -162,7 +187,8 @@ hr.div{border:none;border-top:1px solid var(--border);flex-shrink:0;margin:0;}
   <span class="sl">Customer (optional, speeds up follow-up)</span>
   <div class="cust-row">
     <input id="custName" class="cust-input" type="text" placeholder="Name">
-    <input id="custMobile" class="cust-input" type="tel" placeholder="Mobile">
+    <input id="custMobile" class="cust-input" type="tel" inputmode="numeric" maxlength="10" placeholder="Mobile"
+      oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)">
   </div>
   <div class="gender-row">
     <div class="gender-btn" data-val="Male" onclick="pickGender(this)">Male</div>
@@ -187,12 +213,12 @@ hr.div{border:none;border-top:1px solid var(--border);flex-shrink:0;margin:0;}
   <span class="sl">Payment</span>
   <div class="pay-row">
     <div class="pay-btn" onclick="selectPay(this,'Cash')"><span class="pay-icon">💵</span><span class="pay-lbl">Cash</span></div>
-    <div class="pay-btn gpay" onclick="selectPay(this,'GPay')"><span class="pay-icon">📲</span><span class="pay-lbl">GPay</span></div>
+    <div class="pay-btn gpay" onclick="selectPay(this,'GPay')"><span class="pay-icon">📲</span><span class="pay-lbl">UPI/Card</span></div>
   </div>
   <button id="submitBtn" disabled onclick="recordSale()">Record Sale</button>
 </div>
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyvk0fY25NMMiQgmKhKGVcC2Z7Fv4l0utdB_spqOGGxfec2oyjSALjq7lzzQpxj1Rvb/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzY31Ki1zVXVvPKAUDH_b2zszWXrOY-klD1KJHWStReR_ToIFzwu2XvUqc2Alm-0l0/exec';
 
 const FRAGRANCES = [
   {id:'SKU1', name:'Skinny Dip',        color:'#5B7FB5'},
@@ -201,10 +227,10 @@ const FRAGRANCES = [
   {id:'SKU4', name:'Still Not Over It', color:'#6B1E24'},
   {id:'SKU5', name:'About Last Night',  color:'#8A9E72'},
 ];
-const FRAG_SIZES = [{val:'5ml',price:100},{val:'50ml',price:1099}];
+const FRAG_SIZES = [{val:'5ml',price:150},{val:'50ml',price:770}];
 
 const MERCH = [
-  {id:'CAP',       name:'Cap',            price:199, color:'#8B7355'},
+  {id:'CAP',       name:'Cap',            price:250, color:'#8B7355'},
   {id:'TOTE',      name:'Tote Bag',       price:199, color:'#4A5568'},
   {id:'DISCOVERY', name:'Discovery Set',  price:399, color:'#8B5A83'},
 ];
@@ -416,6 +442,12 @@ async function lookupCode(){
 
 async function recordSale(){
   if(!cart.length||!selPay)return;
+  const mobileVal = document.getElementById('custMobile').value.trim();
+  if(mobileVal && !/^[6-9]\d{9}$/.test(mobileVal)){
+    alert('Mobile number should be 10 digits, starting 6-9 — or leave it blank.');
+    document.getElementById('custMobile').focus();
+    return;
+  }
   if(!selCode){const raw=document.getElementById('codeInput').value.trim();selCode=raw?'WALKIN-'+raw:'WALKIN-'+Date.now();}
   const btn=document.getElementById('submitBtn');
   btn.disabled=true;btn.textContent='SAVING…';
@@ -474,6 +506,33 @@ buildFragGrid();
 buildPromoGrid();
 renderCart();
 warmup();
+
+// ═══════════════════════════════════════════════════════
+//  TOTALS — today's Cash / UPI / Revenue, read-only, live from Sales sheet
+// ═══════════════════════════════════════════════════════
+function openTotals(){
+  document.getElementById('totalsOverlay').classList.add('open');
+  loadTotals();
+}
+function closeTotals(){
+  document.getElementById('totalsOverlay').classList.remove('open');
+}
+async function loadTotals(){
+  const grid = document.getElementById('totalsGrid');
+  grid.innerHTML = '<div class="stat-row" style="justify-content:center;padding:20px 0;">Loading…</div>';
+  try{
+    const res = await fetch(SCRIPT_URL+'?action=getSalesSummary&date='+stockTodayKey);
+    const d = await res.json();
+    grid.innerHTML =
+      '<div class="totals-card hero"><span class="totals-lbl">Total Revenue</span><span class="totals-val">₹'+d.revenue+'</span></div>'
+      +'<div class="totals-card"><span class="totals-lbl">💵 Cash</span><span class="totals-val">₹'+d.cash+'</span></div>'
+      +'<div class="totals-card"><span class="totals-lbl">📲 UPI/Card</span><span class="totals-val">₹'+d.upi+'</span></div>'
+      +'<div class="totals-sub">'+d.count+' sale(s) today · '+d.freeCount+' included a free/promo item</div>'
+      +'<div class="refresh-lbl" style="text-align:center;" onclick="loadTotals()">↻ Refresh</div>';
+  }catch(e){
+    grid.innerHTML = '<div class="stat-row" style="justify-content:center;padding:20px 0;">Could not load. <span class="refresh-lbl" onclick="loadTotals()">Retry</span></div>';
+  }
+}
 
 const STOCK_PRODUCTS = [
   ...FRAGRANCES.map(f=>({id:f.id, name:f.name, color:f.color, sizes:FRAG_SIZES.map(s=>s.val)})),
