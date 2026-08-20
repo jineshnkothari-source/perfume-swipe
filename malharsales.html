@@ -101,6 +101,26 @@ hr.div{border:none;border-top:1px solid var(--border);flex-shrink:0;margin:0;}
 .totals-val{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.04em;}
 .totals-card.hero .totals-val{font-size:40px;color:var(--green);}
 .totals-sub{font-size:11px;color:var(--muted);text-align:center;margin-top:4px;}
+.sold-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-top:1px solid var(--border);font-size:12px;}
+.sold-row:first-of-type{border-top:none;}
+.sold-row .n{font-family:'Bebas Neue',sans-serif;font-size:15px;}
+.be-box{border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:4px;}
+.be-line{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;color:var(--muted);}
+.be-line b{color:var(--white);font-weight:500;}
+.be-result{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.04em;text-align:center;padding-top:8px;margin-top:6px;border-top:1px solid var(--border);}
+.be-result.profit{color:var(--green);}
+.be-result.loss{color:var(--red);}
+#invoiceOverlay{position:fixed;inset:0;z-index:56;background:var(--black);display:none;flex-direction:column;padding:12px 16px 20px;gap:10px;overflow-y:auto;}
+#invoiceOverlay.open{display:flex;}
+#genAllBtn{width:100%;background:rgba(212,168,87,0.1);border:1px solid rgba(212,168,87,0.35);color:var(--gold);padding:10px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:0.06em;border-radius:6px;cursor:pointer;flex-shrink:0;}
+#genAllBtn:disabled{opacity:0.4;cursor:not-allowed;}
+.inv-row{border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;}
+.inv-info{flex:1;min-width:0;}
+.inv-cust{font-size:12px;color:var(--white);}
+.inv-meta{font-size:10px;color:var(--muted);margin-top:2px;}
+.inv-btn{background:rgba(242,239,232,0.1);border:1px solid var(--border);color:var(--white);padding:7px 10px;font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:0.04em;border-radius:5px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.inv-btn.done{background:rgba(61,191,114,0.12);border-color:var(--green);color:var(--green);}
+.inv-btn:disabled{opacity:0.4;cursor:not-allowed;}
 #stockOverlay{position:fixed;inset:0;z-index:50;background:var(--black);display:none;flex-direction:column;padding:12px 16px 20px;gap:10px;overflow-y:auto;}
 #stockOverlay.open{display:flex;}
 .stock-header{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
@@ -166,12 +186,31 @@ hr.div{border:none;border-top:1px solid var(--border);flex-shrink:0;margin:0;}
   <div class="totals-grid" id="totalsGrid">
     <div class="stat-row" style="justify-content:center;padding:20px 0;">Loading…</div>
   </div>
+  <div class="sl" style="margin-top:6px;">Units Sold</div>
+  <div id="soldQtyList"></div>
+  <div class="sl" style="margin-top:6px;">Break-Even</div>
+  <div class="cust-row">
+    <input id="eventCostInput" class="cust-input" type="number" min="0" placeholder="Event cost (₹)" oninput="onEventCostChange()">
+  </div>
+  <div id="breakEvenBox"></div>
+</div>
+<div id="invoiceOverlay">
+  <div class="totals-header">
+    <div class="totals-title">INVOICES</div>
+    <button class="stock-close" onclick="closeInvoices()">✕ Close</button>
+  </div>
+  <hr class="div">
+  <div class="status-bar dim" id="invoiceStatusBar">Today's sales</div>
+  <button id="genAllBtn" onclick="generateAllInvoices()">🧾 Generate All Pending Invoices</button>
+  <div id="invoiceList"></div>
 </div>
 <div class="app">
   <div class="header">
     <div class="page-label">Record Sale</div>
     <div class="header-btns">
+      <button class="stock-btn" id="syncBtn" onclick="syncPendingQueue(false)" style="display:none;"></button>
       <button class="stock-btn" onclick="openTotals()">💰 Totals</button>
+      <button class="stock-btn" onclick="openInvoices()">🧾 Invoices</button>
       <button class="stock-btn" onclick="openStock()">📦 Stock</button>
     </div>
   </div>
@@ -218,7 +257,7 @@ hr.div{border:none;border-top:1px solid var(--border);flex-shrink:0;margin:0;}
   <button id="submitBtn" disabled onclick="recordSale()">Record Sale</button>
 </div>
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbypx3Mbd0Ht0lf1AGHnBpzC_g4UeM1zffnsPORzfBmLUROG8xdz2PxuSvb77e5i8MRg/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzeiPTvNCCPq3BIutGTQVsIaCqvwx7qoD0IYjBLWRHylg9sf-8uQmfRfkQ9vs9w7jmB/exec';
 
 const FRAGRANCES = [
   {id:'SKU1', name:'Skinny Dip',        color:'#5B7FB5'},
@@ -227,13 +266,26 @@ const FRAGRANCES = [
   {id:'SKU4', name:'Still Not Over It', color:'#6B1E24'},
   {id:'SKU5', name:'About Last Night',  color:'#8A9E72'},
 ];
-const FRAG_SIZES = [{val:'5ml',price:150},{val:'50ml',price:770}];
+const FRAG_SIZES = [{val:'5ml',price:100},{val:'50ml',price:770}];
 
 const MERCH = [
-  {id:'CAP',       name:'Cap',            price:300, color:'#8B7355'},
+  {id:'CAP',       name:'Cap',            price:250, color:'#8B7355'},
   {id:'TOTE',      name:'Tote Bag',       price:199, color:'#4A5568'},
   {id:'DISCOVERY', name:'Discovery Set',  price:399, color:'#8B5A83'},
 ];
+
+// Cost per unit (COGS) — placeholders. Fill in your real per-unit cost for
+// each SKU+Size before trusting the break-even numbers on the Totals screen.
+// Keyed the same way sold quantities come back from the server: "SKU|Size".
+const COST_MAP = {
+  'SKU1|5ml': 33, 'SKU1|50ml': 209,
+  'SKU2|5ml': 33, 'SKU2|50ml': 209,
+  'SKU3|5ml': 33, 'SKU3|50ml': 209,
+  'SKU4|5ml': 33, 'SKU4|50ml': 209,
+  'SKU5|5ml': 33, 'SKU5|50ml': 209,
+  'CAP|Unit': 165, 'TOTE|Unit': 120, 'DISCOVERY|Unit': 165,
+};
+const EVENT_COST_KEY = 'ocd_event_cost';
 
 let selFragIds = new Set();
 let selSize    = null;
@@ -440,6 +492,54 @@ async function lookupCode(){
   btn.textContent='LOOK UP';btn.disabled=false;
 }
 
+// ═══════════════════════════════════════════════════════
+//  PENDING QUEUE — local backup for when a POST can't reach the server
+//  (dead network, tab closed mid-request). Nothing is silently lost:
+//  it's saved on-device and auto-retried, instead of the sale just
+//  vanishing because the fetch() threw.
+// ═══════════════════════════════════════════════════════
+const PENDING_KEY = 'ocd_pending_posts';
+
+function getPendingQueue(){
+  try{ return JSON.parse(localStorage.getItem(PENDING_KEY) || '[]'); }catch(e){ return []; }
+}
+function setPendingQueue(q){
+  localStorage.setItem(PENDING_KEY, JSON.stringify(q));
+  updateSyncBadge();
+}
+function queuePending(payload){
+  const q = getPendingQueue();
+  q.push({ payload: payload, queuedAt: new Date().toISOString() });
+  setPendingQueue(q);
+}
+function updateSyncBadge(){
+  const btn = document.getElementById('syncBtn');
+  if(!btn) return;
+  const n = getPendingQueue().length;
+  if(n > 0){ btn.style.display = 'inline-flex'; btn.textContent = '🔄 Sync ('+n+')'; }
+  else { btn.style.display = 'none'; }
+}
+async function syncPendingQueue(silent){
+  const q = getPendingQueue();
+  if(!q.length) return;
+  const btn = document.getElementById('syncBtn');
+  if(btn && !silent){ btn.disabled = true; btn.textContent = 'Syncing…'; }
+  const stillPending = [];
+  for(const item of q){
+    try{
+      await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(item.payload)});
+    }catch(e){
+      stillPending.push(item);
+    }
+  }
+  setPendingQueue(stillPending);
+  if(btn) btn.disabled = false;
+  if(!silent){
+    if(stillPending.length === 0) setStatus('✓ All pending items synced','ok');
+    else setStatus(stillPending.length+' item(s) still pending — no connection yet','warn');
+  }
+}
+
 async function recordSale(){
   if(!cart.length||!selPay)return;
   const mobileVal = document.getElementById('custMobile').value.trim();
@@ -476,12 +576,19 @@ async function recordSale(){
   try{
     await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
     showSuccess();
-  }catch(e){setStatus('❌ Save failed — note manually','err');btn.disabled=false;btn.textContent='Record Sale';}
+  }catch(e){
+    // Genuine network failure (offline, DNS, etc.) — fetch() only throws for
+    // this, not for a successful no-cors send with an unreadable response.
+    // Queue it locally instead of losing it, and keep the till moving.
+    queuePending(payload);
+    showSuccess('SAVED<br>OFFLINE ⚠', ()=>{ setStatus('No connection — sale saved on this device, will sync automatically','warn'); });
+  }
 }
 
 function showSuccess(label, afterFn){
   document.getElementById('successBig').innerHTML = label || 'SALE<br>SAVED ✓';
   document.getElementById('successFlash').classList.add('show');
+  syncPendingQueue(true); // a successful request means we're online — take the chance to flush any backlog
   setTimeout(()=>{document.getElementById('successFlash').classList.remove('show');(afterFn||clearAll)();},1500);
 }
 function clearAll(){
@@ -506,6 +613,8 @@ buildFragGrid();
 buildPromoGrid();
 renderCart();
 warmup();
+updateSyncBadge();
+syncPendingQueue(true); // quietly retry anything left over from a dropped connection last time this page was open
 
 // ═══════════════════════════════════════════════════════
 //  TOTALS — today's Cash / UPI / Revenue, read-only, live from Sales sheet
@@ -517,21 +626,162 @@ function openTotals(){
 function closeTotals(){
   document.getElementById('totalsOverlay').classList.remove('open');
 }
+let lastSalesSummary = null; // cached so the break-even box can recompute on input without refetching
+
 async function loadTotals(){
   const grid = document.getElementById('totalsGrid');
   grid.innerHTML = '<div class="stat-row" style="justify-content:center;padding:20px 0;">Loading…</div>';
+  document.getElementById('soldQtyList').innerHTML = '';
+  document.getElementById('breakEvenBox').innerHTML = '';
   try{
     const res = await fetch(SCRIPT_URL+'?action=getSalesSummary&date='+stockTodayKey);
     const d = await res.json();
+    lastSalesSummary = d;
     grid.innerHTML =
       '<div class="totals-card hero"><span class="totals-lbl">Total Revenue</span><span class="totals-val">₹'+d.revenue+'</span></div>'
       +'<div class="totals-card"><span class="totals-lbl">💵 Cash</span><span class="totals-val">₹'+d.cash+'</span></div>'
       +'<div class="totals-card"><span class="totals-lbl">📲 UPI/Card</span><span class="totals-val">₹'+d.upi+'</span></div>'
       +'<div class="totals-sub">'+d.count+' sale(s) today · '+d.freeCount+' included a free/promo item</div>'
       +'<div class="refresh-lbl" style="text-align:center;" onclick="loadTotals()">↻ Refresh</div>';
+
+    renderSoldQty(d.perSku || {});
+
+    const savedCost = localStorage.getItem(EVENT_COST_KEY) || '';
+    document.getElementById('eventCostInput').value = savedCost;
+    renderBreakEven();
   }catch(e){
     grid.innerHTML = '<div class="stat-row" style="justify-content:center;padding:20px 0;">Could not load. <span class="refresh-lbl" onclick="loadTotals()">Retry</span></div>';
   }
+}
+
+function renderSoldQty(perSku){
+  const list = document.getElementById('soldQtyList');
+  let html = '';
+  STOCK_PRODUCTS.forEach(p=>{
+    p.sizes.forEach(sz=>{
+      const key = p.id+'|'+sz;
+      const qty = (perSku[key] && perSku[key].sold) || 0;
+      if(qty <= 0) return;
+      const sizeLbl = sz==='Unit' ? '' : ' ('+sz+')';
+      html += '<div class="sold-row"><span>'+p.name+sizeLbl+'</span><span class="n">'+qty+'</span></div>';
+    });
+  });
+  list.innerHTML = html || '<div class="sold-row" style="justify-content:center;color:var(--muted);">Nothing sold yet today</div>';
+}
+
+function onEventCostChange(){
+  const val = document.getElementById('eventCostInput').value;
+  localStorage.setItem(EVENT_COST_KEY, val);
+  renderBreakEven();
+}
+
+// Pure client-side math — uses whatever was already fetched by loadTotals(),
+// no server round-trip, so this can recompute instantly as you type.
+function renderBreakEven(){
+  const box = document.getElementById('breakEvenBox');
+  if(!lastSalesSummary){ box.innerHTML=''; return; }
+  const perSku = lastSalesSummary.perSku || {};
+  const eventCost = parseFloat(document.getElementById('eventCostInput').value) || 0;
+
+  let cogs = 0;
+  Object.keys(perSku).forEach(key=>{
+    const sold = perSku[key].sold || 0;
+    const unitCost = COST_MAP[key] || 0;
+    cogs += sold * unitCost;
+  });
+
+  const revenue = lastSalesSummary.revenue || 0;
+  const grossProfit = revenue - cogs;
+  const netProfit = grossProfit - eventCost;
+
+  const hasCosts = Object.values(COST_MAP).some(c=>c>0);
+  const costWarning = hasCosts ? '' : '<div class="totals-sub" style="color:var(--gold);">⚠ COST_MAP is all ₹0 placeholders — fill in real unit costs for this to mean anything</div>';
+
+  box.innerHTML =
+    '<div class="be-box">'
+    +'<div class="be-line"><span>Revenue</span><b>₹'+revenue.toFixed(0)+'</b></div>'
+    +'<div class="be-line"><span>− COGS (units sold × cost)</span><b>₹'+cogs.toFixed(0)+'</b></div>'
+    +'<div class="be-line"><span>= Gross Profit</span><b>₹'+grossProfit.toFixed(0)+'</b></div>'
+    +'<div class="be-line"><span>− Event Cost</span><b>₹'+eventCost.toFixed(0)+'</b></div>'
+    +'<div class="be-result '+(netProfit>=0?'profit':'loss')+'">'+(netProfit>=0?'✅ PROFIT ₹':'⚠ SHORT BY ₹')+Math.abs(netProfit).toFixed(0)+'</div>'
+    +'</div>'
+    + costWarning;
+}
+
+// ═══════════════════════════════════════════════════════
+//  INVOICES — separate from the sale-recording flow entirely. Generating
+//  a PDF takes a few seconds each, so this only ever runs when explicitly
+//  tapped, never automatically after a sale.
+// ═══════════════════════════════════════════════════════
+function openInvoices(){
+  document.getElementById('invoiceOverlay').classList.add('open');
+  loadInvoiceList();
+}
+function closeInvoices(){
+  document.getElementById('invoiceOverlay').classList.remove('open');
+}
+function setInvoiceStatus(msg,cls){const el=document.getElementById('invoiceStatusBar');el.textContent=msg;el.className='status-bar '+(cls||'dim');}
+
+async function loadInvoiceList(){
+  const list = document.getElementById('invoiceList');
+  list.innerHTML = '<div class="stat-row" style="justify-content:center;padding:20px 0;">Loading…</div>';
+  try{
+    const res = await fetch(SCRIPT_URL+'?action=getTodaysSales&date='+stockTodayKey);
+    const d = await res.json();
+    if(!d.sales || !d.sales.length){
+      list.innerHTML = '<div class="stat-row" style="justify-content:center;padding:20px 0;">No sales recorded today yet.</div>';
+      setInvoiceStatus('Nothing to invoice yet','dim');
+      return;
+    }
+    const pending = d.sales.filter(s=>!s.invoiceNumber).length;
+    setInvoiceStatus(d.sales.length+' sale(s) today · '+pending+' pending invoice','dim');
+    list.innerHTML = d.sales.map(s=>{
+      const name = s.customerName || ('Code '+s.boothCode) || 'Walk-in';
+      if(s.invoiceNumber){
+        return '<div class="inv-row"><div class="inv-info"><div class="inv-cust">'+name+'</div>'
+          +'<div class="inv-meta">'+s.time+' · '+s.total+' · '+s.invoiceNumber+'</div></div>'
+          +'<a class="inv-btn done" href="'+s.pdfUrl+'" target="_blank">View PDF</a></div>';
+      }
+      return '<div class="inv-row"><div class="inv-info"><div class="inv-cust">'+name+'</div>'
+        +'<div class="inv-meta">'+s.time+' · '+s.total+'</div></div>'
+        +'<button class="inv-btn" onclick="generateOneInvoice('+s.rowNum+',this)">Generate</button></div>';
+    }).join('');
+  }catch(e){
+    list.innerHTML = '<div class="stat-row" style="justify-content:center;padding:20px 0;">Could not load. <span class="refresh-lbl" onclick="loadInvoiceList()">Retry</span></div>';
+  }
+}
+
+async function generateOneInvoice(rowNum, btn){
+  btn.disabled = true;
+  btn.textContent = '…';
+  try{
+    const res = await fetch(SCRIPT_URL+'?action=generateInvoice&rowNum='+rowNum);
+    const d = await res.json();
+    if(d.status==='success'){
+      btn.outerHTML = '<a class="inv-btn done" href="'+d.pdfUrl+'" target="_blank">View PDF</a>';
+    } else {
+      btn.disabled = false; btn.textContent = 'Retry';
+    }
+  }catch(e){
+    btn.disabled = false; btn.textContent = 'Retry';
+  }
+}
+
+async function generateAllInvoices(){
+  const btn = document.getElementById('genAllBtn');
+  btn.disabled = true;
+  btn.textContent = 'Generating… this can take a minute';
+  setInvoiceStatus('Generating pending invoices — do not close this screen','warn');
+  try{
+    const res = await fetch(SCRIPT_URL+'?action=generateInvoicesBatch&date='+stockTodayKey);
+    const d = await res.json();
+    setInvoiceStatus('Done — '+d.generated+' generated, '+d.skipped+' already had one, '+d.errors+' failed','ok');
+    loadInvoiceList();
+  }catch(e){
+    setInvoiceStatus('Batch generation failed — try again or generate one at a time','err');
+  }
+  btn.disabled = false;
+  btn.textContent = '🧾 Generate All Pending Invoices';
 }
 
 const STOCK_PRODUCTS = [
@@ -719,7 +969,10 @@ async function submitStockTab(){
     try{
       await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'logOpeningStock', date:stockTodayKey, items:items})});
       showSuccess('STOCK<br>OUT ✓', loadStockStartDay);
-    }catch(e){ setStockStatus('Save failed — try again','err'); }
+    }catch(e){
+      queuePending({action:'logOpeningStock', date:stockTodayKey, items:items});
+      setStockStatus('No connection — saved on this device, will sync automatically','warn');
+    }
   } else if(currentStockTab==='restock'){
     const items=[];
     STOCK_PRODUCTS.forEach(p=>{
@@ -734,7 +987,10 @@ async function submitStockTab(){
     try{
       await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'logRestock', date:stockTodayKey, items:items})});
       showSuccess('STOCK<br>IN (RESTOCK) ✓', loadRestockContext);
-    }catch(e){ setStockStatus('Save failed — try again','err'); }
+    }catch(e){
+      queuePending({action:'logRestock', date:stockTodayKey, items:items});
+      setStockStatus('No connection — saved on this device, will sync automatically','warn');
+    }
   } else {
     if(!endDayData){ btn.disabled=false; btn.textContent=origText; return; }
     const items=[];
@@ -747,7 +1003,10 @@ async function submitStockTab(){
     try{
       await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'logClosingStock', date:stockTodayKey, items:items})});
       showSuccess('STOCK<br>IN ✓', loadStockEndDay);
-    }catch(e){ setStockStatus('Save failed — try again','err'); }
+    }catch(e){
+      queuePending({action:'logClosingStock', date:stockTodayKey, items:items});
+      setStockStatus('No connection — saved on this device, will sync automatically','warn');
+    }
   }
   btn.disabled=false;
   btn.textContent=origText;
