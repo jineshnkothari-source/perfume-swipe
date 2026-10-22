@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>iScents — Record Sale</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root{--black:#0A0A08;--white:#F2EFE8;--border:rgba(242,239,232,0.13);--muted:rgba(242,239,232,0.38);--red:#E8372A;--green:#3DBF72;--gpay:#4285F4;--gold:#D4A857;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{width:100%;background:var(--black);color:var(--white);font-family:'DM Sans',sans-serif;}
+.app{display:flex;flex-direction:column;min-height:100vh;padding:12px 16px 20px;gap:10px;}
+.header{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:8px;}
+.page-label{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.06em;}
+.page-label small{display:block;font-family:'DM Sans',sans-serif;font-size:9px;letter-spacing:0.16em;color:var(--muted);}
+.code-row{display:flex;gap:8px;flex-shrink:0;}
+#codeInput{flex:1;min-width:0;background:rgba(242,239,232,0.07);border:1px solid var(--border);border-radius:4px;padding:10px 12px;font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:0.3em;color:var(--white);outline:none;text-align:center;-webkit-appearance:none;}
+#codeInput::placeholder{color:rgba(242,239,232,0.2);font-size:18px;}
+#codeInput:focus{border-color:rgba(242,239,232,0.4);}
+#codeInput.err{border-color:var(--red)!important;}
+#codeInput.ok{border-color:var(--green)!important;}
+#lookupBtn{background:rgba(242,239,232,0.1);color:var(--white);border:1px solid var(--border);padding:10px 14px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:0.06em;border-radius:4px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.status-bar{font-size:11px;min-height:14px;flex-shrink:0;}
+.status-bar.ok{color:var(--green);}
+.status-bar.err{color:var(--red);}
+.status-bar.warn{color:var(--gold);}
+.status-bar.dim{color:var(--muted);}
+.sl{font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);display:block;flex-shrink:0;}
+.cust-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex-shrink:0;}
+.cust-input{background:rgba(242,239,232,0.07);border:1px solid var(--border);border-radius:6px;padding:9px 10px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--white);outline:none;-webkit-appearance:none;min-width:0;}
+.cust-input::placeholder{color:var(--muted);}
+.cust-input:focus{border-color:rgba(242,239,232,0.4);}
+.gender-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;flex-shrink:0;}
+.gender-btn{background:rgba(242,239,232,0.04);border:1px solid var(--border);border-radius:6px;padding:8px 4px;text-align:center;font-size:12px;color:var(--muted);cursor:pointer;}
+.gender-btn.sel{border-color:var(--white);background:rgba(242,239,232,0.12);color:var(--white);}
+
+/* ── Product picker ── */
+.price-strip{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;color:var(--muted);flex-shrink:0;}
+.price-strip b{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--white);letter-spacing:0.04em;font-weight:400;}
+.search-wrap{position:relative;flex-shrink:0;}
+.search-input{width:100%;background:rgba(242,239,232,0.07);border:1px solid var(--border);border-radius:6px;padding:11px 36px 11px 34px;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--white);outline:none;-webkit-appearance:none;}
+.search-input::placeholder{color:var(--muted);}
+.search-input:focus{border-color:rgba(242,239,232,0.45);}
+.search-ico{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--muted);pointer-events:none;}
+.search-clear{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:13px;border:none;background:rgba(242,239,232,0.12);color:var(--white);font-size:13px;cursor:pointer;display:none;}
+.view-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex-shrink:0;}
+.view-tab{background:rgba(242,239,232,0.04);border:1px solid var(--border);border-radius:6px;padding:7px 4px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:0.05em;color:var(--muted);cursor:pointer;}
+.view-tab.active{border-color:var(--white);background:rgba(242,239,232,0.12);color:var(--white);}
+.p-list{border:1px solid var(--border);border-radius:8px;max-height:48vh;overflow-y:auto;flex-shrink:0;-webkit-overflow-scrolling:touch;}
+.p-row{display:flex;align-items:center;gap:8px;padding:0 8px 0 0;border-top:1px solid var(--border);}
+.p-row:first-child{border-top:none;}
+.p-row.on{background:rgba(242,239,232,0.07);}
+.p-main{flex:1;min-width:0;display:flex;align-items:center;gap:10px;padding:11px 0 11px 10px;cursor:pointer;}
+.p-main:active{opacity:0.6;}
+.p-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+.p-name{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.p-row.on .p-name{font-weight:500;}
+.p-step{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.p-step button{width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:rgba(242,239,232,0.06);color:var(--white);font-size:17px;line-height:1;cursor:pointer;}
+.p-step .n{font-family:'Bebas Neue',sans-serif;font-size:17px;min-width:18px;text-align:center;color:var(--muted);}
+.p-row.on .p-step .n{color:var(--white);}
+.p-empty{font-size:12px;color:var(--muted);text-align:center;padding:16px 8px;display:none;}
+
+.disc-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;flex-shrink:0;}
+.disc-btn{background:rgba(212,168,87,0.05);border:1px solid rgba(212,168,87,0.25);border-radius:6px;padding:8px 4px;text-align:center;cursor:pointer;}
+.disc-btn .d-lbl{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:0.05em;color:var(--gold);}
+.disc-btn .d-price{font-size:9px;color:var(--muted);margin-top:1px;}
+.disc-btn.sel{border-color:var(--gold);background:rgba(212,168,87,0.2);}
+.disc-btn.sel .d-price{color:var(--white);}
+.cart-box{border:1px solid var(--border);border-radius:8px;padding:2px 10px;flex-shrink:0;}
+.cart-empty{font-size:11px;color:var(--muted);padding:8px 0;text-align:center;}
+.cart-line{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-top:1px solid var(--border);gap:8px;font-size:12px;}
+.cart-line:first-child{border-top:none;}
+.cart-line .nm{flex:1;min-width:0;}
+.cart-line .q{color:var(--muted);font-family:'Bebas Neue',sans-serif;font-size:14px;}
+.cart-line .amt{color:var(--muted);min-width:52px;text-align:right;}
+.cart-total{display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid var(--border);font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:0.04em;}
+.cart-save{font-size:10px;color:var(--gold);text-align:right;padding:2px 0 8px;}
+.pay-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex-shrink:0;}
+.pay-btn{background:rgba(242,239,232,0.04);border:1px solid var(--border);border-radius:6px;padding:9px 6px;text-align:center;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+.pay-icon{font-size:15px;}
+.pay-lbl{font-size:12px;font-family:'Bebas Neue',sans-serif;letter-spacing:0.05em;color:var(--muted);}
+.pay-btn.sel{border-color:var(--white);background:rgba(242,239,232,0.12);}
+.pay-btn.sel .pay-lbl{color:var(--white);}
+.pay-btn.gpay.sel{border-color:var(--gpay);background:rgba(66,133,244,0.1);}
+#submitBtn{width:100%;background:var(--white);color:var(--black);border:none;padding:13px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.08em;border-radius:4px;cursor:pointer;flex-shrink:0;}
+#submitBtn:disabled{opacity:0.25;cursor:not-allowed;}
+#successFlash{position:fixed;inset:0;background:rgba(10,10,8,0.92);display:none;align-items:center;justify-content:center;z-index:99;}
+#successFlash.show{display:flex;animation:fadeIn 0.2s ease;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.success-inner{text-align:center;}
+.success-inner .big{font-family:'Bebas Neue',sans-serif;font-size:56px;letter-spacing:0.06em;color:var(--green);line-height:1;}
+.success-inner .sm{font-size:13px;color:var(--muted);margin-top:6px;}
+hr.div{border:none;border-top:1px solid var(--border);flex-shrink:0;margin:0;}
+.stock-btn{background:rgba(242,239,232,0.1);color:var(--white);border:1px solid var(--border);padding:7px 10px;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:0.06em;border-radius:4px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.header-btns{display:flex;gap:5px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;}
+
+.overlay{position:fixed;inset:0;background:var(--black);display:none;flex-direction:column;padding:12px 16px 20px;gap:10px;overflow-y:auto;}
+.overlay.open{display:flex;}
+#stockOverlay{z-index:50;} #totalsOverlay{z-index:55;} #invoiceOverlay{z-index:56;}
+.ov-header{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.ov-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.06em;}
+.ov-close{background:transparent;border:1px solid var(--border);color:var(--muted);padding:7px 12px;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:0.06em;border-radius:4px;cursor:pointer;}
+.totals-grid{display:flex;flex-direction:column;gap:8px;flex-shrink:0;}
+.totals-card{border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;justify-content:space-between;align-items:baseline;}
+.totals-card.hero{background:rgba(242,239,232,0.06);}
+.totals-lbl{font-size:12px;color:var(--muted);}
+.totals-val{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.04em;}
+.totals-card.hero .totals-val{font-size:40px;color:var(--green);}
+.totals-sub{font-size:11px;color:var(--muted);text-align:center;margin-top:4px;}
+.sold-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-top:1px solid var(--border);font-size:12px;}
+.sold-row:first-of-type{border-top:none;}
+.sold-row .n{font-family:'Bebas Neue',sans-serif;font-size:15px;}
+.be-box{border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:4px;}
+.be-line{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;color:var(--muted);}
+.be-line b{color:var(--white);font-weight:500;}
+.be-result{font-family:'Bebas Neue',sans-serif;font-size:20px;text-align:center;padding-top:8px;margin-top:6px;border-top:1px solid var(--border);}
+.be-result.profit{color:var(--green);} .be-result.loss{color:var(--red);}
+#genAllBtn{width:100%;background:rgba(212,168,87,0.1);border:1px solid rgba(212,168,87,0.35);color:var(--gold);padding:10px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:0.06em;border-radius:6px;cursor:pointer;flex-shrink:0;}
+#genAllBtn:disabled{opacity:0.4;}
+.inv-row{border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;}
+.inv-info{flex:1;min-width:0;}
+.inv-cust{font-size:12px;}
+.inv-meta{font-size:10px;color:var(--muted);margin-top:2px;}
+.inv-btn{background:rgba(242,239,232,0.1);border:1px solid var(--border);color:var(--white);padding:7px 10px;font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:0.04em;border-radius:5px;cursor:pointer;white-space:nowrap;text-decoration:none;}
+.inv-btn.done{background:rgba(61,191,114,0.12);border-color:var(--green);color:var(--green);}
+.inv-btn:disabled{opacity:0.4;}
+
+/* ── Stock register (compact one-row-per-SKU) ── */
+.stock-date{font-size:11px;color:var(--muted);}
+.stock-tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;flex-shrink:0;}
+.stock-tab-btn{background:rgba(242,239,232,0.04);border:1px solid var(--border);border-radius:6px;padding:10px 4px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:0.05em;color:var(--muted);cursor:pointer;}
+.stock-tab-btn.active{border-color:var(--white);background:rgba(242,239,232,0.12);color:var(--white);}
+.s-list{border:1px solid var(--border);border-radius:8px;flex-shrink:0;}
+.s-row{padding:8px 10px;border-top:1px solid var(--border);}
+.s-row:first-child{border-top:none;}
+.s-top{display:flex;align-items:center;gap:8px;}
+.s-name{flex:1;min-width:0;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.stepper{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.stepper button{width:30px;height:30px;border-radius:5px;border:1px solid var(--border);background:rgba(242,239,232,0.06);color:var(--white);font-size:16px;line-height:1;cursor:pointer;}
+.stepper input{width:46px;text-align:center;background:rgba(242,239,232,0.05);border:1px solid var(--border);border-radius:5px;padding:4px 0;color:var(--white);font-family:'Bebas Neue',sans-serif;font-size:17px;outline:none;-moz-appearance:textfield;}
+.stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.locked-val{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--muted);}
+.stat-row{display:flex;justify-content:flex-end;gap:10px;font-size:10px;color:var(--muted);flex-wrap:wrap;margin-top:3px;}
+.stat-row b{color:var(--white);font-weight:500;}
+.stat-row.center{justify-content:center;padding:20px 0;}
+#stockSubmitBtn{width:100%;background:var(--white);color:var(--black);border:none;padding:13px;font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:0.08em;border-radius:4px;cursor:pointer;flex-shrink:0;}
+#stockSubmitBtn:disabled{opacity:0.3;}
+.refresh-lbl{font-size:10px;color:var(--muted);text-decoration:underline;cursor:pointer;}
+</style>
+</head>
+<body>
+<div id="successFlash">
+  <div class="success-inner">
+    <div class="big" id="successBig">SALE<br>SAVED ✓</div>
+    <div class="sm">Clearing in a moment…</div>
+  </div>
+</div>
+
+<!-- STOCK -->
+<div id="stockOverlay" class="overlay">
+  <div class="ov-header">
+    <div class="ov-title">STOCK REGISTER</div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="stock-date" id="stockDateLbl"></div>
+      <button class="ov-close" onclick="closeStock()">✕ Close</button>
+    </div>
+  </div>
+  <hr class="div">
+  <div class="stock-tabs">
+    <div class="stock-tab-btn active" id="stockTabStart" onclick="switchStockTab('start')">START DAY</div>
+    <div class="stock-tab-btn" id="stockTabRestock" onclick="switchStockTab('restock')">+ RESTOCK</div>
+    <div class="stock-tab-btn" id="stockTabEnd" onclick="switchStockTab('end')">END DAY</div>
+  </div>
+  <div class="status-bar dim" id="stockStatusBar"></div>
+  <div class="search-wrap">
+    <span class="search-ico">🔍</span>
+    <input id="stockSearch" class="search-input" type="text" placeholder="Search fragrance…" autocomplete="off" oninput="filterStock()">
+    <button class="search-clear" id="stockSearchClear" onclick="clearStockSearch()">✕</button>
+  </div>
+  <div id="stockListWrap"></div>
+  <button id="stockSubmitBtn" onclick="submitStockTab()">Save Opening Stock</button>
+</div>
+
+<!-- TOTALS -->
+<div id="totalsOverlay" class="overlay">
+  <div class="ov-header">
+    <div class="ov-title">TODAY'S TOTALS</div>
+    <button class="ov-close" onclick="closeTotals()">✕ Close</button>
+  </div>
+  <hr class="div">
+  <div class="totals-grid" id="totalsGrid"></div>
+  <span class="sl" style="margin-top:6px;">Units Sold</span>
+  <div id="soldQtyList"></div>
+  <span class="sl" style="margin-top:6px;">Break-Even</span>
+  <div class="cust-row">
+    <input id="eventCostInput" class="cust-input" type="number" min="0" placeholder="Event cost (₹)" oninput="onEventCostChange()">
+  </div>
+  <div id="breakEvenBox"></div>
+</div>
+
+<!-- INVOICES -->
+<div id="invoiceOverlay" class="overlay">
+  <div class="ov-header">
+    <div class="ov-title">INVOICES</div>
+    <button class="ov-close" onclick="closeInvoices()">✕ Close</button>
+  </div>
+  <hr class="div">
+  <div class="status-bar dim" id="invoiceStatusBar">Today's sales</div>
+  <button id="genAllBtn" onclick="generateAllInvoices()">🧾 Generate All Pending Invoices</button>
+  <div id="invoiceList"></div>
+</div>
+
+<!-- MAIN -->
+<div class="app">
+  <div class="header">
+    <div class="page-label">Record Sale<small>ISCENTS</small></div>
+    <div class="header-btns">
+      <button class="stock-btn" id="syncBtn" onclick="syncPendingQueue(false)" style="display:none;"></button>
+      <button class="stock-btn" onclick="openTotals()">💰 Totals</button>
+      <button class="stock-btn" onclick="openInvoices()">🧾 Invoices</button>
+      <button class="stock-btn" onclick="openStock()">📦 Stock</button>
+    </div>
+  </div>
+  <hr class="div">
+  <div class="code-row">
+    <input id="codeInput" type="text" inputmode="numeric" maxlength="3" placeholder="123" autocomplete="off"
+      oninput="this.value=this.value.replace(/\D/g,'').slice(0,3);resetStatus();"
+      onkeydown="if(event.key==='Enter'){event.preventDefault();lookupCode();}">
+    <button id="lookupBtn" onclick="lookupCode()">LOOK UP</button>
+  </div>
+  <div class="status-bar dim" id="statusBar">Enter code or leave blank for walk-in</div>
+  <hr class="div">
+  <span class="sl">Customer (optional, speeds up follow-up)</span>
+  <div class="cust-row">
+    <input id="custName" class="cust-input" type="text" placeholder="Name">
+    <input id="custMobile" class="cust-input" type="tel" inputmode="numeric" maxlength="10" placeholder="Mobile"
+      oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)">
+  </div>
+  <div class="gender-row">
+    <div class="gender-btn" data-val="Male" onclick="pickGender(this)">Male</div>
+    <div class="gender-btn" data-val="Female" onclick="pickGender(this)">Female</div>
+    <div class="gender-btn" data-val="Other" onclick="pickGender(this)">Other</div>
+  </div>
+  <hr class="div">
+
+  <div class="price-strip"><span>100ml EDP · MRP <s id="mrpLbl"></s></span><span>Event price <b id="baseLbl"></b></span></div>
+  <div class="search-wrap">
+    <span class="search-ico">🔍</span>
+    <input id="fragSearch" class="search-input" type="text" placeholder="Search fragrance… (e.g. pink, ppf, tea)" autocomplete="off"
+      oninput="filterProducts()" onkeydown="if(event.key==='Enter'){event.preventDefault();addSingleMatch();}">
+    <button class="search-clear" id="fragSearchClear" onclick="clearFragSearch()">✕</button>
+  </div>
+  <div class="view-tabs">
+    <div class="view-tab active" id="viewAll" onclick="setView('all')">ALL A–Z</div>
+    <div class="view-tab" id="viewCart" onclick="setView('cart')">IN CART (0)</div>
+  </div>
+  <div class="p-list" id="pList"></div>
+  <div class="p-empty" id="pEmpty">No match</div>
+
+  <span class="sl">Bulk Discount (salesperson's call — % of MRP, off the event price)</span>
+  <div class="disc-row" id="discRow"></div>
+  <span class="sl">Cart</span>
+  <div class="cart-box" id="cartBox"></div>
+  <span class="sl">Payment</span>
+  <div class="pay-row">
+    <div class="pay-btn" onclick="selectPay(this,'Cash')"><span class="pay-icon">💵</span><span class="pay-lbl">Cash</span></div>
+    <div class="pay-btn gpay" onclick="selectPay(this,'GPay')"><span class="pay-icon">📲</span><span class="pay-lbl">UPI/Card</span></div>
+  </div>
+  <button id="submitBtn" disabled onclick="recordSale()">Record Sale</button>
+</div>
+
+<script>
+// ⚠ Paste the Web App URL from the iScents sheet's Apps Script deployment here.
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwNiPuUaoo_D4eGauclj_2YpMa1UlOHglthL6ZkCqysWsw4pcRG8ENm77ATDwgR7hKi6Q/exec';
+const BRAND = 'iScents';
+
+const MRP        = 699;
+const BASE_PRICE = 500;
+const SIZE       = '100ml';
+const DISCOUNTS  = [0, 10, 15, 20];   // % of MRP, deducted from BASE_PRICE
+function unitPrice(pct){ return Math.round(BASE_PRICE - MRP * pct / 100); }
+
+const FRAGRANCES = [
+  {id:'IS01', name:'Blue Sail',           sku:'100ML - ISCENTS IND - BLUE SAIL',           color:'#3E6FA8'},
+  {id:'IS02', name:'Bold Girl',           sku:'100ML - ISCENTS IND - BOLD GIRL',           color:'#C2185B'},
+  {id:'IS03', name:'Boss Woman',          sku:'100ML - ISCENTS IND - BOSS WOMAN',          color:'#7B1F3A'},
+  {id:'IS04', name:'Caramel Chic',        sku:'100ML - ISCENTS IND - CARAMEL CHIC',        color:'#B5793A'},
+  {id:'IS05', name:"Cernit L'XS",         sku:"100ML - ISCENTS IND - CERNIT L'XS",         color:'#5E6B78'},
+  {id:'IS06', name:'Change',              sku:'100ML - ISCENTS IND - CHANGE',              color:'#4F9A8A'},
+  {id:'IS07', name:'Dark Desire',         sku:'100ML - ISCENTS IND - DARK DESIRE',         color:'#4A1F2E'},
+  {id:'IS08', name:'Darker Black',        sku:'100ML - ISCENTS IND - DARKER BLACK',        color:'#555555'},
+  {id:'IS09', name:'Intercity',           sku:'100ML - ISCENTS IND - INTERCITY',           color:'#6C7A3A'},
+  {id:'IS10', name:'Pink Passion',        sku:'100ML - ISCENTS IND - PINK PASSION',        color:'#E46A9A'},
+  {id:'IS11', name:'Pink Passion Fruity', sku:'100ML - ISCENTS IND - PINK PASSION FRUITY', color:'#F08C6E'},
+  {id:'IS12', name:'Qissah',              sku:'100ML - ISCENTS IND - QISSAH',              color:'#8A5A2B'},
+  {id:'IS13', name:'Slander',             sku:'100ML - ISCENTS IND - SLANDER',             color:'#6A4C93'},
+  {id:'IS14', name:'Suave',               sku:'100ML - ISCENTS IND - SUAVE',               color:'#2F5D62'},
+  {id:'IS15', name:'Tea Rose',            sku:'100ML - ISCENTS IND - TEA ROSE',            color:'#D49A8C'},
+  {id:'IS16', name:'Velvet Petal',        sku:'100ML - ISCENTS IND - VELVET PETAL',        color:'#9C3D54'},
+];
+// A–Z order used everywhere on screen
+const SORTED = FRAGRANCES.map((f,i)=>Object.assign({idx:i},f)).sort((a,b)=>a.name.localeCompare(b.name));
+
+// COGS per unit — fill in landed cost per bottle for real break-even numbers
+const COST_MAP = {};
+FRAGRANCES.forEach(f=>{ COST_MAP[f.id+'|'+SIZE] = 0; });
+const EVENT_COST_KEY = 'iscents_event_cost';
+
+let cart=[], selDisc=0, selPay=null, selCode=null, selGender=null, viewMode='all';
+
+// ═══ SEARCH HELPERS ═══
+// Matches on any part of the name, or the initials ("ppf" → Pink Passion Fruity, "dd" → Dark Desire)
+function norm(s){ return String(s).toLowerCase().replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim(); }
+function searchKey(f){ const n=norm(f.name); return n+' '+n.replace(/ /g,'')+' '+n.split(' ').map(w=>w[0]).join(''); }
+function matches(key, q){ const t=norm(q).split(' ').filter(Boolean); return t.every(x=>key.includes(x)); }
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+
+// ═══ BUILD ═══
+function buildUI(){
+  document.getElementById('mrpLbl').textContent='₹'+MRP;
+  document.getElementById('baseLbl').textContent='₹'+BASE_PRICE;
+  document.getElementById('pList').innerHTML = SORTED.map(f=>
+    '<div class="p-row" id="prow_'+f.idx+'" data-search="'+searchKey(f)+'">'
+    +'<div class="p-main" onclick="addToCart('+f.idx+')"><span class="p-dot" style="background:'+f.color+'"></span><span class="p-name">'+f.name+'</span></div>'
+    +'<div class="p-step"><button onclick="cartAdjust('+f.idx+',-1)">−</button><span class="n" id="pq_'+f.idx+'">0</span><button onclick="addToCart('+f.idx+')">+</button></div>'
+    +'</div>'
+  ).join('');
+  document.getElementById('discRow').innerHTML = DISCOUNTS.map(d=>
+    '<div class="disc-btn'+(d===0?' sel':'')+'" data-d="'+d+'" onclick="pickDisc('+d+')">'
+    +'<div class="d-lbl">'+(d===0?'NONE':d+'%')+'</div><div class="d-price">₹'+unitPrice(d)+' each</div></div>'
+  ).join('');
+}
+
+function filterProducts(){
+  const q=document.getElementById('fragSearch').value;
+  document.getElementById('fragSearchClear').style.display = q ? 'block':'none';
+  let shown=0;
+  SORTED.forEach(f=>{
+    const el=document.getElementById('prow_'+f.idx);
+    let ok=matches(el.dataset.search,q);
+    if(viewMode==='cart' && !cart.find(c=>c.idx===f.idx)) ok=false;
+    el.style.display = ok?'':'none';
+    if(ok) shown++;
+  });
+  const empty=document.getElementById('pEmpty');
+  empty.textContent = viewMode==='cart' && !cart.length ? 'Nothing in cart yet' : 'No match — try fewer letters';
+  empty.style.display = shown ? 'none':'block';
+  return shown;
+}
+function visibleRows(){ return SORTED.filter(f=>document.getElementById('prow_'+f.idx).style.display!=='none'); }
+function addSingleMatch(){
+  const v=visibleRows();
+  if(v.length===1){ addToCart(v[0].idx); document.getElementById('fragSearch').select(); }
+}
+function clearFragSearch(){ const s=document.getElementById('fragSearch'); s.value=''; filterProducts(); s.focus(); }
+function setView(m){
+  viewMode=m;
+  document.getElementById('viewAll').classList.toggle('active',m==='all');
+  document.getElementById('viewCart').classList.toggle('active',m==='cart');
+  filterProducts();
+}
+
+// ═══ CART ═══
+function addToCart(i){
+  const line=cart.find(c=>c.idx===i);
+  if(line) line.qty++; else cart.push({idx:i,qty:1});
+  renderCart(); checkSubmitReady();
+}
+function cartAdjust(i,delta){
+  const line=cart.find(c=>c.idx===i); if(!line) return;
+  line.qty+=delta;
+  if(line.qty<=0) cart=cart.filter(c=>c.idx!==i);
+  renderCart(); checkSubmitReady();
+}
+function pickDisc(d){
+  selDisc=d;
+  document.querySelectorAll('.disc-btn').forEach(b=>b.classList.toggle('sel',+b.dataset.d===d));
+  renderCart();
+}
+function pickGender(el){
+  const already=el.classList.contains('sel');
+  document.querySelectorAll('.gender-btn').forEach(b=>b.classList.remove('sel'));
+  if(!already){ el.classList.add('sel'); selGender=el.dataset.val; } else selGender=null;
+}
+function cartUnits(){ return cart.reduce((s,c)=>s+c.qty,0); }
+function cartTotal(){ return cartUnits()*unitPrice(selDisc); }
+
+function renderCart(){
+  FRAGRANCES.forEach((f,i)=>{
+    const line=cart.find(c=>c.idx===i);
+    document.getElementById('prow_'+i).classList.toggle('on',!!line);
+    document.getElementById('pq_'+i).textContent = line?line.qty:0;
+  });
+  const units=cartUnits();
+  document.getElementById('viewCart').textContent='IN CART ('+units+')';
+  if(viewMode==='cart') filterProducts();
+
+  const box=document.getElementById('cartBox');
+  if(!cart.length){ box.innerHTML='<div class="cart-empty">Cart is empty — tap a fragrance above</div>'; return; }
+  const up=unitPrice(selDisc);
+  const lines=cart.slice().sort((a,b)=>FRAGRANCES[a.idx].name.localeCompare(FRAGRANCES[b.idx].name));
+  let html='';
+  lines.forEach(c=>{
+    html+='<div class="cart-line"><span class="nm">'+FRAGRANCES[c.idx].name+'</span>'
+      +'<span class="q">× '+c.qty+'</span><span class="amt">₹'+(up*c.qty)+'</span></div>';
+  });
+  html+='<div class="cart-total"><span>Total · '+units+' × ₹'+up+(selDisc?' ('+selDisc+'% bulk)':'')+'</span><span>₹'+cartTotal()+'</span></div>';
+  html+='<div class="cart-save">MRP ₹'+(MRP*units)+' · customer saves ₹'+(MRP*units-cartTotal())+'</div>';
+  box.innerHTML=html;
+}
+function selectPay(el,method){
+  document.querySelectorAll('.pay-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel'); selPay=method; checkSubmitReady();
+}
+function checkSubmitReady(){ document.getElementById('submitBtn').disabled=!(cart.length>0 && selPay); }
+
+function setStatus(msg,cls){const el=document.getElementById('statusBar');el.textContent=msg;el.className='status-bar '+(cls||'dim');}
+function resetStatus(){setStatus('Enter code or leave blank for walk-in','dim');document.getElementById('codeInput').classList.remove('ok','err');selCode=null;}
+
+async function lookupCode(){
+  const raw=document.getElementById('codeInput').value.trim();
+  const inp=document.getElementById('codeInput'), btn=document.getElementById('lookupBtn');
+  if(!raw){selCode='WALKIN-'+Date.now();setStatus('Walk-in sale — no code','ok');inp.classList.add('ok');return;}
+  btn.textContent='…';btn.disabled=true;
+  try{
+    const res=await fetch(SCRIPT_URL+'?action=lookup&booth_code='+encodeURIComponent(raw));
+    const data=await res.json();
+    if(data.found){
+      selCode=raw;inp.classList.add('ok');
+      if(data.mobile){ const m=document.getElementById('custMobile'); if(!m.value) m.value=data.mobile; }
+      if(data.existing_sales_count>0) setStatus('⚠ Code '+raw+' already has '+data.existing_sales_count+' sale(s) today — last '+data.existing_sales_last_total+' at '+data.existing_sales_last_time+'. Different customer? Double-check the code.','warn');
+      else setStatus('✓ Code '+raw+' found','ok');
+    }else{
+      selCode='WALKIN-'+raw;inp.classList.add('err');
+      if(data.existing_sales_count>0) setStatus('Not found in survey — but this code already has '+data.existing_sales_count+' sale(s) today. Typo? Logging as walk-in.','warn');
+      else setStatus('Not found — walk-in','err');
+    }
+  }catch(e){selCode='WALKIN-'+raw;inp.classList.add('err');setStatus('Network error — walk-in','err');}
+  btn.textContent='LOOK UP';btn.disabled=false;
+}
+
+// ═══ PENDING QUEUE (offline backup) ═══
+const PENDING_KEY='iscents_pending_posts';
+function getPendingQueue(){ try{ return JSON.parse(lsGet(PENDING_KEY)||'[]'); }catch(e){ return []; } }
+function setPendingQueue(q){ lsSet(PENDING_KEY,JSON.stringify(q)); updateSyncBadge(); }
+function queuePending(payload){ const q=getPendingQueue(); q.push({payload:payload,queuedAt:new Date().toISOString()}); setPendingQueue(q); }
+function updateSyncBadge(){
+  const btn=document.getElementById('syncBtn'); const n=getPendingQueue().length;
+  if(n>0){ btn.style.display='inline-flex'; btn.textContent='🔄 Sync ('+n+')'; } else btn.style.display='none';
+}
+async function syncPendingQueue(silent){
+  const q=getPendingQueue(); if(!q.length) return;
+  const btn=document.getElementById('syncBtn');
+  if(!silent){ btn.disabled=true; btn.textContent='Syncing…'; }
+  const still=[];
+  for(const item of q){
+    try{ await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(item.payload)}); }
+    catch(e){ still.push(item); }
+  }
+  setPendingQueue(still); btn.disabled=false;
+  if(!silent) setStatus(still.length ? still.length+' item(s) still pending — no connection yet' : '✓ All pending items synced', still.length?'warn':'ok');
+}
+
+async function recordSale(){
+  if(!cart.length||!selPay) return;
+  const mobileVal=document.getElementById('custMobile').value.trim();
+  if(mobileVal && !/^[6-9]\d{9}$/.test(mobileVal)){
+    alert('Mobile number should be 10 digits, starting 6-9 — or leave it blank.');
+    document.getElementById('custMobile').focus(); return;
+  }
+  if(!selCode){const raw=document.getElementById('codeInput').value.trim();selCode=raw?'WALKIN-'+raw:'WALKIN-'+Date.now();}
+  const btn=document.getElementById('submitBtn'); btn.disabled=true; btn.textContent='SAVING…';
+
+  const up=unitPrice(selDisc), lines=[];
+  cart.forEach(c=>{ for(let k=0;k<c.qty;k++) lines.push(FRAGRANCES[c.idx]); });
+  const payload={
+    action:'logSale', brand:BRAND, booth_code:selCode,
+    sale_fragrance:lines.map(f=>f.sku).join(' | '),
+    sale_sku:lines.map(f=>f.id).join(' | '),
+    sale_size:lines.map(()=>SIZE).join(' | '),
+    sale_price:lines.map(()=>'₹'+up).join(' | '),
+    sale_total:'₹'+(up*lines.length),
+    sale_mrp_total:'₹'+(MRP*lines.length),
+    sale_discount_pct:selDisc,
+    sale_payment:selPay,
+    sale_notes:selDisc?('Bulk discount '+selDisc+'% of MRP (₹'+up+'/unit vs ₹'+BASE_PRICE+')'):'',
+    sale_promo_applied:selDisc?('BULK'+selDisc):'',
+    sale_time:new Date().toISOString(),
+    sale_customer_name:document.getElementById('custName').value.trim(),
+    sale_customer_gender:selGender||'',
+    sale_customer_mobile:mobileVal,
+  };
+  try{
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
+    showSuccess();
+  }catch(e){
+    queuePending(payload);
+    showSuccess('SAVED<br>OFFLINE ⚠',()=>{ clearAll(); setStatus('No connection — sale saved on this device, will sync automatically','warn'); });
+  }
+}
+function showSuccess(label,afterFn){
+  document.getElementById('successBig').innerHTML=label||'SALE<br>SAVED ✓';
+  document.getElementById('successFlash').classList.add('show');
+  syncPendingQueue(true);
+  setTimeout(()=>{document.getElementById('successFlash').classList.remove('show');(afterFn||clearAll)();},1500);
+}
+function clearAll(){
+  cart=[]; selPay=null; selGender=null; selCode=null;
+  pickDisc(0);
+  document.getElementById('fragSearch').value='';
+  setView('all');
+  ['codeInput','custName','custMobile'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('codeInput').className='';
+  document.querySelectorAll('.pay-btn.sel,.gender-btn.sel').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('submitBtn').disabled=true;
+  document.getElementById('submitBtn').textContent='Record Sale';
+  renderCart(); filterProducts();
+  document.getElementById('pList').scrollTop=0;
+  setStatus('Enter code or leave blank for walk-in','dim');
+}
+function warmup(){ fetch(SCRIPT_URL+'?action=ping',{mode:'no-cors'}).catch(()=>{}); }
+
+// ═══ TOTALS ═══
+function openTotals(){ document.getElementById('totalsOverlay').classList.add('open'); loadTotals(); }
+function closeTotals(){ document.getElementById('totalsOverlay').classList.remove('open'); }
+let lastSalesSummary=null;
+async function loadTotals(){
+  const grid=document.getElementById('totalsGrid');
+  grid.innerHTML='<div class="stat-row center">Loading…</div>';
+  document.getElementById('soldQtyList').innerHTML=''; document.getElementById('breakEvenBox').innerHTML='';
+  try{
+    const res=await fetch(SCRIPT_URL+'?action=getSalesSummary&date='+stockTodayKey);
+    const d=await res.json(); lastSalesSummary=d;
+    grid.innerHTML='<div class="totals-card hero"><span class="totals-lbl">Total Revenue</span><span class="totals-val">₹'+d.revenue+'</span></div>'
+      +'<div class="totals-card"><span class="totals-lbl">💵 Cash</span><span class="totals-val">₹'+d.cash+'</span></div>'
+      +'<div class="totals-card"><span class="totals-lbl">📲 UPI/Card</span><span class="totals-val">₹'+d.upi+'</span></div>'
+      +'<div class="totals-sub">'+d.count+' sale(s) · '+(d.units||0)+' unit(s) today'+(d.discountedCount?' · '+d.discountedCount+' with bulk discount':'')+'</div>'
+      +'<div class="totals-sub"><span class="refresh-lbl" onclick="loadTotals()">↻ Refresh</span></div>';
+    renderSoldQty(d.perSku||{});
+    document.getElementById('eventCostInput').value=lsGet(EVENT_COST_KEY)||'';
+    renderBreakEven();
+  }catch(e){ grid.innerHTML='<div class="stat-row center">Could not load.&nbsp;<span class="refresh-lbl" onclick="loadTotals()">Retry</span></div>'; }
+}
+function renderSoldQty(perSku){
+  let html='';
+  SORTED.map(f=>({f:f,q:(perSku[f.id+'|'+SIZE]||{}).sold||0})).filter(x=>x.q>0).sort((a,b)=>b.q-a.q)
+    .forEach(x=>{ html+='<div class="sold-row"><span>'+x.f.name+'</span><span class="n">'+x.q+'</span></div>'; });
+  document.getElementById('soldQtyList').innerHTML=html||'<div class="sold-row" style="justify-content:center;color:var(--muted);">Nothing sold yet today</div>';
+}
+function onEventCostChange(){ lsSet(EVENT_COST_KEY,document.getElementById('eventCostInput').value); renderBreakEven(); }
+function renderBreakEven(){
+  const box=document.getElementById('breakEvenBox'); if(!lastSalesSummary){ box.innerHTML=''; return; }
+  const perSku=lastSalesSummary.perSku||{}, eventCost=parseFloat(document.getElementById('eventCostInput').value)||0;
+  let cogs=0; Object.keys(perSku).forEach(k=>{ cogs+=(perSku[k].sold||0)*(COST_MAP[k]||0); });
+  const revenue=lastSalesSummary.revenue||0, gross=revenue-cogs, net=gross-eventCost;
+  box.innerHTML='<div class="be-box">'
+    +'<div class="be-line"><span>Revenue</span><b>₹'+revenue.toFixed(0)+'</b></div>'
+    +'<div class="be-line"><span>− COGS (units sold × cost)</span><b>₹'+cogs.toFixed(0)+'</b></div>'
+    +'<div class="be-line"><span>= Gross Profit</span><b>₹'+gross.toFixed(0)+'</b></div>'
+    +'<div class="be-line"><span>− Event Cost</span><b>₹'+eventCost.toFixed(0)+'</b></div>'
+    +'<div class="be-result '+(net>=0?'profit':'loss')+'">'+(net>=0?'✅ PROFIT ₹':'⚠ SHORT BY ₹')+Math.abs(net).toFixed(0)+'</div></div>'
+    +(Object.values(COST_MAP).some(c=>c>0)?'':'<div class="totals-sub" style="color:var(--gold);">⚠ COST_MAP is all ₹0 placeholders — fill in real unit costs for this to mean anything</div>');
+}
+
+// ═══ INVOICES ═══
+function openInvoices(){ document.getElementById('invoiceOverlay').classList.add('open'); loadInvoiceList(); }
+function closeInvoices(){ document.getElementById('invoiceOverlay').classList.remove('open'); }
+function setInvoiceStatus(msg,cls){const el=document.getElementById('invoiceStatusBar');el.textContent=msg;el.className='status-bar '+(cls||'dim');}
+async function loadInvoiceList(){
+  const list=document.getElementById('invoiceList');
+  list.innerHTML='<div class="stat-row center">Loading…</div>';
+  try{
+    const res=await fetch(SCRIPT_URL+'?action=getTodaysSales&date='+stockTodayKey);
+    const d=await res.json();
+    if(!d.sales||!d.sales.length){ list.innerHTML='<div class="stat-row center">No sales recorded today yet.</div>'; setInvoiceStatus('Nothing to invoice yet','dim'); return; }
+    const pending=d.sales.filter(s=>!s.invoiceNumber).length;
+    setInvoiceStatus(d.sales.length+' sale(s) today · '+pending+' pending invoice','dim');
+    list.innerHTML=d.sales.map(s=>{
+      const name=s.customerName||(s.boothCode?'Code '+s.boothCode:'Walk-in');
+      if(s.invoiceNumber) return '<div class="inv-row"><div class="inv-info"><div class="inv-cust">'+name+'</div><div class="inv-meta">'+s.time+' · '+s.total+' · '+s.invoiceNumber+'</div></div><a class="inv-btn done" href="'+s.pdfUrl+'" target="_blank">View PDF</a></div>';
+      return '<div class="inv-row"><div class="inv-info"><div class="inv-cust">'+name+'</div><div class="inv-meta">'+s.time+' · '+s.total+'</div></div><button class="inv-btn" onclick="generateOneInvoice('+s.rowNum+',this)">Generate</button></div>';
+    }).join('');
+  }catch(e){ list.innerHTML='<div class="stat-row center">Could not load.&nbsp;<span class="refresh-lbl" onclick="loadInvoiceList()">Retry</span></div>'; }
+}
+async function generateOneInvoice(rowNum,btn){
+  btn.disabled=true; btn.textContent='…';
+  try{
+    const res=await fetch(SCRIPT_URL+'?action=generateInvoice&rowNum='+rowNum);
+    const d=await res.json();
+    if(d.status==='success') btn.outerHTML='<a class="inv-btn done" href="'+d.pdfUrl+'" target="_blank">View PDF</a>';
+    else { btn.disabled=false; btn.textContent='Retry'; }
+  }catch(e){ btn.disabled=false; btn.textContent='Retry'; }
+}
+async function generateAllInvoices(){
+  const btn=document.getElementById('genAllBtn');
+  btn.disabled=true; btn.textContent='Generating… this can take a minute';
+  setInvoiceStatus('Generating pending invoices — do not close this screen','warn');
+  try{
+    const res=await fetch(SCRIPT_URL+'?action=generateInvoicesBatch&date='+stockTodayKey);
+    const d=await res.json();
+    setInvoiceStatus('Done — '+d.generated+' generated, '+d.skipped+' already had one, '+d.errors+' failed'+(d.remaining?' · '+d.remaining+' left, tap again':''),'ok');
+    loadInvoiceList();
+  }catch(e){ setInvoiceStatus('Batch generation failed — try again or generate one at a time','err'); }
+  btn.disabled=false; btn.textContent='🧾 Generate All Pending Invoices';
+}
+
+// ═══ STOCK REGISTER ═══
+const stockTodayKey=new Date().toLocaleDateString('en-CA'); // local YYYY-MM-DD
+document.getElementById('stockDateLbl').textContent=stockTodayKey;
+let currentStockTab='start', stockMap={};
+
+function openStock(){ document.getElementById('stockOverlay').classList.add('open'); switchStockTab('start'); }
+function closeStock(){ document.getElementById('stockOverlay').classList.remove('open'); }
+function setStockStatus(msg,cls){const el=document.getElementById('stockStatusBar');el.textContent=msg;el.className='status-bar '+(cls||'dim');}
+function filterStock(){
+  const q=document.getElementById('stockSearch').value;
+  document.getElementById('stockSearchClear').style.display=q?'block':'none';
+  document.querySelectorAll('#stockListWrap .s-row').forEach(r=>{ r.style.display=matches(r.dataset.search,q)?'':'none'; });
+}
+function clearStockSearch(){ document.getElementById('stockSearch').value=''; filterStock(); }
+function stepStock(id,delta){ const el=document.getElementById(id); el.value=Math.max(0,(parseInt(el.value)||0)+delta); }
+function stepperHtml(id,blank){
+  return '<div class="stepper"><button onclick="stepStock(\''+id+'\',-1)">−</button>'
+    +'<input id="'+id+'" type="number" min="0" '+(blank?'placeholder="–"':'value="0"')+' inputmode="numeric">'
+    +'<button onclick="stepStock(\''+id+'\',1)">+</button></div>';
+}
+function rowHtml(f,right,stats){
+  return '<div class="s-row" data-search="'+searchKey(f)+'"><div class="s-top"><span class="p-dot" style="background:'+f.color+'"></span>'
+    +'<span class="s-name">'+f.name+'</span>'+right+'</div>'+(stats?'<div class="stat-row">'+stats+'</div>':'')+'</div>';
+}
+function setStockList(html){ document.getElementById('stockListWrap').innerHTML = html.indexOf('s-row')>-1 ? '<div class="s-list">'+html+'</div>' : html; filterStock(); }
+
+function switchStockTab(tab){
+  currentStockTab=tab; clearStockSearch();
+  ['start','restock','end'].forEach(t=>document.getElementById('stockTab'+t[0].toUpperCase()+t.slice(1)).classList.toggle('active',t===tab));
+  document.getElementById('stockSubmitBtn').textContent={start:'Save Opening Stock',restock:'Save Restock',end:'Save Closing Stock'}[tab];
+  loadStockTab();
+}
+async function loadStockTab(){
+  setStockStatus('Loading today\u2019s stock…','dim');
+  document.getElementById('stockListWrap').innerHTML='<div class="stat-row center">Loading…</div>';
+  try{
+    const res=await fetch(SCRIPT_URL+'?action=getOpeningStock&date='+stockTodayKey);
+    const data=await res.json();
+    stockMap={}; (data.items||[]).forEach(it=>{ stockMap[it.sku+'|'+it.size]=it; });
+    renderStockTab();
+  }catch(e){
+    stockMap={};
+    if(currentStockTab==='start'){ renderStockTab(); setStockStatus('Could not check saved stock — network error','err'); }
+    else { setStockStatus('Network error loading stock','err'); document.getElementById('stockListWrap').innerHTML='<div class="stat-row center">Could not load.&nbsp;<span class="refresh-lbl" onclick="loadStockTab()">Retry</span></div>'; }
+  }
+}
+function renderStockTab(){
+  const has=Object.keys(stockMap).length>0;
+  let html='';
+  if(currentStockTab==='start'){
+    SORTED.forEach(f=>{
+      const it=stockMap[f.id+'|'+SIZE];
+      html+= it ? rowHtml(f,'<span class="locked-val">🔒 '+it.opening+'</span>')
+                : rowHtml(f,stepperHtml('stockstart_'+f.id));
+    });
+    setStockStatus('Enter 100ml qty taken today · 🔒 = already saved','dim');
+  } else if(currentStockTab==='restock'){
+    SORTED.forEach(f=>{
+      const it=stockMap[f.id+'|'+SIZE]; if(!it) return;
+      html+=rowHtml(f,stepperHtml('stockrestock_'+f.id),'Opening <b>'+it.opening+'</b> · Restocked so far <b>'+it.restocked+'</b>');
+    });
+    if(!html) html='<div class="stat-row center">No Start Day stock saved yet today — nothing to restock.</div>';
+    setStockStatus('Only SKUs with Start Day saved can be restocked','dim');
+  } else {
+    if(!has){
+      html='<div class="stat-row center">No opening stock logged for today yet. Use Start Day first.</div>';
+      setStockStatus('No opening stock found for today','err');
+    } else {
+      SORTED.forEach(f=>{
+        const it=stockMap[f.id+'|'+SIZE]; if(!it) return;
+        html+=rowHtml(f,stepperHtml('stockend_'+f.id,true),
+          'Open <b>'+it.opening+'</b>'+(it.restocked?' + Rstk <b>'+it.restocked+'</b>':'')+' · Sold <b>'+it.sold+'</b> · Expected back <b>'+it.expected+'</b>'
+          +(it.actual!==''&&it.actual!=null?' · Counted <b>'+it.actual+'</b>':''));
+      });
+      setStockStatus('Enter what actually came back to warehouse','dim');
+    }
+  }
+  setStockList(html);
+}
+
+async function submitStockTab(){
+  const btn=document.getElementById('stockSubmitBtn'), orig=btn.textContent;
+  btn.disabled=true; btn.textContent='SAVING…';
+  const items=[]; let payload=null, label='', emptyMsg='';
+  if(currentStockTab==='start'){
+    FRAGRANCES.forEach(f=>{ const el=document.getElementById('stockstart_'+f.id); if(!el) return; const q=parseInt(el.value)||0; if(q>0) items.push({sku:f.id,fragrance:f.sku,size:SIZE,qty:q}); });
+    emptyMsg='Enter at least one quantity'; label='STOCK<br>OUT ✓';
+    if(items.length) payload={action:'logOpeningStock',brand:BRAND,date:stockTodayKey,items:items};
+  } else if(currentStockTab==='restock'){
+    FRAGRANCES.forEach(f=>{ const el=document.getElementById('stockrestock_'+f.id); if(!el) return; const q=parseInt(el.value)||0; if(q>0) items.push({sku:f.id,size:SIZE,qty:q}); });
+    emptyMsg='Enter at least one restock quantity'; label='STOCK<br>IN (RESTOCK) ✓';
+    if(items.length) payload={action:'logRestock',brand:BRAND,date:stockTodayKey,items:items};
+  } else {
+    FRAGRANCES.forEach(f=>{ const el=document.getElementById('stockend_'+f.id); if(el && el.value!=='') items.push({sku:f.id,size:SIZE,actual:parseInt(el.value)||0}); });
+    emptyMsg='Enter counted quantities first'; label='STOCK<br>IN ✓';
+    if(items.length) payload={action:'logClosingStock',brand:BRAND,date:stockTodayKey,items:items};
+  }
+  if(!payload){ setStockStatus(emptyMsg,'err'); btn.disabled=false; btn.textContent=orig; return; }
+  try{
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
+    showSuccess(label, loadStockTab);
+  }catch(e){
+    queuePending(payload);
+    setStockStatus('No connection — saved on this device, will sync automatically','warn');
+  }
+  btn.disabled=false; btn.textContent=orig;
+}
+
+buildUI(); renderCart(); filterProducts(); warmup(); updateSyncBadge(); syncPendingQueue(true);
+</script>
+</body>
+</html>
