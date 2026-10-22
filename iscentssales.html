@@ -146,6 +146,7 @@ hr.div{border:none;border-top:1px solid var(--border);flex-shrink:0;margin:0;}
 .stat-row.center{justify-content:center;padding:20px 0;}
 #stockSubmitBtn{width:100%;background:var(--white);color:var(--black);border:none;padding:13px;font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:0.08em;border-radius:4px;cursor:pointer;flex-shrink:0;}
 #stockSubmitBtn:disabled{opacity:0.3;}
+.cfg-banner{background:rgba(232,55,42,0.15);border:1px solid var(--red);color:var(--white);border-radius:6px;padding:10px;font-size:12px;line-height:1.4;display:none;}
 .refresh-lbl{font-size:10px;color:var(--muted);text-decoration:underline;cursor:pointer;}
 </style>
 </head>
@@ -213,6 +214,7 @@ hr.div{border:none;border-top:1px solid var(--border);flex-shrink:0;margin:0;}
 
 <!-- MAIN -->
 <div class="app">
+  <div class="cfg-banner" id="cfgBanner">⚠ Not connected to the sheet yet. Paste the Apps Script Web App URL (ending in /exec) into SCRIPT_URL in this file. Sales will NOT be saved until then.</div>
   <div class="header">
     <div class="page-label">Record Sale<small>ISCENTS</small></div>
     <div class="header-btns">
@@ -272,8 +274,25 @@ hr.div{border:none;border-top:1px solid var(--border);flex-shrink:0;margin:0;}
 
 <script>
 // ⚠ Paste the Web App URL from the iScents sheet's Apps Script deployment here.
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwNiPuUaoo_D4eGauclj_2YpMa1UlOHglthL6ZkCqysWsw4pcRG8ENm77ATDwgR7hKi6Q/exec';
+const SCRIPT_URL = 'PASTE_ISCENTS_APPS_SCRIPT_URL_HERE';
 const BRAND = 'iScents';
+const CONFIGURED = /^https:\/\/script\.google\.com\/.+\/exec$/.test(SCRIPT_URL);
+
+// Writes go as GET so we can read the sheet's reply and KNOW it saved.
+// (The old no-cors POST could never tell if the sheet actually wrote the row.)
+async function send(payload){
+  if(!CONFIGURED) throw new Error('Sheet not connected (SCRIPT_URL not set)');
+  const url = SCRIPT_URL+'?action='+encodeURIComponent(payload.action)+'&payload='+encodeURIComponent(JSON.stringify(payload))+'&_='+Date.now();
+  if(url.length > 7500){ // very large cart — fall back to POST (can't confirm)
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
+    return {status:'sent'};
+  }
+  let res;
+  try{ res = await fetch(url); }catch(e){ throw new Error('No connection'); }
+  let d; try{ d = await res.json(); }catch(e){ throw new Error('Sheet returned an unexpected page — check the deployment access is "Anyone"'); }
+  if(d.status!=='success' && d.status!=='duplicate') throw new Error(d.error || 'Sheet error');
+  return d;
+}
 
 const MRP        = 699;
 const BASE_PRICE = 500;
@@ -456,11 +475,11 @@ async function syncPendingQueue(silent){
   if(!silent){ btn.disabled=true; btn.textContent='Syncing…'; }
   const still=[];
   for(const item of q){
-    try{ await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(item.payload)}); }
-    catch(e){ still.push(item); }
+    try{ await send(item.payload); }
+    catch(e){ still.push(item); item.lastError=e.message; }
   }
   setPendingQueue(still); btn.disabled=false;
-  if(!silent) setStatus(still.length ? still.length+' item(s) still pending — no connection yet' : '✓ All pending items synced', still.length?'warn':'ok');
+  if(!silent) setStatus(still.length ? still.length+' item(s) still pending — '+(still[0].lastError||'no connection yet') : '✓ All pending items synced', still.length?'warn':'ok');
 }
 
 async function recordSale(){
@@ -493,11 +512,12 @@ async function recordSale(){
     sale_customer_mobile:mobileVal,
   };
   try{
-    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
+    await send(payload);
     showSuccess();
   }catch(e){
     queuePending(payload);
-    showSuccess('SAVED<br>OFFLINE ⚠',()=>{ clearAll(); setStatus('No connection — sale saved on this device, will sync automatically','warn'); });
+    const why=e.message;
+    showSuccess('SAVED ON<br>DEVICE ⚠',()=>{ clearAll(); setStatus('Not in sheet yet ('+why+') — kept on this phone, tap 🔄 Sync to retry','warn'); });
   }
 }
 function showSuccess(label,afterFn){
@@ -705,15 +725,16 @@ async function submitStockTab(){
   }
   if(!payload){ setStockStatus(emptyMsg,'err'); btn.disabled=false; btn.textContent=orig; return; }
   try{
-    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
+    await send(payload);
     showSuccess(label, loadStockTab);
   }catch(e){
     queuePending(payload);
-    setStockStatus('No connection — saved on this device, will sync automatically','warn');
+    setStockStatus('Not in sheet yet ('+e.message+') — kept on this phone, tap 🔄 Sync to retry','warn');
   }
   btn.disabled=false; btn.textContent=orig;
 }
 
+if(!CONFIGURED) document.getElementById('cfgBanner').style.display='block';
 buildUI(); renderCart(); filterProducts(); warmup(); updateSyncBadge(); syncPendingQueue(true);
 </script>
 </body>
